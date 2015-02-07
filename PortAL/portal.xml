@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<portal>
+	<!-- This group will be put in the systray -->
+	<group key="Z">
+		<sep name="My menu"/>
+		<app name="command line" exe="%system%\cmd.exe" path="C:\"/>
+		<!-- Possible to put a hotkey in a group (open a menu), a application (launch it) or a special item (quit to quit. sep does nothing) -->
+		<app name="notepad" exe="%win%\notepad.exe" key="N"/>
+		<group name="A sub menu">
+			<sep name="Sub menu title"/>
+			<!-- mod is the modifier : C for Ctrl. A for Alt. W for Win. S for Shift -->
+			<quit name="A &quot;quit&quot; item" mod="CA" key="Q"/>
+		</group>
+		<group name="Explorers">
+			<app name="explorer" exe="%win%\explorer.exe" />
+			<app name="explorer with another icon" exe="%win%\explorer.exe" ico="%win%\explorer.exe,2"/>
+		</group>
+		<app name="Portal Documentation" exe="%portal%\doc\index.html" shell="true"/>
+		<!-- An entry in order to config your portal menu. The icon of notepad is replaced by the XML icon -->
+		<app name="Edit this config" exe="%win%\notepad.exe" param="%portal%\portal.xml" ico="%portal%\portal.xml" />
+		<sep/>
+		<quit/>
+	</group>
+</portal>

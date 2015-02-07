@@ -1,0 +1,33 @@
+------------------------
+Release: 1.4.3
+Date   : 2012-09-02
+------------------------
+ * XML Library modification : using pugixml instead of TinyXML.
+ * Merging xmlconfig with PortAL
+ * new "break" option
+
+------------------------
+Release: 1.4.2
+Date   : 2011-12-14
+------------------------
+ * New menu design
+ * Shortcut display in menus (showsc)
+ * Dynamic load of sub menus
+ * Icon manager
+ * New "browse" option
+ * Add a link in the balloon notification
+
+------------------------
+Release: 1.4.1
+Date   : 2011-08-26
+------------------------
+ * Set multiple hotkeys for groups and applications
+ * Minors fixes
+
+------------------------
+Release: 1.4.0
+Date   : 2010-12-01
+------------------------
+ * Improving Windows Vista/Seven compatibility
+ * Support of keyboard naviguation in menus
+ * 64bits version

@@ -1,0 +1,52 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON                    "usb.minimal.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,4,6,0
+ PRODUCTVERSION 1,4,6,0
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x3L
+#else
+ FILEFLAGS 0x2L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040c04b0"
+        BEGIN
+            VALUE "Comments", "Glatigny Jerome"
+            VALUE "CompanyName", "Obsidev - http://www.obsidev.com"
+            VALUE "FileDescription", "Portable Application Launcher - GuiPro project"
+            VALUE "FileVersion", "1, 4, 6, 0"
+            VALUE "InternalName", "PortAL"
+            VALUE "LegalCopyright", "GPL 2007-2014"
+            VALUE "LegalTrademarks", "GuiPro project - http://guipro.sourceforge.net"
+            VALUE "OriginalFilename", "PortAL.exe"
+            VALUE "ProductName", "Portable Application Launcher"
+            VALUE "ProductVersion", "1, 4, 6, 0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x40c, 1200
+    END
+END

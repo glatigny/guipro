@@ -1,0 +1,66 @@
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// Français (France) resources
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON                    "hulk.minimal.ico"
+IDI_TRAY_ICON           ICON                    "hulk.minimal.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,9,3,0
+ PRODUCTVERSION 0,9,3,0
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "Comments", "DarkSage (Glatigny Jerome)"
+            VALUE "FileDescription", "HotKey UnLimited - GUIPro project"
+            VALUE "FileVersion", "0, 9, 3, 0"
+            VALUE "InternalName", "HulK"
+            VALUE "LegalCopyright", "GPL 2007-2011"
+            VALUE "LegalTrademarks", "GUIPro project - http://guipro.sourceforge.net"
+            VALUE "OriginalFilename", "HulK.exe"
+            VALUE "ProductName", "HotKey UnLimited"
+            VALUE "ProductVersion", "0, 9, 3, 0"
+        END
+        BLOCK "040c04b0"
+        BEGIN
+            VALUE "Comments", "DarkSage (Glatigny Jerome)"
+            VALUE "FileDescription", "HotKey UnLimited - projet GUIPro"
+            VALUE "FileVersion", "0, 9, 3, 0"
+            VALUE "InternalName", "HulK"
+            VALUE "LegalCopyright", "GPL 2007-2011"
+            VALUE "LegalTrademarks", "projet GUIPro - http://guipro.sourceforge.net"
+            VALUE "OriginalFilename", "HulK.exe"
+            VALUE "ProductName", "HotKey UnLimited"
+            VALUE "ProductVersion", "0, 9, 3, 0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200, 0x40c, 1200
+    END
+END
+

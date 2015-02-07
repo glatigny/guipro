@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 10
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sersi", "Sersi.vcxproj", "{20CBF676-BA5D-4B1E-BADB-8BC2E75CCB09}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug Console|Win32 = Debug Console|Win32
+		Debug Window|Win32 = Debug Window|Win32
+		Release Console|Win32 = Release Console|Win32
+		Release Window|Win32 = Release Window|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{20CBF676-BA5D-4B1E-BADB-8BC2E75CCB09}.Debug Console|Win32.ActiveCfg = Debug Console|Win32
+		{20CBF676-BA5D-4B1E-BADB-8BC2E75CCB09}.Debug Console|Win32.Build.0 = Debug Console|Win32
+		{20CBF676-BA5D-4B1E-BADB-8BC2E75CCB09}.Debug Window|Win32.ActiveCfg = Debug Window|Win32
+		{20CBF676-BA5D-4B1E-BADB-8BC2E75CCB09}.Debug Window|Win32.Build.0 = Debug Window|Win32
+		{20CBF676-BA5D-4B1E-BADB-8BC2E75CCB09}.Release Console|Win32.ActiveCfg = Release Console|Win32
+		{20CBF676-BA5D-4B1E-BADB-8BC2E75CCB09}.Release Console|Win32.Build.0 = Release Console|Win32
+		{20CBF676-BA5D-4B1E-BADB-8BC2E75CCB09}.Release Window|Win32.ActiveCfg = Release Window|Win32
+		{20CBF676-BA5D-4B1E-BADB-8BC2E75CCB09}.Release Window|Win32.Build.0 = Release Window|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

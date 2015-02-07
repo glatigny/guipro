@@ -1,5 +1,5 @@
 /*
-	PortAL - GUIPro Project ( http://guipro.sourceforge.net/ )
+	PortAL - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
 	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
@@ -39,6 +39,7 @@ const wchar_t g_szWindowName[]	= L"PortAL";
 HINSTANCE g_hInst	= NULL;
 HWND g_hwndMain		= NULL;
 std::vector<HICON> g_IconTray;
+LPWSTR g_loadingmessage = NULL;
 UINT g_currentMenu	= 0;
 DWORD windowsVersion = 0;
 BOOL g_aboutbaloon = 0;
@@ -119,9 +120,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			installHookKeyboard();
 
 			// Open the configuration
-			if( openConfig() == FALSE )
+			if (openConfig() == FALSE)
 			{
 				uninstallHookKeyboard();
+
+				MessageBox(g_hwndMain, L"Configuration file not found or invalid", ERR_MSGBOX_TITLE, NULL);
+
 				PostQuitMessage(0);
 				return 0;
 			}
@@ -134,6 +138,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			// Add the system tray icons (depends of the configuration)
 			ShowTrayIcons();
+
+			// Show loading error messages
+			if (g_loadingmessage != NULL) {
+				ShowBalloon(ERR_MSGBOX_TITLE, g_loadingmessage, 0, NIIF_ERROR);
+				free(g_loadingmessage);
+				g_loadingmessage = NULL;
+			}
 
 			// Launch application in "autorun" mode
 			Autorun();
@@ -327,12 +338,13 @@ void quitPortal()
 
 void reloadPortalConfig()
 {
-	if( openConfig() == TRUE )
+	int ret = openConfig();
+	if( ret == TRUE )
 	{
 		ReloadTrayIcons();
 		ShowBalloon(WC_PORTAL_ABOUT_TEXT_TITLE, WC_PORTAL_RLDCONF_TEXT_OK, 0, NIIF_INFO);
 	}
-	else
+	else if (ret == FALSE)
 	{
 		ShowBalloon(WC_PORTAL_ABOUT_TEXT_TITLE, WC_PORTAL_RLDCONF_TEXT_ERR, 0, NIIF_ERROR);
 	}

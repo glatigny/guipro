@@ -272,6 +272,9 @@
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalDependencies>Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ResourceCompile>
+      <Culture>0x040c</Culture>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Express Release|x64'">
     <ClCompile>
@@ -329,22 +332,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ResourceCompile Include="PortAL.rc">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Express Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Express Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Express Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Express Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Express X64 Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Express X64 Release|x64'">true</ExcludedFromBuild>
-    </ResourceCompile>
-    <ResourceCompile Include="PortAL_Express.rc">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="usb.minimal.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -375,6 +362,9 @@
     <ClCompile Include="trayIcon.cpp" />
     <ClCompile Include="updater.cpp" />
     <ClCompile Include="xmlconfig.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PortAL.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

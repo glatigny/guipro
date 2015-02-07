@@ -13,9 +13,9 @@
 	BrandingText "Graphical User Interface Productivity : PortAL"
 
 	!define PRODUCT_NAME "PortAL"
-	!define PRODUCT_VERSION "1.4.6"
+	!define PRODUCT_VERSION "1.4.7"
 	!define PRODUCT_PUBLISHER "Graphical User Interface Productivity"
-	!define PRODUCT_WEB_SITE "http://guipro.sourceforge.net"
+	!define PRODUCT_WEB_SITE "http://obsidev.github.io/guipro/"
 	!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 	!define PRODUCT_UNINST_ROOT_KEY "HKLM"
 
@@ -147,17 +147,17 @@ Section "!PortAL" SecInstall
 	
 installAuto:
 	${If} ${RunningX64}
-		File /oname=PortAL.exe x64\PortAL-x64.exe
+		File /oname=PortAL.exe x64\PortAL.exe
 	${Else}
-		File /oname=PortAL.exe x86\PortAL-x86.exe
+		File /oname=PortAL.exe x86\PortAL.exe
 	${EndIf}
 	Goto PortalExeOk
 installx86:
-	File /oname=PortAL.exe x86\PortAL-x86.exe
+	File /oname=PortAL.exe x86\PortAL.exe
 	Goto PortalExeOk
 
 installx64:
-	File /oname=PortAL.exe x64\PortAL-x64.exe
+	File /oname=PortAL.exe x64\PortAL.exe
 	Goto PortalExeOk
 ;*/
 
@@ -169,13 +169,14 @@ installx64:
 
 PortalExeOk:
 	File ..\portal.txt
+	File ..\license.txt
 	
 	SetOverwrite off
 	File ..\portal.xml
 	SetOverwrite on
 	
-	SetOutPath "$INSTDIR\doc"
-	File /r /x .svn ..\doc\*.*
+;	SetOutPath "$INSTDIR\doc"
+;	File /r /x .svn ..\doc\*.*
 
 	;Store installation folder
 	WriteRegStr HKCU "Software\GUIPro\PortAL" "" $INSTDIR

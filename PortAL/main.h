@@ -1,5 +1,5 @@
 /*
-	PortAL - GUIPro Project ( http://guipro.sourceforge.net/ )
+	PortAL - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
 	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
@@ -32,6 +32,7 @@ extern const wchar_t g_szWindowName[];
 extern HINSTANCE g_hInst;
 extern HWND g_hwndMain;
 extern std::vector<HICON> g_IconTray;
+extern LPWSTR g_loadingmessage;
 extern UINT g_currentMenu;
 extern DWORD windowsVersion;
 extern BOOL g_aboutbaloon;

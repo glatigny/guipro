@@ -1,5 +1,5 @@
 /*
-	PortAL - GUIPro Project ( http://guipro.sourceforge.net/ )
+	PortAL - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
 	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
@@ -38,10 +38,7 @@ bool myRegisterHotKey(UINT key, UINT mod, int id, bool overriding)
 			return addOverrideKey(key, id);
 		return false;
 	}
-	else
-	{
-		return true;
-	}
+	return true;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -55,10 +52,7 @@ bool myUnregisterHotKey(int id)
 	{
 		return false;
 	}
-	else
-	{
-		return true;
-	}
+	return true;
 }
 
 
@@ -479,13 +473,10 @@ void uninstallHookKeyboard()
 
 bool addOverrideKey(DWORD c, int id)
 {
-	if( hookKeyboardHandle )
+	if( hookKeyboardHandle && overrideKeys.find(c) == overrideKeys.end())
 	{
-		if(overrideKeys.find(c) == overrideKeys.end())
-		{
-			overrideKeys[c] = id;
-			return true;
-		}
+		overrideKeys[c] = id;
+		return true;
 	}
 	return false;
 }
@@ -494,13 +485,10 @@ bool addOverrideKey(DWORD c, int id)
 
 bool delOverrideKey(DWORD c)
 {
-	if( hookKeyboardHandle )
+	if( hookKeyboardHandle && overrideKeys.find(c) != overrideKeys.end())
 	{
-		if(overrideKeys.find(c) != overrideKeys.end())
-		{
-			overrideKeys.erase(c);
-			return true;
-		}
+		overrideKeys.erase(c);
+		return true;
 	}
 	return false;
 }
@@ -526,7 +514,6 @@ bool delOverrideKey(int id)
 			overrideKeys.erase(key);
 			return true;
 		}
-		return false;
 	}
 	return false;
 }

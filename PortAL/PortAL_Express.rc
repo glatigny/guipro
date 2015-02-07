@@ -12,20 +12,49 @@
 IDI_MAIN_ICON           ICON                    "usb.minimal.ico"
 
 /////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource1.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,4,6,0
- PRODUCTVERSION 1,4,6,0
- FILEFLAGSMASK 0x17L
+ FILEVERSION 1,4,7,0
+ PRODUCTVERSION 1,4,7,0
+ FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
- FILEFLAGS 0x3L
+ FILEFLAGS 0x1L
 #else
- FILEFLAGS 0x2L
+ FILEFLAGS 0x0L
 #endif
- FILEOS 0x4L
+ FILEOS 0x40004L
  FILETYPE 0x1L
  FILESUBTYPE 0x0L
 BEGIN
@@ -36,13 +65,13 @@ BEGIN
             VALUE "Comments", "Glatigny Jerome"
             VALUE "CompanyName", "Obsidev - http://www.obsidev.com"
             VALUE "FileDescription", "Portable Application Launcher - GuiPro project"
-            VALUE "FileVersion", "1, 4, 6, 0"
+            VALUE "FileVersion", "1.4.7.0"
             VALUE "InternalName", "PortAL"
-            VALUE "LegalCopyright", "GPL 2007-2014"
-            VALUE "LegalTrademarks", "GuiPro project - http://guipro.sourceforge.net"
+            VALUE "LegalCopyright", "GPL 2007-2015"
+            VALUE "LegalTrademarks", "GuiPro project - http://obsidev.github.io/guipro/"
             VALUE "OriginalFilename", "PortAL.exe"
             VALUE "ProductName", "Portable Application Launcher"
-            VALUE "ProductVersion", "1, 4, 6, 0"
+            VALUE "ProductVersion", "1.4.7.0"
         END
     END
     BLOCK "VarFileInfo"

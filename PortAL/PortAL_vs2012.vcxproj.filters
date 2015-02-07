@@ -21,14 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="PortAL.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="PortAL_Express.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="usb.minimal.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -111,5 +103,10 @@
     <ClCompile Include="pugixml\pugixml.cpp">
       <Filter>Source Files\pugixml</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PortAL.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

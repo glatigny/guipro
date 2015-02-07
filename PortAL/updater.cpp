@@ -1,5 +1,5 @@
 /*
-	PortAL - GUIPro Project ( http://guipro.sourceforge.net/ )
+	PortAL - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
 	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
@@ -27,5 +27,5 @@
 
 void checkGuiproVersion() {
 	// http://sourceforge.net/api/file/index/project-id/190801/mtime/desc/limit/20/rss?path=Portal
-	ShellExecute(g_hwndMain, TEXT("open"), L"http://guipro.sourceforge.net/portal", NULL, NULL, SW_SHOW);
+	ShellExecute(g_hwndMain, TEXT("open"), L"http://obsidev.github.io/guipro/", NULL, NULL, SW_SHOW);
 }

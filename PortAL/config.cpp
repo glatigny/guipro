@@ -1,5 +1,5 @@
 /*
-	PortAL - GUIPro Project ( http://guipro.sourceforge.net/ )
+	PortAL - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
 	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
@@ -138,8 +138,14 @@ int openConfig()
 				ret = TRUE;
 			}
 #else
-			registerConfig(TRUE);
 			ret = TRUE;
+			if (registerConfig(TRUE) == FALSE)
+				ret = PORTAL_CONFIG_LOAD_PARTIAL;
+
+			if (g_loadingmessage != NULL) {
+				free(g_loadingmessage);
+				g_loadingmessage = NULL;
+			}
 #endif
 		}
 		else
@@ -155,8 +161,9 @@ int openConfig()
 			}
 #else
 			g_portal = l_config;
-			registerConfig(TRUE);
 			ret = TRUE;
+			if (registerConfig(TRUE) == FALSE)
+				ret = PORTAL_CONFIG_LOAD_PARTIAL;
 #endif
 		}
 	}
@@ -182,11 +189,20 @@ int registerConfig(int alert)
 			wcscpy_s(l_message, l_size, ERR_HOTKEYS_MSG);
 			wcscat_s(l_message, l_size, l_registerErrors);
 			
-			MessageBox(g_hwndMain, l_message, ERR_MSGBOX_TITLE, NULL);
+			// If we do not have any tray icon ; we store the message in a global variable
+			//
+			if (g_IconTray.size() == 0)
+			{
+				g_loadingmessage = _wcsdup(l_message);
+			}
+			else
+			{
+				ShowBalloon(ERR_MSGBOX_TITLE, l_message, 0, NIIF_ERROR);
+			}
 			
 			free(l_message);
-			free(l_registerErrors);
 		}
+		free(l_registerErrors);
 		return FALSE;
 	}
 	free(l_registerErrors);

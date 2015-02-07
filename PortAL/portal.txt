@@ -5,9 +5,3 @@ Design for portable mode (usb key for example).
 Low cost memory, hotkey access, application icons in menu.
 
 For more information, please read the HTML documentation.
-
-
- Contact
----------
-http://guipro.sourceforge.net
-Jerome :: shini_darky@users.sourceforge.net

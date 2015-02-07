@@ -1,5 +1,5 @@
 /*
-	PortAL - GUIPro Project ( http://guipro.sourceforge.net/ )
+	PortAL - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
 	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
@@ -35,6 +35,8 @@
 #define PORTAL_FILE_ID			1000
 
 /* ------------------------------------------------------------------------------------------------- */
+
+#define PORTAL_CONFIG_LOAD_PARTIAL	2
 
 /* MENU DEFINES */
 #define PORTAL_MENU_SYSTRAY			0

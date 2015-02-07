@@ -27,3 +27,6 @@
 *.i*86
 *.x86_64
 *.hex
+*.sdf
+PortAL/PortAL_vs2012.vcxproj.user
+*.zip

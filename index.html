@@ -41,6 +41,33 @@ Goal of this project for this release is to:</p>
 <li>Show the application menu by hotkey ( fully configurable using a xml file )</li>
 </ul>
 
+<p>Sample of configuration file</p>
+
+<div class="highlight highlight-XML"><pre>&lt;?<span class="pl-ent">xml</span><span class="pl-e"> version</span>=<span class="pl-s1"><span class="pl-pds">"</span>1.0<span class="pl-pds">"</span></span><span class="pl-e"> encoding</span>=<span class="pl-s1"><span class="pl-pds">"</span>UTF-8<span class="pl-pds">"</span></span>?&gt;
+&lt;<span class="pl-ent">portal</span>&gt;
+    <span class="pl-c">&lt;!-- This group will be put in the systray --&gt;</span>
+    &lt;<span class="pl-ent">group</span>&gt;
+        &lt;<span class="pl-ent">sep</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>My menu<span class="pl-pds">"</span></span>/&gt;
+        &lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>command line<span class="pl-pds">"</span></span> <span class="pl-e">exe</span>=<span class="pl-s1"><span class="pl-pds">"</span>%system%\cmd.exe<span class="pl-pds">"</span></span> <span class="pl-e">path</span>=<span class="pl-s1"><span class="pl-pds">"</span>C:\<span class="pl-pds">"</span></span>/&gt;
+        <span class="pl-c">&lt;!-- Possible to put a hotkey in a group (open a menu), a application (launch it) or a special item (quit to quit. sep does nothing) --&gt;</span>
+        &lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>notepad<span class="pl-pds">"</span></span> <span class="pl-e">exe</span>=<span class="pl-s1"><span class="pl-pds">"</span>%win%\notepad.exe<span class="pl-pds">"</span></span> <span class="pl-e">key</span>=<span class="pl-s1"><span class="pl-pds">"</span>N<span class="pl-pds">"</span></span>/&gt;
+        &lt;<span class="pl-ent">group</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>A sub menu<span class="pl-pds">"</span></span>&gt;
+            &lt;<span class="pl-ent">sep</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>Sub menu title<span class="pl-pds">"</span></span>/&gt;
+            <span class="pl-c">&lt;!-- mod is the modifier : C for Ctrl. A for Alt. W for Win. S for Shift --&gt;</span>
+            &lt;<span class="pl-ent">quit</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>A <span class="pl-c1">&amp;quot;</span>quit<span class="pl-c1">&amp;quot;</span> item<span class="pl-pds">"</span></span> <span class="pl-e">mod</span>=<span class="pl-s1"><span class="pl-pds">"</span>CA<span class="pl-pds">"</span></span> <span class="pl-e">key</span>=<span class="pl-s1"><span class="pl-pds">"</span>Q<span class="pl-pds">"</span></span>/&gt;
+        &lt;/<span class="pl-ent">group</span>&gt;
+        &lt;<span class="pl-ent">group</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>Explorers<span class="pl-pds">"</span></span>&gt;
+            &lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>explorer<span class="pl-pds">"</span></span> <span class="pl-e">exe</span>=<span class="pl-s1"><span class="pl-pds">"</span>%win%\explorer.exe<span class="pl-pds">"</span></span>/&gt;
+            &lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>explorer with another icon<span class="pl-pds">"</span></span> <span class="pl-e">exe</span>=<span class="pl-s1"><span class="pl-pds">"</span>%win%\explorer.exe<span class="pl-pds">"</span></span> <span class="pl-e">ico</span>=<span class="pl-s1"><span class="pl-pds">"</span>%win%\explorer.exe,2<span class="pl-pds">"</span></span>/&gt;
+        &lt;/<span class="pl-ent">group</span>&gt;
+        &lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>Portal Documentation<span class="pl-pds">"</span></span> <span class="pl-e">exe</span>=<span class="pl-s1"><span class="pl-pds">"</span>%portal%\doc\index.html<span class="pl-pds">"</span></span> <span class="pl-e">shell</span>=<span class="pl-s1"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span>/&gt;
+        <span class="pl-c">&lt;!-- An entry in order to config your portal menu. The icon of notepad is replaced by the XML icon --&gt;</span>
+        &lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s1"><span class="pl-pds">"</span>Edit this config<span class="pl-pds">"</span></span> <span class="pl-e">exe</span>=<span class="pl-s1"><span class="pl-pds">"</span>%win%\notepad.exe<span class="pl-pds">"</span></span> <span class="pl-e">param</span>=<span class="pl-s1"><span class="pl-pds">"</span>%portal%\portal.xml<span class="pl-pds">"</span></span> <span class="pl-e">ico</span>=<span class="pl-s1"><span class="pl-pds">"</span>%portal%\portal.xml<span class="pl-pds">"</span></span> /&gt;
+        &lt;<span class="pl-ent">sep</span>/&gt;
+        &lt;<span class="pl-ent">quit</span>/&gt;
+    &lt;/<span class="pl-ent">group</span>&gt;
+&lt;/<span class="pl-ent">portal</span>&gt;</pre></div>
+
 <h2>
 <a id="hulk" class="anchor" href="#hulk" aria-hidden="true"><span class="octicon octicon-link"></span></a>HulK</h2>
 

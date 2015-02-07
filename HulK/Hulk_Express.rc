@@ -14,20 +14,49 @@ IDI_MAIN_ICON           ICON                    "hulk.minimal.ico"
 IDI_TRAY_ICON           ICON                    "hulk.minimal.ico"
 
 /////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource1.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,3,0
- PRODUCTVERSION 0,9,3,0
- FILEFLAGSMASK 0x17L
+ FILEVERSION 0,9,4,0
+ PRODUCTVERSION 0,9,4,0
+ FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
 #else
  FILEFLAGS 0x0L
 #endif
- FILEOS 0x4L
+ FILEOS 0x40004L
  FILETYPE 0x1L
  FILESUBTYPE 0x0L
 BEGIN
@@ -35,27 +64,29 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "DarkSage (Glatigny Jerome)"
+            VALUE "Comments", "Glatigny Jerome"
+            VALUE "CompanyName", "Obsidev - http://www.obsidev.com"
             VALUE "FileDescription", "HotKey UnLimited - GUIPro project"
-            VALUE "FileVersion", "0, 9, 3, 0"
+            VALUE "FileVersion", "0, 9, 4, 0"
             VALUE "InternalName", "HulK"
-            VALUE "LegalCopyright", "GPL 2007-2011"
-            VALUE "LegalTrademarks", "GUIPro project - http://guipro.sourceforge.net"
+            VALUE "LegalCopyright", "GPL 2007-2015"
+            VALUE "LegalTrademarks", "GUIPro project - http://obsidev.github.io/guipro/"
             VALUE "OriginalFilename", "HulK.exe"
             VALUE "ProductName", "HotKey UnLimited"
-            VALUE "ProductVersion", "0, 9, 3, 0"
+            VALUE "ProductVersion", "0, 9, 4, 0"
         END
         BLOCK "040c04b0"
         BEGIN
-            VALUE "Comments", "DarkSage (Glatigny Jerome)"
+            VALUE "Comments", "Glatigny Jerome"
+            VALUE "CompanyName", "Obsidev - http://www.obsidev.com"
             VALUE "FileDescription", "HotKey UnLimited - projet GUIPro"
-            VALUE "FileVersion", "0, 9, 3, 0"
+            VALUE "FileVersion", "0, 9, 4, 0"
             VALUE "InternalName", "HulK"
-            VALUE "LegalCopyright", "GPL 2007-2011"
-            VALUE "LegalTrademarks", "projet GUIPro - http://guipro.sourceforge.net"
+            VALUE "LegalCopyright", "GPL 2007-2015"
+            VALUE "LegalTrademarks", "projet GUIPro - http://obsidev.github.io/guipro/"
             VALUE "OriginalFilename", "HulK.exe"
             VALUE "ProductName", "HotKey UnLimited"
-            VALUE "ProductVersion", "0, 9, 3, 0"
+            VALUE "ProductVersion", "0, 9, 4, 0"
         END
     END
     BLOCK "VarFileInfo"

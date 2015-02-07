@@ -9,13 +9,13 @@
 ;General
 	;Name and file
 	Name "HotKey UnLimited"
-	OutFile "HulK-0.9.3.exe"
+	OutFile "HulK-0.9.5.exe"
 	BrandingText "Graphical User Interface Productivity : HulK"
 
 	!define PRODUCT_NAME "HulK"
-	!define PRODUCT_VERSION "0.9.3"
+	!define PRODUCT_VERSION "0.9.5"
 	!define PRODUCT_PUBLISHER "Graphical User Interface Productivity"
-	!define PRODUCT_WEB_SITE "http://guipro.sourceforge.net"
+	!define PRODUCT_WEB_SITE "http://obsidev.github.io/guipro/"
 	!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 	!define PRODUCT_UNINST_ROOT_KEY "HKLM"
 
@@ -174,8 +174,8 @@ HulkExeOk:
 	File ..\hulk.ini
 	SetOverwrite on
 	
-	SetOutPath "$INSTDIR\doc"
-	File /r /x .svn ..\doc\*.*
+;	SetOutPath "$INSTDIR\doc"
+;	File /r /x .svn ..\doc\*.*
 
 	;Store installation folder
 	WriteRegStr HKCU "Software\GUIPro\HulK" "" $INSTDIR

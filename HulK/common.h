@@ -1,20 +1,21 @@
-/*  HulK - GUIPro Project ( http://guipro.sourceforge.net/ )
+/*
+	HulK - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
-    Author : DarkSage  aka  Glatigny Jérôme <darksage@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #ifndef COMMON_H
@@ -53,8 +54,8 @@
 
 /* ------------------------------------------------------------------------------------------------- */
 
-#define WC_HULK_ABOUT_TEXT_TITLE	L"HulK 0.9.3"
-#define WC_HULK_ABOUT_TEXT			L"HotKey UnLimited\nhttp://guipro.sourceforge.net"
+#define WC_HULK_ABOUT_TEXT_TITLE	L"HulK 0.9.4"
+#define WC_HULK_ABOUT_TEXT			L"HotKey UnLimited\nhttp://obsidev.github.io/guipro/"
 #define WC_HULK_ERROR_MAX_APPS		L"Iconized windows limit reached"
 
 /* ------------------------------------------------------------------------------------------------- */

@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "winres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -16,10 +16,7 @@
 // French (France) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
-#ifdef _WIN32
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
-#pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -34,7 +31,7 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "#include ""winres.h""\r\n"
     "\0"
 END
 
@@ -49,29 +46,19 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_MAIN_ICON           ICON                    "hulk.minimal.ico"
-IDI_TRAY_ICON           ICON                    "hulk.minimal.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,3,0
- PRODUCTVERSION 0,9,3,0
- FILEFLAGSMASK 0x17L
+ FILEVERSION 0,9,5,0
+ PRODUCTVERSION 0,9,5,0
+ FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
 #else
  FILEFLAGS 0x0L
 #endif
- FILEOS 0x4L
+ FILEOS 0x40004L
  FILETYPE 0x1L
  FILESUBTYPE 0x0L
 BEGIN
@@ -79,27 +66,27 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "DarkSage (Glatigny Jerome)"
+            VALUE "Comments", "Glatigny Jerome"
             VALUE "FileDescription", "HotKey UnLimited - GUIPro project"
-            VALUE "FileVersion", "0, 9, 3, 0"
+            VALUE "FileVersion", "0.9.5.0"
             VALUE "InternalName", "HulK"
-            VALUE "LegalCopyright", "GPL 2007-2011"
-            VALUE "LegalTrademarks", "GUIPro project - http://guipro.sourceforge.net"
+            VALUE "LegalCopyright", "GPL 2007-2015"
+            VALUE "LegalTrademarks", "GUIPro project - http://obsidev.github.io/guipro/"
             VALUE "OriginalFilename", "HulK.exe"
             VALUE "ProductName", "HotKey UnLimited"
-            VALUE "ProductVersion", "0, 9, 3, 0"
+            VALUE "ProductVersion", "0.9.5.0"
         END
         BLOCK "040c04b0"
         BEGIN
-            VALUE "Comments", "DarkSage (Glatigny Jerome)"
+            VALUE "Comments", "Glatigny Jerome"
             VALUE "FileDescription", "HotKey UnLimited - projet GUIPro"
-            VALUE "FileVersion", "0, 9, 3, 0"
+            VALUE "FileVersion", "0.9.5.0"
             VALUE "InternalName", "HulK"
-            VALUE "LegalCopyright", "GPL 2007-2011"
-            VALUE "LegalTrademarks", "projet GUIPro - http://guipro.sourceforge.net"
+            VALUE "LegalCopyright", "GPL 2007-2015"
+            VALUE "LegalTrademarks", "projet GUIPro - http://obsidev.github.io/guipro/"
             VALUE "OriginalFilename", "HulK.exe"
             VALUE "ProductName", "HotKey UnLimited"
-            VALUE "ProductVersion", "0, 9, 3, 0"
+            VALUE "ProductVersion", "0.9.5.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -108,6 +95,16 @@ BEGIN
     END
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON                    "hulk.minimal.ico"
+IDI_TRAY_ICON           ICON                    "hulk.minimal.ico"
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 

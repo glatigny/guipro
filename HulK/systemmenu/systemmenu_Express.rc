@@ -24,12 +24,12 @@ BEGIN
     BEGIN
         BLOCK "040c04b0"
         BEGIN
-            VALUE "Comments", "DarkSage (Glatigny Jerome)"
+            VALUE "Comments", "Glatigny Jerome"
             VALUE "FileDescription", "System Menu plugin for HulK - GuiPro project"
             VALUE "FileVersion", "0, 2, 0, 0"
             VALUE "InternalName", "Automatic System Menu plugin for HulK"
-            VALUE "LegalCopyright", "GPL 2007-2011"
-            VALUE "LegalTrademarks", "GuiPro project - http://guipro.sourceforge.net"
+            VALUE "LegalCopyright", "GPL 2007-2015"
+            VALUE "LegalTrademarks", "GuiPro project - http://obsidev.github.io/guipro/"
             VALUE "OriginalFilename", "systemmenu.dll"
             VALUE "ProductName", "Automatic System Menu plugin for HulK"
             VALUE "ProductVersion", "0, 2, 0, 0"

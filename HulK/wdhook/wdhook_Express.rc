@@ -24,12 +24,12 @@ BEGIN
     BEGIN
         BLOCK "040c04b0"
         BEGIN
-            VALUE "Comments", "DarkSage (Glatigny Jerome)"
+            VALUE "Comments", "Glatigny Jerome"
             VALUE "FileDescription", "Window Hook for HulK - GuiPro project"
             VALUE "FileVersion", "0, 2, 0, 0"
             VALUE "InternalName", "HulK Window Hook for Borderless"
-            VALUE "LegalCopyright", "GPL 2007-2011"
-            VALUE "LegalTrademarks", "GuiPro project - http://guipro.sourceforge.net"
+            VALUE "LegalCopyright", "GPL 2007-2015"
+            VALUE "LegalTrademarks", "GuiPro project - http://obsidev.github.io/guipro/"
             VALUE "OriginalFilename", "wdhook.dll"
             VALUE "ProductName", "HulK Window Hook for Borderless"
             VALUE "ProductVersion", "0, 2, 0, 0"

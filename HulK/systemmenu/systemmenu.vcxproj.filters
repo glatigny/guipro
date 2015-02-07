@@ -37,8 +37,5 @@
     <ResourceCompile Include="systemmenu.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="systemmenu_Express.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
   </ItemGroup>
 </Project>

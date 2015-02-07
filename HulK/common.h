@@ -54,7 +54,7 @@
 
 /* ------------------------------------------------------------------------------------------------- */
 
-#define WC_HULK_ABOUT_TEXT_TITLE	L"HulK 0.9.4"
+#define WC_HULK_ABOUT_TEXT_TITLE	L"HulK 0.9.5"
 #define WC_HULK_ABOUT_TEXT			L"HotKey UnLimited\nhttp://obsidev.github.io/guipro/"
 #define WC_HULK_ERROR_MAX_APPS		L"Iconized windows limit reached"
 

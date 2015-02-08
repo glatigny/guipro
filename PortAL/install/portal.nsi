@@ -213,7 +213,7 @@ SectionGroup /e "Install On Computer"
 		CreateDirectory "$SMPROGRAMS\GUIPro\PortAL"
 		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\PortAL.lnk" "$INSTDIR\PortAL.exe" "" "$INSTDIR\PortAL.exe" 0
-		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\documentation.lnk" "$INSTDIR\doc\index.html" "" "$INSTDIR\doc\index.html" 0
+;		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\documentation.lnk" "$INSTDIR\doc\index.html" "" "$INSTDIR\doc\index.html" 0
 		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\edit config.lnk" "$WINDIR\notepad.exe" "$INSTDIR\portal.xml" "" 0
 	SectionEnd
 
@@ -263,7 +263,7 @@ Section "!un.Uninstall Portal" secUnRemove
 	Delete "$INSTDIR\Uninstall.exe"
 
 	RMDir /r "$SMPROGRAMS\GUIPro\PortAL"
-	RMDir /r "$INSTDIR\doc"
+;	RMDir /r "$INSTDIR\doc"
 	RMDir "$SMPROGRAMS\GUIPro"
 	RMDir "$INSTDIR"
 

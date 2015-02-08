@@ -85,11 +85,14 @@ void ShowAbout(int pos)
 	g_aboutbaloon = 1;
 }
 
+/* ------------------------------------------------------------------------------------------------- */
 
 void HideBalloon(int pos)
 {
 	ShowBalloon(NULL, NULL, pos, NIIF_USER);
 }
+
+/* ------------------------------------------------------------------------------------------------- */
 
 void ShowBalloon(wchar_t* title, wchar_t* text, int pos, DWORD type)
 {

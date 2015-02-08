@@ -52,9 +52,9 @@
 	!define MUI_FINISHPAGE_TEXT "HulK was successfully installed"
 	!define MUI_FINISHPAGE_RUN "$INSTDIR\HulK.exe"
 	!define MUI_FINISHPAGE_RUN_TEXT "Start HulK"
-	!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\doc\index.html"
-	!define MUI_FINISHPAGE_SHOWREADME_TEXT "Read the documentation"
-	!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+;	!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\doc\index.html"
+;	!define MUI_FINISHPAGE_SHOWREADME_TEXT "Read the documentation"
+;	!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
 
 	!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of HulK : HotKey Unlimited.$\r$\n$\r$\nIt is recommended that you close current $\"HotKey Unlimited$\" applications.$\r$\nThis setup doesn't need to reboot your computer.$\r$\n$\r$\nClick Next to continue."
 
@@ -212,7 +212,7 @@ SectionGroup /e "Install On Computer"
 		CreateDirectory "$SMPROGRAMS\GUIPro\HulK"
 		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\HulK.lnk" "$INSTDIR\HulK.exe" "" "$INSTDIR\HulK.exe" 0
-		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\documentation.lnk" "$INSTDIR\doc\index.html" "" "$INSTDIR\doc\index.html" 0
+;		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\documentation.lnk" "$INSTDIR\doc\index.html" "" "$INSTDIR\doc\index.html" 0
 		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\edit config.lnk" "$WINDIR\notepad.exe" "$INSTDIR\hulk.ini" "" 0
 	SectionEnd
 
@@ -263,7 +263,7 @@ Section "!un.Uninstall HulK" secUnRemove
 	Delete "$INSTDIR\Uninstall.exe"
 
 	RMDir /r "$SMPROGRAMS\GUIPro\HulK"
-	RMDir /r "$INSTDIR\doc"
+;	RMDir /r "$INSTDIR\doc"
 	RMDir "$SMPROGRAMS\GUIPro"
 	RMDir "$INSTDIR"
 

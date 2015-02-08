@@ -52,9 +52,9 @@
 	!define MUI_FINISHPAGE_TEXT "PortAL was successfully installed"
 	!define MUI_FINISHPAGE_RUN "$INSTDIR\PortAL.exe"
 	!define MUI_FINISHPAGE_RUN_TEXT "Start PortAL"
-	!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\doc\index.html"
-	!define MUI_FINISHPAGE_SHOWREADME_TEXT "Read the documentation"
-	!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+;	!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\doc\index.html"
+;	!define MUI_FINISHPAGE_SHOWREADME_TEXT "Read the documentation"
+;	!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
 
 	!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of PortAL : Portable Application Launcher.$\r$\n$\r$\nIt is recommended that you close current $\"Portable Application Launcher$\" applications.$\r$\nThis setup doesn't need to reboot your computer.$\r$\n$\r$\nClick Next to continue."
 

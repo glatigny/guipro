@@ -207,8 +207,8 @@ int openConfig()
 
 int registerConfig(int alert)
 {
-	LPWSTR l_registerErrors = (LPWSTR)malloc(sizeof(PWSTR) * MAX_LENGHT);
-	memset(l_registerErrors, 0, sizeof(PWSTR) * MAX_LENGHT);
+	LPWSTR l_registerErrors = (LPWSTR)malloc(sizeof(PWSTR) * MAX_LENGTH);
+	memset(l_registerErrors, 0, sizeof(PWSTR) * MAX_LENGTH);
 	if( registerHotkeys(l_registerErrors) > 0)
 	{
 		if( alert )
@@ -248,13 +248,13 @@ int registerHotkeys(LPWSTR p_registerErrors)
 				wcscpy_s(l_errkey, MAX_ERRHKLEN, getInverseModifier(elem->mod));
 				wcscat_s(l_errkey, MAX_ERRHKLEN, getInverseHotKeyCode(elem->key));
 
-				if( (wcslen(p_registerErrors) + wcslen(l_errkey)) >= MAX_LENGHT)
+				if( (wcslen(p_registerErrors) + wcslen(l_errkey)) >= MAX_LENGTH)
 				{
 					return error;	
 				}
 
-				wcscat_s(p_registerErrors, MAX_LENGHT, l_errkey);
-				wcscat_s(p_registerErrors, MAX_LENGHT, (wchar_t*)"\n");
+				wcscat_s(p_registerErrors, MAX_LENGTH, l_errkey);
+				wcscat_s(p_registerErrors, MAX_LENGTH, (wchar_t*)"\n");
 			}
 		}
 		elem = elem->next;

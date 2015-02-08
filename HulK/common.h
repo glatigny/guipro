@@ -65,7 +65,7 @@
 
 /* ------------------------------------------------------------------------------------------------- */
 
-#define MAX_LENGHT					256
+#define MAX_LENGTH					256
 #define MAX_ERRHKLEN				30
 #define SIZEOF_ARRAY(p)				(sizeof(p) /sizeof(p[0]))
 

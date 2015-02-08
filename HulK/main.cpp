@@ -79,7 +79,6 @@ _CrtSetDbgFlag(flag);
 	if( !CreateWindowEx(WS_EX_TOOLWINDOW, g_szMainWnd, g_szWindowName, 0, 0, 0, 0, 0, NULL, NULL, g_hInst, NULL) )
 		return 1;
 
-
 	// Main loop.
 	// Get and send messages for the application.
 	MSG msg;

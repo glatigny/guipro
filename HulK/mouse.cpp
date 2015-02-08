@@ -47,22 +47,34 @@ __declspec(dllexport) LRESULT CALLBACK hookMouse(int nCode, WPARAM wParam, LPARA
 		switch( wParam )
 		{
 			case WM_LBUTTONDOWN:
-				return mouseEvent(MOUSE_BTN_LEFT, true, lParam);
+				if (mouseEvent(MOUSE_BTN_LEFT, true, lParam))
+					return 1;
+				break;
 
 			case WM_RBUTTONDOWN:
-				return mouseEvent(MOUSE_BTN_RIGHT, true, lParam);
+				if (mouseEvent(MOUSE_BTN_RIGHT, true, lParam))
+					return 1;
+				break;
 
 			case WM_MBUTTONDOWN:
-				return mouseEvent(MOUSE_BTN_MIDDLE, true, lParam);
+				if (mouseEvent(MOUSE_BTN_MIDDLE, true, lParam))
+					return 1;
+				break;
 
 			case WM_LBUTTONUP:
-				return mouseEvent(MOUSE_BTN_LEFT, false, lParam);
+				if (mouseEvent(MOUSE_BTN_LEFT, false, lParam))
+					return 1;
+				break;
 
 			case WM_RBUTTONUP:
-				return mouseEvent(MOUSE_BTN_RIGHT, false, lParam);
+				if (mouseEvent(MOUSE_BTN_RIGHT, false, lParam))
+					return 1;
+				break;
 
 			case WM_MBUTTONUP:
-				return mouseEvent(MOUSE_BTN_MIDDLE, false, lParam);
+				if (mouseEvent(MOUSE_BTN_MIDDLE, false, lParam))
+					return 1;
+				break;
 
 			case WM_MOUSEMOVE:
 				if( movingInProgress )
@@ -76,7 +88,9 @@ __declspec(dllexport) LRESULT CALLBACK hookMouse(int nCode, WPARAM wParam, LPARA
 				break;
 
 			case WM_MOUSEWHEEL:
-				return mouseEvent(MOUSE_BTN_WHEEL, false, lParam);
+				if (mouseEvent(MOUSE_BTN_WHEEL, false, lParam))
+					return 1;
+				break;
 		}
 	}
 

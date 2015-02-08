@@ -243,13 +243,13 @@ int registerHKPlugins(LPWSTR p_registerErrors, int error)
 				wcscpy_s(l_errkey, MAX_ERRHKLEN, getInverseModifier(i->second->mod));
 				wcscat_s(l_errkey, MAX_ERRHKLEN, getInverseHotKeyCode(i->second->key));
 				
-				if( (wcslen(p_registerErrors) + wcslen(l_errkey)) >= MAX_LENGHT)
+				if( (wcslen(p_registerErrors) + wcslen(l_errkey)) >= MAX_LENGTH)
 				{
 					return error;	
 				}
 
-				wcscat_s(p_registerErrors, MAX_LENGHT, l_errkey);
-				wcscat_s(p_registerErrors, MAX_LENGHT, (wchar_t*)"\n");
+				wcscat_s(p_registerErrors, MAX_LENGTH, l_errkey);
+				wcscat_s(p_registerErrors, MAX_LENGTH, (wchar_t*)"\n");
 			}
 		}
 	}

@@ -1,26 +1,31 @@
-/*  VulCan - GUIPro Project ( http://guipro.sourceforge.net/ )
+/*
+	VulCan - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
-    Author : DarkSage  aka  Glatigny Jérôme <darksage@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "common.h"
 #include "main.h"
 #include "resource.h"
-#include "hotkey.h"
+#include "hotKey.h"
+#include "volume.h"
+#include "menu.h"
+#include "config.h"
+#include "mouse.h"
 #include <crtdbg.h>
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -32,11 +37,7 @@ HINSTANCE g_hInst	= NULL;
 HWND g_hwndMain		= NULL;
 HICON g_hIconTray	= NULL;
 DWORD windows_version = 0;
-
-GUID g_guidMyContext = GUID_NULL;
-IAudioEndpointVolume *g_pEndptVol = NULL;
-IMMDeviceEnumerator *pEnumerator = NULL;
-IMMDevice *pDevice = NULL;
+BOOL g_aboutballoon = 0;
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -114,50 +115,80 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			(LONG)(LONG_PTR)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TRAY_ICON), IMAGE_ICON, 
 			GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR));
 
-		myRegisterHotKey(VK_ADD, MOD_CONTROL | MOD_WIN, IDH_HOTKEY_VOL_UP);
-		myRegisterHotKey(VK_SUBTRACT, MOD_CONTROL | MOD_WIN, IDH_HOTKEY_VOL_DOWN);
-		myRegisterHotKey(VK_NUMPAD0, MOD_CONTROL | MOD_WIN, IDH_HOTKEY_VOL_MUTE);
+		// call uninstall hook keyboard to clean the override key array
+		uninstallHookKeyboard();
 
 		// Set the Tray Icon
 		ReloadExTrayIcon();
 
+		if (openConfig() == 1)
+		{
+			MessageBox(g_hwndMain, L"No config file", L"Error", NULL);
+			GUIProQuit();
+			return 0;
+		}
+
+		if (!registerConfig(TRUE))
+		{
+			GUIProQuit();
+			return 0;
+		}
+
+		/*
+		myRegisterHotKey(VK_ADD, MOD_CONTROL | MOD_WIN, IDH_HOTKEY_VOL_UP, true);
+		myRegisterHotKey(VK_SUBTRACT, MOD_CONTROL | MOD_WIN, IDH_HOTKEY_VOL_DOWN, true);
+		myRegisterHotKey(VK_NUMPAD0, MOD_CONTROL | MOD_WIN, IDH_HOTKEY_VOL_MUTE, true);
+		*/
 		// Clean the memory in order to have a light application
 		FlushMemory();
 		break;
 
 	case WM_DESTROY:
-			GUIProQuit();
+		GUIProQuit();
 		break;
 
 	case WM_HOTKEY:
-		if( wParam == IDH_HOTKEY_VOL_UP )
 		{
-			changeVolumeUp();
-		}
-		
-		if( wParam == IDH_HOTKEY_VOL_DOWN )
-		{
-			changeVolumeDown();
-		}
+			int ret = -2;
+			switch (wParam) {
+				case IDH_HOTKEY_VOL_UP:
+					ret = changeVolumeUp();
+					break;
+				case IDH_HOTKEY_VOL_DOWN:
+					ret = changeVolumeDown();
+					break;
+				case IDH_HOTKEY_VOL_MUTE:
+					ret = changeVolumeMute();
+					if (ret > 0)
+						ret = getVolume();
+					break;
+			}
 
-		if( wParam == IDH_HOTKEY_VOL_MUTE )
-		{
-			changeVolumeMute();
-		}
+			if (ret >= 0)
+			{
+				ShowVolumeBalloon(ret);
+			}
 
-		FlushMemory();
+			unloadVolumeInterface();
+			FlushMemory();
+		}
 		break;
 
 	case WM_MYTRAYMSG:
 		// Tray Icon event
 		if (wParam == IDI_MAIN_ICON)
 		{
-			if( (UINT)lParam == WM_RBUTTONUP ) 
+			if ((UINT)lParam == WM_RBUTTONUP) 
 			{
-				GUIProQuit();
+				ShowTrayMenu();
+				FlushMemory();
+			}
+			else if ((UINT)lParam == WM_LBUTTONUP)
+			{
+				ShowVolumeBalloon(-1);
+				FlushMemory();
 			}
 		}
-		FlushMemory();
 		break;
 
 	default:
@@ -181,6 +212,7 @@ void GUIProQuit()
 {
 	myUnregisterHotKey(IDH_HOTKEY_VOL_UP);
 	myUnregisterHotKey(IDH_HOTKEY_VOL_DOWN);
+	uninstallHookMouse();
 
 	unloadVolumeInterface();
 
@@ -197,117 +229,6 @@ void GUIProQuit()
 void FlushMemory()
 {
 	SetProcessWorkingSetSize(GetCurrentProcess(), 102400, 409600);
-}
-
-/* ------------------------------------------------------------------------------------------------- */
-
-#define SAFE_RELEASE(punk)  \
-              if ((punk) != NULL)  \
-                { (punk)->Release(); (punk) = NULL; }
-
-BOOL initVolumeInterface()
-{
-	HRESULT hr = S_OK;
-	CoInitialize(NULL);
-	hr = CoCreateGuid(&g_guidMyContext);
-	if (FAILED(hr)) return 1;
-
-	hr = CoCreateInstance(__uuidof(MMDeviceEnumerator),
-			NULL, CLSCTX_INPROC_SERVER,
-			__uuidof(IMMDeviceEnumerator),
-			(void**)&pEnumerator);
-	if (FAILED(hr)) return 1;
-
-	hr = pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
-	if (FAILED(hr)) return 1;
-
-    hr = pDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)&g_pEndptVol);
-	if (FAILED(hr)) return 1;
-
-	return 0;
-}
-
-/* ------------------------------------------------------------------------------------------------- */
-
-void unloadVolumeInterface()
-{
-	SAFE_RELEASE(pEnumerator)
-    SAFE_RELEASE(pDevice)
-    SAFE_RELEASE(g_pEndptVol)
-    CoUninitialize();
-
-	pEnumerator = NULL;
-	pDevice = NULL;
-	g_pEndptVol = NULL;
-}
-
-#undef SAFE_RELEASE
-
-/* ------------------------------------------------------------------------------------------------- */
-
-BOOL changeVolumeUp()
-{
-	if( pDevice == NULL )
-		initVolumeInterface();
-
-	float fVolume;
-	HRESULT hr;
-	hr = g_pEndptVol->GetMasterVolumeLevelScalar(&fVolume);
-	if( FAILED(hr) )
-		return FALSE;
-
-	fVolume += (float)0.05;
-	if( fVolume > 1 )
-		fVolume = 1;
-	hr = g_pEndptVol->SetMasterVolumeLevelScalar(fVolume, &g_guidMyContext);
-	if( FAILED(hr) )
-		return FALSE;
-
-	return TRUE;
-}
-
-/* ------------------------------------------------------------------------------------------------- */
-
-BOOL changeVolumeDown()
-{
-	if( pDevice == NULL )
-		initVolumeInterface();
-
-	float fVolume;
-	HRESULT hr;
-	hr = g_pEndptVol->GetMasterVolumeLevelScalar(&fVolume);
-	if( FAILED(hr) )
-		return FALSE;
-
-	fVolume -= (float)0.05;
-	if( fVolume < 0 )
-		fVolume = 0;
-	hr = g_pEndptVol->SetMasterVolumeLevelScalar(fVolume, &g_guidMyContext);
-	if( FAILED(hr) )
-		return FALSE;
-
-	return TRUE;
-}
-
-/* ------------------------------------------------------------------------------------------------- */
-
-BOOL changeVolumeMute()
-{
-	if( pDevice == NULL )
-		initVolumeInterface();
-
-	BOOL bMute;
-	HRESULT hr;
-	
-	hr = g_pEndptVol->GetMute( &bMute );
-	if( FAILED(hr) )
-		return FALSE;
-
-	hr = g_pEndptVol->SetMute( !bMute, &g_guidMyContext);
-	if( FAILED(hr) )
-		return FALSE;
-
-	return TRUE;
 }
 
 /* ------------------------------------------------------------------------------------------------- */

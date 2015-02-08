@@ -18,21 +18,18 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef TRAYICON_H
-#define TRAYICON_H
+#ifndef VOLUME_H
+#define VOLUME_H
 
 #include <windows.h>
-#include <ShellAPI.h>
 
-#define WM_MYTRAYMSG (WM_USER + 100)
+extern float g_volume_step;
 
-BOOL AddTrayIcon(HWND hwnd, UINT uID, HICON hIcon, PCWSTR szTip);
-BOOL DeleteTrayIcon(HWND hwnd, UINT uID);
-BOOL ReloadTrayIcon(HWND hwnd, UINT uID, HICON hIcon, PCWSTR szTip);
-void ShowAbout();
-void ShowVolumeBalloon(int vol);
-void ShowBalloon(wchar_t* title, wchar_t* text, DWORD type);
-void ReloadExTrayIcon();
-void ShowTrayIcon();
+BOOL initVolumeInterface();
+void unloadVolumeInterface();
+int changeVolumeUp();
+int changeVolumeDown();
+int changeVolumeMute();
+int getVolume();
 
-#endif /* TRAYICON_H */
+#endif /* VOLUME_H */

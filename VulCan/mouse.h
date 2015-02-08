@@ -18,40 +18,22 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef HOTKEY_H
-#define HOTKEY_H
+#ifndef MOUSE_H
+#define MOUSE_H
 
-#include <windows.h>
-
-#define IDH_HOTKEY_VOL_UP		(1000)
-#define IDH_HOTKEY_VOL_DOWN		(1001)
-#define IDH_HOTKEY_VOL_MUTE		(1002)
+#include "common.h"
+#include "config.h"
 
 // Special definition of the function in order to activate Hooking in an executable program
 // in general, hooking must be in a library (dll)
-__declspec(dllexport) LRESULT CALLBACK hookKeyboard(int nCode, WPARAM wParam, LPARAM lParam);
+extern "C" __declspec(dllexport) LRESULT CALLBACK hookMouse(int nCode, WPARAM wParam, LPARAM lParam);
 
-bool myRegisterHotKey(UINT key, UINT mod, int id, bool overriding);
-bool myUnregisterHotKey(int id);
+extern bool g_mouseUsed[VL_MOUSE_BTN_MAX];
 
-UINT getHotKeyCode(const wchar_t* p_ascii);
-wchar_t* getInverseHotKeyCode(UINT key);
-UINT getModifier(const wchar_t* p_ascii);
-wchar_t* getInverseModifier(UINT mod);
+void installHookMouse();
+void uninstallHookMouse();
 
-void installHookKeyboard();
-void uninstallHookKeyboard();
+UINT mouseEvent(UINT p_event, bool status, LPARAM lParam);
+UINT mouseWheelEvent(UINT direction, LPARAM lParam);
 
-typedef struct _vlHk {
-	DWORD key;
-	int id;
-} vlHk;
-vlHk* getOverrideHotkey(DWORD key, bool create = false);
-
-int getEventFromId(int id);
-
-bool addOverrideKey(DWORD c, int id);
-bool delOverrideKey(DWORD c);
-bool delOverrideKey(int id);
-
-#endif /* HOTKEY_H */
+#endif /* MOUSE_H */

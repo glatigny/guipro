@@ -5,6 +5,9 @@
 #define IDI_MAIN_ICON                   101
 #define IDI_TRAY_ICON                   102
 #define IDM_EXIT                        303
+#define IDM_ABOUT						304
+#define IDM_STATUS						305
+#define IDM_MUTE						306
 
 // Next default values for new objects
 // 

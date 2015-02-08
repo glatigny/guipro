@@ -1,26 +1,32 @@
-/*  NoMad - GUIPro Project ( http://guipro.sourceforge.net/ )
+/*
+	VulCan - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
-    Author : DarkSage  aka  Glatigny Jérôme <darksage@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "common.h"
 #include "trayIcon.h"
 #include "main.h"
+#include "volume.h"
 #include "resource.h"
+
+#ifndef NIIF_USER
+#define NIIF_USER       0x00000004
+#endif
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -51,15 +57,23 @@ BOOL DeleteTrayIcon(HWND hwnd, UINT uID)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-BOOL ReloadTrayIcon(HWND hwnd, UINT uID)
+BOOL ReloadTrayIcon(HWND hwnd, UINT uID, HICON hIcon, PCWSTR szTip)
 {
-	NOTIFYICONDATA nid; 
+	NOTIFYICONDATA nid;
 	nid.cbSize = sizeof(NOTIFYICONDATA);
 	nid.uFlags = NIF_STATE;
-    nid.hWnd = hwnd;
-    nid.uID = uID;
-	nid.dwStateMask = NIS_HIDDEN;
-	nid.dwState = 0;
+	nid.hWnd = hwnd;
+	nid.uID = uID;
+	if (hIcon != NULL)
+	{
+		nid.hIcon = hIcon;
+		nid.uFlags |= NIF_ICON;
+	}
+	if (szTip != NULL)
+	{
+		lstrcpyn(nid.szTip, szTip, SIZEOF_ARRAY(nid.szTip));
+		nid.uFlags |= NIF_TIP;
+	}
 	return(Shell_NotifyIcon(NIM_MODIFY, &nid));
 }
 
@@ -68,6 +82,28 @@ BOOL ReloadTrayIcon(HWND hwnd, UINT uID)
 void ShowAbout()
 {
 	ShowBalloon(WC_VULCAN_ABOUT_TEXT_TITLE, WC_VULCAN_ABOUT_TEXT, NIIF_USER);
+	g_aboutballoon = 1;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+void ShowVolumeBalloon(int vol) {
+	if (vol < 0)
+		vol = getVolume();
+
+	if (vol > 0)
+	{
+		size_t size = sizeof(wchar_t) * (wcslen(WC_VULCAN_VOLUME_CHANGE) + 5);
+		wchar_t* l_volume = (wchar_t*)malloc(size);
+		memset(l_volume, 0, size);
+		wsprintfW(l_volume, WC_VULCAN_VOLUME_CHANGE, vol);
+		ShowBalloon(WC_VULCAN_VOLUME_TITLE, l_volume, NIIF_INFO);
+		free(l_volume);
+	}
+	else if (vol == 0)
+	{
+		ShowBalloon(WC_VULCAN_VOLUME_TITLE, WC_VULCAN_VOLUME_MUTE, NIIF_INFO);
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -75,20 +111,24 @@ void ShowAbout()
 void ShowBalloon(wchar_t* title, wchar_t* text, DWORD type)
 {
 	NOTIFYICONDATA nid;
+	g_aboutballoon = 0;
 
 	// Set special size in order to be compatible with win2000
-	if(windows_version < WINVER_XP)
+	if (windows_version <= WINVER_2000)
 	{
 		nid.cbSize = NOTIFYICONDATA_V2_SIZE;
 		if( type == NIIF_USER )
 			nid.dwInfoFlags = NIIF_INFO;
 		else
 			nid.dwInfoFlags = type;
+		// Display 10 seconds
+		nid.uTimeout = 15;
 	}
 	else
 	{
 		nid.cbSize = sizeof(NOTIFYICONDATA);
 		nid.dwInfoFlags = type;
+		nid.hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON));
 	}
 
 	nid.hWnd = g_hwndMain;
@@ -96,19 +136,35 @@ void ShowBalloon(wchar_t* title, wchar_t* text, DWORD type)
 	nid.uFlags = NIF_INFO;
 	
 	ZeroMemory(nid.szInfoTitle, SIZEOF_ARRAY(nid.szInfoTitle));
-	lstrcpyn(nid.szInfoTitle, title, SIZEOF_ARRAY(nid.szInfoTitle));
-	
 	ZeroMemory(nid.szInfo, SIZEOF_ARRAY(nid.szInfo));
-	lstrcpyn(nid.szInfo, text, SIZEOF_ARRAY(nid.szInfo));
 	
+//	// Remove the old ballon
+//	Shell_NotifyIcon(NIM_MODIFY, &nid);
+
+	if (title != NULL && text != NULL)
+	{
+		if (title != NULL)
+			lstrcpyn(nid.szInfoTitle, title, SIZEOF_ARRAY(nid.szInfoTitle));
+		if (text != NULL)
+			lstrcpyn(nid.szInfo, text, SIZEOF_ARRAY(nid.szInfo));
+	}
+
+	// Display the balloon
 	Shell_NotifyIcon(NIM_MODIFY, &nid);
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+void HideBalloon()
+{
+	ShowBalloon(NULL, NULL, NIIF_USER);
 }
 
 /* ------------------------------------------------------------------------------------------------- */
 
 void ReloadExTrayIcon()
 {
-	if( !ReloadTrayIcon(g_hwndMain, IDI_MAIN_ICON) )
+	if( !ReloadTrayIcon(g_hwndMain, IDI_MAIN_ICON, NULL, NULL) )
 	{
 		ShowTrayIcon();
 	}

@@ -1,20 +1,21 @@
-/*  NoMad - GUIPro Project ( http://guipro.sourceforge.net/ )
+/*
+	VulCan - GUIPro Project ( http://obsidev.github.io/guipro/ )
 
-    Author : DarkSage  aka  Glatigny Jérôme <darksage@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "common.h"
@@ -61,6 +62,49 @@ DWORD GetWindowsVersion()
 	}
 	
 	return WINVER_unknow;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+LPSTR UnicodeToAnsi(LPCWSTR s)
+{
+	if (s == NULL)
+		return NULL;
+
+	int cw = lstrlenW(s);
+	if (cw == 0)
+	{
+		CHAR *psz = new CHAR[1]; *psz = '\0';
+		return psz;
+	}
+
+	int cc = WideCharToMultiByte(CP_ACP, 0, s, cw, NULL, 0, NULL, NULL);
+
+	if (cc == 0)
+		return NULL;
+
+	CHAR *psz = new CHAR[cc + 1];
+	cc = WideCharToMultiByte(CP_ACP, 0, s, cw, psz, cc, NULL, NULL);
+	if (cc == 0) {
+		delete[] psz;
+		return NULL;
+	}
+
+	psz[cc] = '\0';
+	return psz;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+wchar_t* AnsiToUnicode(const char* cTemp)
+{
+	if ((cTemp != NULL) && (cTemp[0] != '\0'))
+	{
+		wchar_t wcTemp[MAX_FILE_LEN];
+		MultiByteToWideChar(GetACP(), 0, cTemp, -1, wcTemp, sizeof(wcTemp) / sizeof(wcTemp[0]));
+		return _wcsdup(wcTemp);
+	}
+	return NULL;
 }
 
 /* ------------------------------------------------------------------------------------------------- */

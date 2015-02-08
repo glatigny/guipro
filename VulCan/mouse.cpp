@@ -25,7 +25,7 @@
 #include "config.h"
 
 HHOOK hookMouseHandle;
-bool g_mouseUsed[VL_MOUSE_BTN_MAX];
+UCHAR g_mouseUsed[VL_MOUSE_BTN_MAX];
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -36,35 +36,35 @@ __declspec(dllexport) LRESULT CALLBACK hookMouse(int nCode, WPARAM wParam, LPARA
 		switch (wParam)
 		{
 		case WM_LBUTTONDOWN:
-			if (g_mouseUsed[VL_MOUSE_BTN_LEFT] && mouseEvent(VL_MOUSE_BTN_LEFT, true, lParam))
+			if (g_mouseUsed[VL_MOUSE_BTN_LEFT] > 0 && mouseEvent(VL_MOUSE_BTN_LEFT, true, lParam))
 				return 1;
 			break;
 		case WM_RBUTTONDOWN:
-			if (g_mouseUsed[VL_MOUSE_BTN_RIGHT] && mouseEvent(VL_MOUSE_BTN_RIGHT, true, lParam))
+			if (g_mouseUsed[VL_MOUSE_BTN_RIGHT] > 0 && mouseEvent(VL_MOUSE_BTN_RIGHT, true, lParam))
 				return 1;
 			break;
 		case WM_MBUTTONDOWN:
-			if (g_mouseUsed[VL_MOUSE_BTN_MIDDLE] && mouseEvent(VL_MOUSE_BTN_MIDDLE, true, lParam))
+			if (g_mouseUsed[VL_MOUSE_BTN_MIDDLE] > 0 && mouseEvent(VL_MOUSE_BTN_MIDDLE, true, lParam))
 				return 1;
 			break;
 		case WM_LBUTTONUP:
-			if (g_mouseUsed[VL_MOUSE_BTN_LEFT] && mouseEvent(VL_MOUSE_BTN_LEFT, false, lParam))
+			if (g_mouseUsed[VL_MOUSE_BTN_LEFT] > 0 && mouseEvent(VL_MOUSE_BTN_LEFT, false, lParam))
 				return 1;
 			break;
 		case WM_RBUTTONUP:
-			if (g_mouseUsed[VL_MOUSE_BTN_RIGHT] && mouseEvent(VL_MOUSE_BTN_RIGHT, false, lParam))
+			if (g_mouseUsed[VL_MOUSE_BTN_RIGHT] > 0 && mouseEvent(VL_MOUSE_BTN_RIGHT, false, lParam))
 				return 1;
 			break;
 		case WM_MBUTTONUP:
-			if (g_mouseUsed[VL_MOUSE_BTN_MIDDLE] && mouseEvent(VL_MOUSE_BTN_MIDDLE, false, lParam))
+			if (g_mouseUsed[VL_MOUSE_BTN_MIDDLE] > 0 && mouseEvent(VL_MOUSE_BTN_MIDDLE, false, lParam))
 				return 1;
 			break;
 		case WM_MOUSEWHEEL:
-			if ((g_mouseUsed[VL_MOUSE_BTN_WHEEL_UP] || g_mouseUsed[VL_MOUSE_BTN_WHEEL_DOWN]) && mouseWheelEvent(0, lParam))
+			if ((g_mouseUsed[VL_MOUSE_BTN_WHEEL_UP] > 0 || g_mouseUsed[VL_MOUSE_BTN_WHEEL_DOWN]> 0) && mouseWheelEvent(0, lParam))
 				return 1;
 			break;
 		case WM_MOUSEHWHEEL:
-			if ((g_mouseUsed[VL_MOUSE_BTN_WHEEL_LEFT] || g_mouseUsed[VL_MOUSE_BTN_WHEEL_RIGHT]) && mouseWheelEvent(1, lParam))
+			if ((g_mouseUsed[VL_MOUSE_BTN_WHEEL_LEFT] > 0 || g_mouseUsed[VL_MOUSE_BTN_WHEEL_RIGHT]> 0) && mouseWheelEvent(1, lParam))
 				return 1;
 			break;
 		}
@@ -75,51 +75,9 @@ __declspec(dllexport) LRESULT CALLBACK hookMouse(int nCode, WPARAM wParam, LPARA
 
 /* ------------------------------------------------------------------------------------------------- */
 
-UINT mouseEvent(UINT p_event, bool status, LPARAM lParam)
+UINT checkMouseKeys(UINT mouseType)
 {
 	UINT ret = 0;
-	MOUSEHOOKSTRUCT ms = *((MOUSEHOOKSTRUCT *)lParam);
-
-	// TODO
-
-	return ret;
-}
-
-/* ------------------------------------------------------------------------------------------------- */
-
-UINT mouseWheelEvent(UINT direction, LPARAM lParam)
-{
-	UINT ret = 0;
-
-	MSLLHOOKSTRUCT ms = *((MSLLHOOKSTRUCT *)lParam);
-	short delta = HIWORD(ms.mouseData);
-	UINT mouseType = 0;
-
-	if (delta == WHEEL_DELTA)
-	{
-		if (direction == 0 && g_mouseUsed[VL_MOUSE_BTN_WHEEL_UP])
-		{
-			mouseType = VL_MOUSE_BTN_WHEEL_UP;
-		}
-		else if (direction == 1 && g_mouseUsed[VL_MOUSE_BTN_WHEEL_LEFT])
-		{
-			mouseType = VL_MOUSE_BTN_WHEEL_LEFT;
-		}
-	}
-	else if (delta == -WHEEL_DELTA)
-	{
-		if (direction == 0 && g_mouseUsed[VL_MOUSE_BTN_WHEEL_DOWN])
-		{
-			mouseType = VL_MOUSE_BTN_WHEEL_DOWN;
-		}
-		else if (direction == 1 && g_mouseUsed[VL_MOUSE_BTN_WHEEL_RIGHT])
-		{
-			mouseType = VL_MOUSE_BTN_WHEEL_RIGHT;
-		}
-	}
-
-	if (mouseType == 0)
-		return ret;
 
 	for (int i = 0; i < VL_ACT_LAST; i++)
 	{
@@ -139,9 +97,7 @@ UINT mouseWheelEvent(UINT direction, LPARAM lParam)
 
 			if (cpt_opt > 0 && cpt_opt == cpt_key)
 			{
-				ret = 1;
-				int event = getEventFromId(i+1);
-				PostMessage(g_hwndMain, WM_HOTKEY, event, NULL);
+				ret = getEventFromId(i + 1);
 			}
 
 #undef KEYSTATE
@@ -150,6 +106,91 @@ UINT mouseWheelEvent(UINT direction, LPARAM lParam)
 		}
 	}
 
+	return ret;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+UINT mouseEvent(UINT p_event, bool status, LPARAM lParam)
+{
+	UINT ret = 0;
+	MOUSEHOOKSTRUCT ms = *((MOUSEHOOKSTRUCT *)lParam);
+	UINT evt = 0;
+
+	if (status)
+	{
+		evt = checkMouseKeys(p_event);
+		if (evt > 0)
+		{
+			ret = 1;
+			g_mouseUsed[p_event] = 2;
+		}
+	}
+	else if (g_mouseUsed[p_event] > 1)
+	{
+		ret = 1;
+
+		//
+		for (int i = 0; i < VL_ACT_LAST; i++)
+		{
+			if (g_vlConfig[i].action == 1 && g_vlConfig[i].type == VL_TYPE_MOUSE && g_vlConfig[i].key == p_event)
+			{
+				evt = getEventFromId(i + 1);
+				break;
+			}
+		}
+		if (evt > 0)
+			PostMessage(g_hwndMain, WM_HOTKEY, evt, NULL);
+
+		//
+		g_mouseUsed[p_event] = 1;
+	}
+
+	return ret;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+UINT mouseWheelEvent(UINT direction, LPARAM lParam)
+{
+	UINT ret = 0;
+
+	MSLLHOOKSTRUCT ms = *((MSLLHOOKSTRUCT *)lParam);
+	short delta = HIWORD(ms.mouseData);
+	UINT mouseType = 0;
+
+	if (delta == WHEEL_DELTA)
+	{
+		if (direction == 0 && g_mouseUsed[VL_MOUSE_BTN_WHEEL_UP] > 0)
+		{
+			mouseType = VL_MOUSE_BTN_WHEEL_UP;
+		}
+		else if (direction == 1 && g_mouseUsed[VL_MOUSE_BTN_WHEEL_LEFT] > 0)
+		{
+			mouseType = VL_MOUSE_BTN_WHEEL_LEFT;
+		}
+	}
+	else if (delta == -WHEEL_DELTA)
+	{
+		if (direction == 0 && g_mouseUsed[VL_MOUSE_BTN_WHEEL_DOWN] > 0)
+		{
+			mouseType = VL_MOUSE_BTN_WHEEL_DOWN;
+		}
+		else if (direction == 1 && g_mouseUsed[VL_MOUSE_BTN_WHEEL_RIGHT] > 0)
+		{
+			mouseType = VL_MOUSE_BTN_WHEEL_RIGHT;
+		}
+	}
+
+	if (mouseType == 0)
+		return ret;
+
+	int evt = checkMouseKeys(mouseType);
+	if (evt > 0)
+	{
+		ret = 1;
+		PostMessage(g_hwndMain, WM_HOTKEY, evt, NULL);
+	}
 	return ret;
 }
 

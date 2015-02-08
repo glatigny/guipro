@@ -28,7 +28,7 @@
 // in general, hooking must be in a library (dll)
 extern "C" __declspec(dllexport) LRESULT CALLBACK hookMouse(int nCode, WPARAM wParam, LPARAM lParam);
 
-extern bool g_mouseUsed[VL_MOUSE_BTN_MAX];
+extern UCHAR g_mouseUsed[VL_MOUSE_BTN_MAX];
 
 void installHookMouse();
 void uninstallHookMouse();

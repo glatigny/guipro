@@ -143,7 +143,7 @@ int openConfig()
 				if (g_vlConfig[mod - 1].type == VL_TYPE_MOUSE)
 				{
 					// register the mouse button
-					g_mouseUsed[g_vlConfig[mod - 1].key] = true;
+					g_mouseUsed[g_vlConfig[mod - 1].key] = 1;
 				}
 			}
 
@@ -191,7 +191,7 @@ int registerConfig(int alert)
 	//
 	for (int i = 0; i <= VL_MOUSE_BTN_MAX; i++)
 	{
-		if (g_mouseUsed[i])
+		if (g_mouseUsed[i] > 0)
 		{
 			installHookMouse();
 			break;

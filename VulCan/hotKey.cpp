@@ -32,8 +32,8 @@ vlHk overrideKeys[VL_ACT_LAST];
 
 bool myRegisterHotKey(UINT key, UINT mod, int id, bool overriding)
 {
-	int event = getEventFromId(id+1);
-	if (RegisterHotKey(g_hwndMain, event, mod, key))
+	int evt = getEventFromId(id + 1);
+	if (RegisterHotKey(g_hwndMain, evt, mod, key))
 		return true;
 	
 	if (overriding && mod == MOD_WIN)
@@ -386,9 +386,9 @@ __declspec(dllexport) LRESULT CALLBACK hookKeyboard(int nCode, WPARAM wParam, LP
 				SetForegroundWindow(g_hwndMain);
 				SetFocus(g_hwndMain);
 
-				int event = getEventFromId(hk->id);
+				int evt = getEventFromId(hk->id);
 				// Simulate hotkey
-				PostMessage(g_hwndMain, WM_HOTKEY, event, NULL);
+				PostMessage(g_hwndMain, WM_HOTKEY, evt, NULL);
 
 				// Abort the other hotkey but sending a new key press (abort the window key too)
 				// keybd_event may be an old function but...

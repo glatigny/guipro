@@ -39,6 +39,7 @@ PortalProg* menuGetElem(int pos);
 int menuGetNbFiles();
 PortalProg* menuGetFile(int pos);
 
+wchar_t* getConfigurationFilename();
 int openConfig();
 
 int registerConfig(int alert);
@@ -48,7 +49,7 @@ int registerHotkeys(LPWSTR p_registerErrors);
 void unregisterHotkeys();
 
 DWORD WINAPI threadFileNotification(LPVOID lpthis);
-bool installFileNotification();
+bool installFileNotification(wchar_t* xmlfilename = NULL);
 bool uninstallFileNotification();
 
 #endif /* CONFIG_H */

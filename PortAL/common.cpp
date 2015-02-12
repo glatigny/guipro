@@ -19,6 +19,7 @@
 */
 
 #include "common.h"
+#include "config.h"
 #include <shlobj.h>
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -183,6 +184,11 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 					wcsncat_s(lTemp, MAX_FILE_LEN, buff, n);
 					cur += 8;
 				}
+			}
+			else if( !wcsncmp(cur, L"%config%", 8) )
+			{
+				wchar_t* config = getConfigurationFilename();
+				wcscat_s(lTemp, MAX_FILE_LEN, config);
 			}
 			else
 			{

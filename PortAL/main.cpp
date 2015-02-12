@@ -149,7 +149,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			// Launch application in "autorun" mode
 			Autorun();
 
-			installFileNotification();
 			FlushMemory();
 		}
 		break;

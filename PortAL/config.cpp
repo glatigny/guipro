@@ -61,6 +61,46 @@ PortalProg* menuGetFile(int pos)
 
 /* ------------------------------------------------------------------------------------------------- */
 
+wchar_t* getConfigurationFilename()
+{
+	wchar_t* xmlfilename = NULL;
+	int args;
+	wchar_t** argList = CommandLineToArgvW(GetCommandLineW(), &args);
+	if (argList != NULL)
+	{
+		for (int i = 1; i < args; i++)
+		{
+			wchar_t* n = argList[i];
+			if (!wcsncmp(n, L"-config", 7))
+			{
+				i++;
+				if (i < args && xmlfilename == NULL)
+					xmlfilename = specialDirs(argList[i]);
+			}
+		}
+		LocalFree(argList);
+	}
+
+	if (xmlfilename == NULL)
+	{
+		xmlfilename = specialDirs(L"%appdata%\\GUIPro\\"WC_PORTAL_XML_FILENAME);
+		if (!fileExists(xmlfilename))
+		{
+			free(xmlfilename);
+			xmlfilename = NULL;
+		}
+	}
+
+	if (xmlfilename == NULL)
+	{
+		xmlfilename = specialDirs(L"%portal%\\"WC_PORTAL_XML_FILENAME);
+	}
+
+	return xmlfilename;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
 int openConfig()
 {
 	// File variables
@@ -72,43 +112,14 @@ int openConfig()
 
 	int ret = FALSE;
 
-	int args;
-	wchar_t** argList = CommandLineToArgvW(GetCommandLineW(), &args);
-	if( argList == NULL )
-		return ret;
-
-	for(int i = 1; i < args; i++)
-	{
-		wchar_t* n = argList[i];
-		if( !wcsncmp(n, L"-config", 7) )
-		{
-			i++;
-			if(i < args && xmlfilename == NULL)
-				xmlfilename = specialDirs(argList[i]);
-		}
-	}
-	LocalFree(argList);
-
-	if( xmlfilename == NULL )
-	{
-		xmlfilename = specialDirs(L"%appdata%\\GUIPro\\"WC_PORTAL_XML_FILENAME);
-		if(!fileExists(xmlfilename))
-		{
-			free(xmlfilename);
-			xmlfilename = NULL;
-		}
-	}
-
-	if( xmlfilename == NULL )
-	{
-		xmlfilename = specialDirs(L"%portal%\\"WC_PORTAL_XML_FILENAME);
-	}
+	xmlfilename = getConfigurationFilename();
 
 	PortalConfig* l_config = loadConfig(xmlfilename);
 	if( l_config != NULL )
 	{
 		if( g_portal )
 		{
+			uninstallFileNotification();
 			unregisterHotkeys();
 
 			// Store the old configuration
@@ -168,8 +179,10 @@ int openConfig()
 		}
 	}
 
-	if( xmlfilename )
+	if (xmlfilename) {
+		installFileNotification(xmlfilename);
 		free(xmlfilename);
+	}
 
 	return ret;
 }
@@ -218,42 +231,44 @@ int registerHotkeys(LPWSTR p_registerErrors)
 	UINT mod = 0;
 	bool overriding = false;
 
-	if( g_portal )
+	if (!g_portal)
 	{
-		for( PortalProgVector::iterator i = g_portal->hotkeys.begin(); i != g_portal->hotkeys.end(); i++ )
+		return error;
+	}
+
+	for( PortalProgVector::iterator i = g_portal->hotkeys.begin(); i != g_portal->hotkeys.end(); i++ )
+	{
+		mod = (*i)->modifier;
+		overriding = (*i)->overriding;
+
+		if( !myRegisterHotKey( (*i)->hkey, mod, IDH_HOTKEY_MENU + (cpt++), overriding ) )
 		{
-			mod = (*i)->modifier;
-			overriding = (*i)->overriding;
+			error++;
 
-			if( !myRegisterHotKey( (*i)->hkey, mod, IDH_HOTKEY_MENU + (cpt++), overriding ) )
+			LPWSTR l_errkey = (LPWSTR)malloc(sizeof(PWSTR) * MAX_ERRHKLEN);
+			ZeroMemory(l_errkey, sizeof(PWSTR) * MAX_ERRHKLEN);
+
+			LPWSTR tmp = getInvModifier((*i)->modifier);
+			if( tmp != NULL )
 			{
-				error++;
-
-				LPWSTR l_errkey = (LPWSTR)malloc(sizeof(PWSTR) * MAX_ERRHKLEN);
-				ZeroMemory(l_errkey, sizeof(PWSTR) * MAX_ERRHKLEN);
-
-				LPWSTR tmp = getInvModifier((*i)->modifier);
-				if( tmp != NULL )
-				{
-					wcscpy_s(l_errkey, MAX_ERRHKLEN, tmp);
-					free(tmp);
-				}
-
-				tmp = getInvHotKeyCode((*i)->hkey);
-				if( tmp != NULL )
-				{
-					wcscat_s(l_errkey, MAX_ERRHKLEN, tmp);
-					free(tmp);
-				}
-
-				if( (wcslen(p_registerErrors) + wcslen(l_errkey)) >= MAX_LANGLEN)
-				{
-					return error;	
-				}
-
-				wcscat_s(p_registerErrors, MAX_LANGLEN, l_errkey);
-				wcscat_s(p_registerErrors, MAX_LANGLEN, (wchar_t*)"\n");
+				wcscpy_s(l_errkey, MAX_ERRHKLEN, tmp);
+				free(tmp);
 			}
+
+			tmp = getInvHotKeyCode((*i)->hkey);
+			if( tmp != NULL )
+			{
+				wcscat_s(l_errkey, MAX_ERRHKLEN, tmp);
+				free(tmp);
+			}
+
+			if( (wcslen(p_registerErrors) + wcslen(l_errkey)) >= MAX_LANGLEN)
+			{
+				return error;	
+			}
+
+			wcscat_s(p_registerErrors, MAX_LANGLEN, l_errkey);
+			wcscat_s(p_registerErrors, MAX_LANGLEN, (wchar_t*)"\n");
 		}
 	}
 
@@ -279,14 +294,36 @@ void unregisterHotkeys()
 
 DWORD WINAPI threadFileNotification(LPVOID lpthis)
 {
-	wchar_t szBuff[255];
-	wchar_t szPath[255] = L"";
+#define THREAD_FILENAME_SIZE 512
+	wchar_t* szBuff = NULL;
+	wchar_t* szPath = NULL;
+	
+	int n = 0;
+	if (lpthis != NULL) {
+		szBuff = (wchar_t*)lpthis;
+		n = (int)wcslen(szBuff);
+	}
+
 	// Get file path
-	int n = GetModuleFileName(g_hInst, szBuff, 255);
-	if (n != 0 && n < 255) {
+	if (n == 0) {
+		szBuff = (wchar_t*)malloc(sizeof(wchar_t) * THREAD_FILENAME_SIZE);
+		n = GetModuleFileName(g_hInst, szBuff, THREAD_FILENAME_SIZE);
+	}
+
+	// Extract folder
+	if (n != 0 && n < THREAD_FILENAME_SIZE) {
 		while (n >= 0 && szBuff[n] != L'\\') n--;
+		szPath = (wchar_t*)malloc(sizeof(wchar_t) * (n + 1));
+		memset(szPath, 0, sizeof(wchar_t) * (n + 1));
 		lstrcpyn(szPath, szBuff, n+1);
 	}
+#undef THREAD_FILENAME_SIZE
+
+	if (szBuff != NULL)
+		free(szBuff);
+
+	if (n == 0)
+		return false;
 
 	HANDLE g_hDir;
 	FILE_NOTIFY_INFORMATION Buffer[8];
@@ -301,6 +338,9 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 		FILE_FLAG_BACKUP_SEMANTICS,
 		NULL 
 	);
+
+	if (szPath != NULL)
+		free(szPath);
 
 	while( ReadDirectoryChangesW( g_hDir, &Buffer, sizeof(Buffer), FALSE, notifyFlags, &BytesReturned, NULL, NULL) )
 	{
@@ -320,11 +360,14 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-bool installFileNotification()
+bool installFileNotification(wchar_t* xmlfilename)
 {
 	if( g_FileNotif_threadHandle == NULL )
 	{
-		g_FileNotif_threadHandle = CreateThread(NULL, NULL, threadFileNotification, NULL, NULL, &g_FileNotif_ThreadId);
+		wchar_t* filename = NULL;
+		if (xmlfilename != NULL)
+			filename = _wcsdup(xmlfilename);
+		g_FileNotif_threadHandle = CreateThread(NULL, NULL, threadFileNotification, (LPVOID)filename, NULL, &g_FileNotif_ThreadId);
 		return true;
 	}
 	return false;
@@ -334,13 +377,10 @@ bool installFileNotification()
 
 bool uninstallFileNotification()
 {
-	if( g_FileNotif_threadHandle != NULL )
+	if (g_FileNotif_threadHandle != NULL && CloseHandle(g_FileNotif_threadHandle))
 	{
-		if( CloseHandle(g_FileNotif_threadHandle) )
-		{
-			g_FileNotif_threadHandle = NULL;
-			return true;
-		}
+		g_FileNotif_threadHandle = NULL;
+		return true;
 	}
 	return false;
 }

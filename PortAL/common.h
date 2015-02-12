@@ -31,6 +31,13 @@
 
 /* ------------------------------------------------------------------------------------------------- */
 
+//#define MENU_DRAW_V1					// Old menu design.
+//#define ICON_MANAGER					// Old icon manager.
+//#define ICON_MANAGER_THREAD			// Loading image in a thread (experimental)
+//#define PORTAL_REFUSE_HOTKEY_ERROR	// Old rules for the loading of the configuration.
+
+/* ------------------------------------------------------------------------------------------------- */
+
 #define PORTAL_HK_ID			400
 #define PORTAL_FILE_ID			1000
 

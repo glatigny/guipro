@@ -12,6 +12,8 @@ The goal of PortAL is to give fast and easy way to launch applications.
 
 All the interface of PortAL has been made to be flexible, configurable and fast.
 
+More details about the PortAL configuration in the [Wiki](https://github.com/obsidev/guipro/wiki/PortAL-Configuration)
+
 ## HotKey UnLimited - _HulK_
 
 When some tools exists to move the windows by pressing a key and clicking with the mouse ; HulK provide a set of features to help the management of the windows.
@@ -35,7 +37,7 @@ In VulCan you can use the mouse wheel in the configuration ; it is quite useful 
 
 # Installation
 
-Download binaries from: http://obsidev.github.io/guipro/
+Download binaries from: http://obsidev.github.io/guipro/ (or in the [releases section](https://github.com/obsidev/guipro/releases))
 
 # License
 

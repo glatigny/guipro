@@ -33,10 +33,10 @@ void launch(PortalProg* prog)
 
 	const wchar_t* s_szConfig = progname;
 	wchar_t szBuff[512] = L"";
-	wchar_t szParam[2048] = L"";
+	wchar_t szParam[PARAMS_BUFFER_LNG] = L" ";
 	wchar_t szDirName[512] = L"";
 	const int nMaxLen = 255 - SIZEOF_ARRAY(s_szConfig);
-	int n;
+	size_t n;
 
 	if( progname[0] == '|' )
 	{
@@ -56,52 +56,48 @@ void launch(PortalProg* prog)
 	if( relative )
 	{
 		n = GetModuleFileName(g_hInst, szBuff, nMaxLen);
-		if (n != 0 && n < nMaxLen) {
+		if (n > 0 && n < nMaxLen) {
 			while (n >= 0 && szBuff[n] != L'\\') n--;
-			lstrcpyn(szBuff + n + 1, s_szConfig, SIZEOF_ARRAY(szBuff) - n);
+			lstrcpyn(szBuff + n + 1, s_szConfig, SIZEOF_ARRAY(szBuff) - (int)n);
 		}
-	} else
-		lstrcpy(szBuff, s_szConfig);
+	}
+	else
+		wcscpy_s(szBuff, s_szConfig);
 	
 	if( progparams != NULL )
 	{
-		if( progparams[0] != ' ')
-		{
-			wchar_t szParamBuff[512] = L" ";
-			lstrcpy(szParamBuff + 1, progparams);
-			lstrcpy(szParam, szParamBuff);
-		}
-		else
-		{
-			lstrcpy(szParam, progparams);
-		}
+		wcscat_s(szParam, progparams);
 
 		// Handle special %clipboard% content in the parameters
 		//
-		wchar_t* pos = wcschr(szParam, L'%');
-		if (pos != NULL && !wcsncmp(pos, L"%clipboard%", 11))
+		wchar_t* cur = wcschr(szParam, L'%');
+		if (cur != NULL && (!wcsncmp(cur, L"%clipboard%", 11) || !wcsncmp(cur, L"%clipboards%", 12)))
 		{
+			bool multiple = !wcsncmp(cur, L"%clipboards%", 12);
 			// Get clipboard
-			wchar_t* clipboardData = getClipboard();
+			wchar_t* clipboardData = getClipboard(multiple);
 
 			// Secure the clipboard length
-			int clipboardLength = 0;
+			size_t pos = (size_t)(cur - szParam);
+			size_t clipboardLength = 0;
 			if (clipboardData != NULL)
 				clipboardLength = wcslen(clipboardData);
-			if (clipboardLength > 0 && (clipboardLength > 2048 || (wcslen(szParam) + clipboardLength) > 2048))
+			if (clipboardLength > 0 && (clipboardLength > PARAMS_BUFFER_LNG || (wcslen(szParam) - (multiple ? 12 : 11) + clipboardLength) > PARAMS_BUFFER_LNG))
 			{
 				free(clipboardData);
 				clipboardData = NULL;
 			}
 
-			// Replace
-			wchar_t* tmp = _wcsdup(pos + 12);
+			// Replace the %clipboard% by the clipboard (or just remove the content from the parameter string)
+			wchar_t* tmp = _wcsdup(cur + (multiple ? 12 : 11));
 			if (clipboardData != NULL)
 			{
-				lstrcpy(pos, clipboardData);
-				pos += wcslen(clipboardData);
+				wcscpy_s(cur, PARAMS_BUFFER_LNG - pos, clipboardData);
+				size_t l = wcslen(clipboardData);
+				pos += l;
+				cur += l;
 			}
-			lstrcpy(pos, tmp);
+			wcscpy_s(cur, PARAMS_BUFFER_LNG - pos, tmp);
 			free(tmp);
 
 			if (clipboardData != NULL)
@@ -114,13 +110,13 @@ void launch(PortalProg* prog)
 
 	if( dirname != NULL && !(prog->options & PROG_OPTION_BROWSE) )
 	{
-		lstrcpy(szDirName, dirname);
+		wcscpy_s(szDirName, dirname);
 	}
 	else
 	{
-		n = lstrlen(szBuff);
+		n = wcslen(szBuff);
 		while( n >= 0 && (szBuff[n] != L'\\')) n--;
-		lstrcpyn(szDirName, szBuff, n+1);
+		wcsncpy_s(szDirName, szBuff, n + 1);
 	}
 
 	if( (g_portal->shellExecuteDefault && !(prog->options & PROG_OPTION_NOSHELL) ) || prog->options & PROG_OPTION_SHELL )
@@ -135,6 +131,8 @@ void launch(PortalProg* prog)
 		STARTUPINFO si = { sizeof(STARTUPINFO) };
 		PROCESS_INFORMATION pi;
 
+		// Elevation process
+		//
 		if (prog->options & PROG_OPTION_ELEVATION)
 		{
 			BOOL runAsAdmin = false;
@@ -149,6 +147,7 @@ void launch(PortalProg* prog)
 				adminGroup = NULL;
 			}
 
+			// If elevation failed, we use the shell execute
 			if (!runAsAdmin)
 			{
 				SHELLEXECUTEINFO shexi;

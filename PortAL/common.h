@@ -70,6 +70,8 @@
 #define MAX_LANGLEN					256
 #define MAX_ERRHKLEN				30
 #define MAX_FILE_LEN				(1024)
+#define PARAMS_BUFFER_LNG			2048
+#define CLIPBOARD_BUFFER_LNG		2048
 #define SIZEOF_ARRAY(p)				(sizeof(p) /sizeof(p[0]))
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -99,6 +101,6 @@
 DWORD GetWindowsVersion();
 bool fileExists(wchar_t* filename);
 wchar_t* specialDirs(const wchar_t* cTemp, int mode = 0);
-wchar_t* getClipboard();
+wchar_t* getClipboard(bool multiple = false);
 
 #endif /* COMMON_H */

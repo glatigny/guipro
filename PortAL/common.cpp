@@ -242,7 +242,7 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-wchar_t* getClipboard()
+wchar_t* getClipboard(bool multiple)
 {
 	wchar_t* ret = NULL;
 	UINT clipboardType = 0;
@@ -256,28 +256,92 @@ wchar_t* getClipboard()
 
 	OpenClipboard(g_hwndMain);
 	HANDLE clipHwnd = GetClipboardData(clipboardType);
-	if (clipHwnd != NULL)
+	if (clipHwnd == NULL)
 	{
-		if (clipboardType == CF_UNICODETEXT)
-		{
-			WCHAR* data = (WCHAR*)GlobalLock(clipHwnd);
-			if (data != NULL)
-			{
-				ret = _wcsdup(data);
-			}
-			GlobalUnlock(data);
-		}
-		else if (clipboardType == CF_HDROP)
-		{
-			HDROP drop = (HDROP)GlobalLock(clipHwnd);
-			if (drop != NULL)
-			{
-				ret = (wchar_t*)malloc(sizeof(wchar_t) * MAX_PATH);
-				DragQueryFileW(drop, 0, ret, MAX_PATH);
-			}
-			GlobalUnlock(drop);
-		}
+		CloseClipboard();
+		return ret;
 	}
+
+	// Text Clipboard
+	//
+	if (clipboardType == CF_UNICODETEXT)
+	{
+		WCHAR* data = (WCHAR*)GlobalLock(clipHwnd);
+		if (data != NULL)
+		{
+			ret = _wcsdup(data);
+		}
+		GlobalUnlock(data);
+		CloseClipboard();
+		return ret;
+	}
+	
+	// File Clipboard
+	//
+	if (clipboardType == CF_HDROP)
+	{
+		// Get the clipboard lock
+		HDROP drop = (HDROP)GlobalLock(clipHwnd);
+		if (drop == NULL)
+		{
+			CloseClipboard();
+			return ret;
+		}
+
+		// Check the number of files in the clipboard
+		int nbFiles = DragQueryFileW(drop, 0xFFFFFFFF, NULL, 0);
+		if (nbFiles <= 0)
+		{
+			GlobalUnlock(drop);
+			CloseClipboard();
+			return ret;
+		}
+
+		// Handle the files in the clipboard
+		// With a special (small) way if we are not in "multiple" mode.
+		if (!multiple)
+		{
+			// We only allocate a small range of memory in that case
+			ret = (wchar_t*)malloc(sizeof(wchar_t) * MAX_PATH);
+			memset(ret, 0, sizeof(wchar_t) * MAX_PATH);
+			DragQueryFileW(drop, 0, ret, MAX_PATH);
+		}
+		else
+		{
+			// We need to list all files in the clipboard without going outside of the memory.
+			int pos = 0;
+			ret = (wchar_t*)malloc(sizeof(wchar_t) * CLIPBOARD_BUFFER_LNG);
+
+			// Allocation check
+			if (ret == NULL)
+			{
+				GlobalUnlock(drop);
+				CloseClipboard();
+				return ret;
+			}
+
+			wchar_t* curr = ret;
+			memset(ret, 0, sizeof(wchar_t) * CLIPBOARD_BUFFER_LNG);
+
+			for (int i = 0; i < nbFiles && pos < CLIPBOARD_BUFFER_LNG; i++)
+			{
+				int n = DragQueryFileW(drop, i, curr, CLIPBOARD_BUFFER_LNG - pos);
+				if (n > 0) {
+					pos += n;
+					curr += n;
+				}
+				
+				// We add a space between the files
+				if ((i + 1) < nbFiles && pos < CLIPBOARD_BUFFER_LNG)
+				{
+					curr[0] = ' ';
+					curr++;
+				}
+			}
+		}
+		GlobalUnlock(drop);
+	}
+
 	CloseClipboard();
 	return ret;
 }

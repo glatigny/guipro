@@ -33,7 +33,7 @@ void launch(PortalProg* prog)
 
 	const wchar_t* s_szConfig = progname;
 	wchar_t szBuff[512] = L"";
-	wchar_t szParam[512] = L"";
+	wchar_t szParam[2048] = L"";
 	wchar_t szDirName[512] = L"";
 	const int nMaxLen = 255 - SIZEOF_ARRAY(s_szConfig);
 	int n;
@@ -74,6 +74,41 @@ void launch(PortalProg* prog)
 		else
 		{
 			lstrcpy(szParam, progparams);
+		}
+
+		// Handle special %clipboard% content in the parameters
+		//
+		wchar_t* pos = wcschr(szParam, L'%');
+		if (pos != NULL && !wcsncmp(pos, L"%clipboard%", 11))
+		{
+			// Get clipboard
+			wchar_t* clipboardData = getClipboard();
+
+			// Secure the clipboard length
+			int clipboardLength = 0;
+			if (clipboardData != NULL)
+				clipboardLength = wcslen(clipboardData);
+			if (clipboardLength > 0 && (clipboardLength > 2048 || (wcslen(szParam) + clipboardLength) > 2048))
+			{
+				free(clipboardData);
+				clipboardData = NULL;
+			}
+
+			// Replace
+			wchar_t* tmp = _wcsdup(pos + 12);
+			if (clipboardData != NULL)
+			{
+				lstrcpy(pos, clipboardData);
+				pos += wcslen(clipboardData);
+			}
+			lstrcpy(pos, tmp);
+			free(tmp);
+
+			if (clipboardData != NULL)
+			{
+				free(clipboardData);
+				clipboardData = NULL;
+			}
 		}
 	}
 

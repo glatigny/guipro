@@ -22,6 +22,8 @@
 #include "config.h"
 #include <shlobj.h>
 
+extern HWND g_hwndMain;
+
 /* ------------------------------------------------------------------------------------------------- */
 
 typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
@@ -237,3 +239,47 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 
 	return _wcsdup(cTemp);
 }
+
+/* ------------------------------------------------------------------------------------------------- */
+
+wchar_t* getClipboard()
+{
+	wchar_t* ret = NULL;
+	UINT clipboardType = 0;
+	if (IsClipboardFormatAvailable(CF_UNICODETEXT))
+		clipboardType = CF_UNICODETEXT;
+	else if (IsClipboardFormatAvailable(CF_HDROP))
+		clipboardType = CF_HDROP;
+
+	if (clipboardType == 0)
+		return ret;
+
+	OpenClipboard(g_hwndMain);
+	HANDLE clipHwnd = GetClipboardData(clipboardType);
+	if (clipHwnd != NULL)
+	{
+		if (clipboardType == CF_UNICODETEXT)
+		{
+			WCHAR* data = (WCHAR*)GlobalLock(clipHwnd);
+			if (data != NULL)
+			{
+				ret = _wcsdup(data);
+			}
+			GlobalUnlock(data);
+		}
+		else if (clipboardType == CF_HDROP)
+		{
+			HDROP drop = (HDROP)GlobalLock(clipHwnd);
+			if (drop != NULL)
+			{
+				ret = (wchar_t*)malloc(sizeof(wchar_t) * MAX_PATH);
+				DragQueryFileW(drop, 0, ret, MAX_PATH);
+			}
+			GlobalUnlock(drop);
+		}
+	}
+	CloseClipboard();
+	return ret;
+}
+
+/* ------------------------------------------------------------------------------------------------- */

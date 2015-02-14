@@ -99,5 +99,6 @@
 DWORD GetWindowsVersion();
 bool fileExists(wchar_t* filename);
 wchar_t* specialDirs(const wchar_t* cTemp, int mode = 0);
+wchar_t* getClipboard();
 
 #endif /* COMMON_H */

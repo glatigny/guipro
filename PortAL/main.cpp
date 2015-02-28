@@ -185,7 +185,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_MYTRAYMSG:
-		if ((wParam >= IDI_MAIN_ICON) && (wParam <= (IDI_MAIN_ICON + g_portal->menus.size())) )
+		if ((wParam >= IDI_MAIN_ICON) && g_portal && (wParam <= (IDI_MAIN_ICON + g_portal->menus.size())))
 		{
 			// Find the clicked systray
 			int pos = (int)wParam - IDI_MAIN_ICON;

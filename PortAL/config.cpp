@@ -26,6 +26,7 @@
 #include "xmlconfig.h"
 
 PortalConfig* g_portal;
+PortalVariableVector* g_variables = NULL;
 PortalProgVector g_portal_files;
 
 unsigned long	g_FileNotif_ThreadId;
@@ -179,9 +180,23 @@ int openConfig()
 		}
 	}
 
-	if (xmlfilename) {
+	if (xmlfilename)
+	{
 		installFileNotification(xmlfilename);
 		free(xmlfilename);
+	}
+
+	if (g_variables)
+	{
+		for (PortalVariableVector::iterator i = g_variables->begin(); i != g_variables->end(); i++)
+		{
+			free((*i)->key);
+			if ((*i)->value != NULL)
+				free((*i)->value);
+			free(*i);
+		}
+		delete(g_variables);
+		g_variables = NULL;
 	}
 
 	return ret;

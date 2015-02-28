@@ -137,4 +137,11 @@ class PortalConfig
 		}
 };
 
+struct _PortalVariable {
+	wchar_t* key;
+	wchar_t* value;
+} typedef PortalVariable;
+
+typedef std::vector<PortalVariable*> PortalVariableVector;
+
 #endif /* PORTAL_CONFIG_H */

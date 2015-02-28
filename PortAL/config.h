@@ -29,6 +29,7 @@
 
 /*-- VARIABLES --*/
 extern PortalConfig* g_portal;
+extern PortalVariableVector* g_variables;
 extern PortalProgVector g_portal_files;
 
 /*-- FUNCTIONS --*/

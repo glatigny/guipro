@@ -20,6 +20,7 @@
 
 #include "common.h"
 #include "xmlconfig.h"
+#include "config.h"
 #include "hotKey.h"
 #include "pugixml/pugixml.hpp"
 
@@ -253,20 +254,53 @@ void loadSubMenu(pugi::xml_node elem, PortalProg* container, PortalConfig* confi
 
 /* ------------------------------------------------------------------------------------------------- */
 
+void loadVariables(pugi::xml_node elem, PortalVariableVector* variables)
+{
+	PortalVariable* var = NULL;
+
+	for (PortalVariableVector::iterator i = variables->begin(); i != variables->end(); i++)
+	{
+		free((*i)->key);
+		free((*i)->value);
+		free((*i));
+	}
+	variables->clear();
+
+	while (elem)
+	{
+		if (wcscmp(elem.name(), L"var") || elem.attribute(L"name").empty()) {
+			elem = elem.next_sibling();
+			continue;
+		}
+
+		var = (PortalVariable*)malloc(sizeof(PortalVariable));
+		var->key = _wcsdup(elem.attribute(L"name").value());
+		var->value = NULL;
+
+		if (!elem.attribute(L"value").empty())
+			var->value = specialDirs(elem.attribute(L"value").value());
+		
+		variables->push_back(var);
+		elem = elem.next_sibling();
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
 void pushHotkey(PortalConfig* config, PortalProg* l_prog)
 {
-	if( l_prog->hkey > 0 )
+	if (l_prog->hkey <= 0)
+		return;
+	
+	for( PortalProgVector::iterator i = config->hotkeys.begin() ; i != config->hotkeys.end() ; i++ )
 	{
-		for( PortalProgVector::iterator i = config->hotkeys.begin() ; i != config->hotkeys.end() ; i++ )
+		if( ((*i)->hkey == l_prog->hkey) && ((*i)->modifier == l_prog->modifier) )
 		{
-			if( ((*i)->hkey == l_prog->hkey) && ((*i)->modifier == l_prog->modifier) )
-			{
-				(*i)->nextSameHotkey = l_prog;
-				return;
-			}
+			(*i)->nextSameHotkey = l_prog;
+			return;
 		}
-		config->hotkeys.push_back( l_prog );
 	}
+	config->hotkeys.push_back( l_prog );
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -274,18 +308,14 @@ void pushHotkey(PortalConfig* config, PortalProg* l_prog)
 PortalConfig* loadConfig(wchar_t* filename)
 {
 	if(filename == NULL)
-	{
 		return NULL;
-	}
 
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(filename);
 
 	if( !result )
-	{
 		return NULL;
-	}
-	
+
 	PortalConfig* config = new PortalConfig();
 	PortalProg* l_prog = NULL;
 	PortalProg* prog_tmp = NULL;
@@ -295,81 +325,91 @@ PortalConfig* loadConfig(wchar_t* filename)
 
 	pugi::xml_node root = doc.first_child();
 	getGeneralOptions(config, root);
-	
+
 	pugi::xml_node menu = root.first_child();
 	while( menu )
 	{
-		l_prog = new PortalProg();
-		keyX[3] = L'1';
-		modX[3] = L'1';
-		overX[4] = L'1';
-
-		if( !wcscmp(menu.name(), L"app") )
+		if (!wcscmp(menu.name(), L"app") || !wcscmp(menu.name(), L"group"))
 		{
-			if(!menu.attribute(L"name").empty())
-				l_prog->progName = _wcsdup(menu.attribute(L"name").value());
-			if(!menu.attribute(L"key").empty()) {
-				l_prog->hkey = getHotKeyCode(menu.attribute(L"key").value());
-				l_prog->modifier = MOD_WIN;
-			}
-			if(!menu.attribute(L"mod").empty())
-				l_prog->modifier = getModifier(menu.attribute(L"mod").value());
-			if(!menu.attribute(L"over").empty())
-				l_prog->overriding = (isTrue(menu.attribute(L"over").value()) != 0x0);
-			if(!menu.attribute(L"ico").empty())
-				l_prog->icoPath = specialDirs(menu.attribute(L"ico").value());
-			if(!menu.attribute(L"path").empty())
-				l_prog->dirPath = specialDirs(menu.attribute(L"path").value());
-			if(!menu.attribute(L"exe").empty())
-				l_prog->progExe = specialDirs(menu.attribute(L"exe").value());
-			if(!menu.attribute(L"param").empty())
-				l_prog->progParam = specialDirs(menu.attribute(L"param").value());
-			l_prog->options = getOptions(menu);
-		}
-		else if( !wcscmp(menu.name(), L"group") )
-		{
-			if(!menu.attribute(L"name").empty())
-				l_prog->progName = _wcsdup(menu.attribute(L"name").value());
-			if(!menu.attribute(L"key").empty()) {
-				l_prog->hkey = getHotKeyCode(menu.attribute(L"key").value());
-				l_prog->modifier = MOD_WIN;
-			}
-			if(!menu.attribute(L"mod").empty())
-				l_prog->modifier = getModifier(menu.attribute(L"mod").value());
-			if(!menu.attribute(L"over").empty())
-				l_prog->overriding = (isTrue(menu.attribute(L"over").value()) != 0x0);
-			if(!menu.attribute(L"ico").empty())
-				l_prog->icoPath = specialDirs(menu.attribute(L"ico").value());
-			l_prog->options = getOptions(menu);
+			l_prog = new PortalProg();
+			keyX[3] = L'1';
+			modX[3] = L'1';
+			overX[4] = L'1';
 
-			if( isTrue(menu.attribute(L"autoopen").value()) == 0x1 )
-				l_prog->options |= PROG_OPTION_AUTOOPEN;
-		}
-
-		pushHotkey(config, l_prog);
-		config->flat.push_back( l_prog );
-		l_prog->uID = (UINT)config->flat.size();
-
-		while(!menu.attribute(keyX).empty())
-		{
-			prog_tmp = new PortalProg();
-			prog_tmp->uID = (UINT)(-1); // Set special uID for memory allocation.
-			prog_tmp->hkey = getHotKeyCode(menu.attribute(keyX).value());
-			prog_tmp->modifier = getModifier(menu.attribute(modX).value());
-			prog_tmp->overriding = (isTrue(menu.attribute(overX).value()) != 0x0);
-			prog_tmp->nextSameHotkey = l_prog;
-			pushHotkey(config, prog_tmp);
-			if( keyX[3] < L'9' )
+			if (!wcscmp(menu.name(), L"app"))
 			{
-				keyX[3] = keyX[3]+1;
-				modX[3] = modX[3]+1;
-				overX[4] = overX[4]+1;
+				if (!menu.attribute(L"name").empty())
+					l_prog->progName = _wcsdup(menu.attribute(L"name").value());
+				if (!menu.attribute(L"key").empty()) {
+					l_prog->hkey = getHotKeyCode(menu.attribute(L"key").value());
+					l_prog->modifier = MOD_WIN;
+				}
+				if (!menu.attribute(L"mod").empty())
+					l_prog->modifier = getModifier(menu.attribute(L"mod").value());
+				if (!menu.attribute(L"over").empty())
+					l_prog->overriding = (isTrue(menu.attribute(L"over").value()) != 0x0);
+				if (!menu.attribute(L"ico").empty())
+					l_prog->icoPath = specialDirs(menu.attribute(L"ico").value());
+				if (!menu.attribute(L"path").empty())
+					l_prog->dirPath = specialDirs(menu.attribute(L"path").value());
+				if (!menu.attribute(L"exe").empty())
+					l_prog->progExe = specialDirs(menu.attribute(L"exe").value());
+				if (!menu.attribute(L"param").empty())
+					l_prog->progParam = specialDirs(menu.attribute(L"param").value());
+				l_prog->options = getOptions(menu);
 			}
+			else if (!wcscmp(menu.name(), L"group"))
+			{
+				if (!menu.attribute(L"name").empty())
+					l_prog->progName = _wcsdup(menu.attribute(L"name").value());
+				if (!menu.attribute(L"key").empty()) {
+					l_prog->hkey = getHotKeyCode(menu.attribute(L"key").value());
+					l_prog->modifier = MOD_WIN;
+				}
+				if (!menu.attribute(L"mod").empty())
+					l_prog->modifier = getModifier(menu.attribute(L"mod").value());
+				if (!menu.attribute(L"over").empty())
+					l_prog->overriding = (isTrue(menu.attribute(L"over").value()) != 0x0);
+				if (!menu.attribute(L"ico").empty())
+					l_prog->icoPath = specialDirs(menu.attribute(L"ico").value());
+				l_prog->options = getOptions(menu);
+
+				if (isTrue(menu.attribute(L"autoopen").value()) == 0x1)
+					l_prog->options |= PROG_OPTION_AUTOOPEN;
+			}
+
+			pushHotkey(config, l_prog);
+			config->flat.push_back(l_prog);
+			l_prog->uID = (UINT)config->flat.size();
+
+			while (!menu.attribute(keyX).empty())
+			{
+				prog_tmp = new PortalProg();
+				prog_tmp->uID = (UINT)(-1); // Set special uID for memory allocation.
+				prog_tmp->hkey = getHotKeyCode(menu.attribute(keyX).value());
+				prog_tmp->modifier = getModifier(menu.attribute(modX).value());
+				prog_tmp->overriding = (isTrue(menu.attribute(overX).value()) != 0x0);
+				prog_tmp->nextSameHotkey = l_prog;
+				pushHotkey(config, prog_tmp);
+				if (keyX[3] < L'9')
+				{
+					keyX[3] = keyX[3] + 1;
+					modX[3] = modX[3] + 1;
+					overX[4] = overX[4] + 1;
+				}
+			}
+
+			loadSubMenu(menu.first_child(), l_prog, config);
+
+			config->menus.push_back(l_prog);
+		}
+		else if (!wcscmp(menu.name(), L"variables"))
+		{
+			if (!g_variables)
+				g_variables = new PortalVariableVector();
+			loadVariables(menu.first_child(), g_variables);
 		}
 
-		loadSubMenu(menu.first_child(), l_prog, config );
-
-		config->menus.push_back(l_prog);
 		menu = menu.next_sibling();
 	}
 	free(keyX);

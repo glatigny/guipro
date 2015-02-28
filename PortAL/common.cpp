@@ -204,7 +204,7 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 				}
 			}
 
-			lcur = wcschr( cur, '%');
+			lcur = wcschr( cur+1, '%');
 			if( lcur != NULL ) {
 				wcsncat_s(lTemp, MAX_FILE_LEN, cur, lcur-cur );
 				cur = lcur;

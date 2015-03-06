@@ -192,6 +192,7 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 		{
 			wchar_t* config = getConfigurationFilename();
 			wcscat_s(lTemp, MAX_FILE_LEN, config);
+			cur += 8;
 		}
 		else
 		{

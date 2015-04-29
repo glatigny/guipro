@@ -322,6 +322,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void quitPortal()
 {
+	DestroyMyMenu(true);
 	uninstallFileNotification();
 	unregisterHotkeys();
 	uninstallHookKeyboard();
@@ -329,6 +330,7 @@ void quitPortal()
 	g_portal = NULL;
 	for(PortalProgVector::iterator i = g_portal_files.begin(); i != g_portal_files.end(); i++) { delete (*i); }
 	g_portal_files.clear();
+	UnInitMenuVars();
 	DeleteTrayIcons();
 	PostQuitMessage(0);
 }

@@ -40,6 +40,7 @@ DWORD GetWindowsVersion()
 
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
+	// Deprecated, use "VerifyVersionInfo" instead
 	if( !(bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi) ) )
 		return WINVER_unknow;
 
@@ -55,7 +56,9 @@ DWORD GetWindowsVersion()
 		{
 			if( osvi.dwMinorVersion == 0 )
 				return WINVER_VISTA;
-			return WINVER_7;
+			if (osvi.dwMinorVersion == 1)
+				return WINVER_7;
+			return WINVER_8;
 		}
 		else if( osvi.dwMajorVersion == 5 )
 		{
@@ -192,6 +195,7 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 		{
 			wchar_t* config = getConfigurationFilename();
 			wcscat_s(lTemp, MAX_FILE_LEN, config);
+			free(config);
 			cur += 8;
 		}
 		else

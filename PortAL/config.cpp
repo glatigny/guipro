@@ -284,6 +284,8 @@ int registerHotkeys(LPWSTR p_registerErrors)
 
 			wcscat_s(p_registerErrors, MAX_LANGLEN, l_errkey);
 			wcscat_s(p_registerErrors, MAX_LANGLEN, (wchar_t*)"\n");
+
+			free(l_errkey);
 		}
 	}
 

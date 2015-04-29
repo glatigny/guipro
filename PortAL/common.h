@@ -35,6 +35,7 @@
 //#define ICON_MANAGER					// Old icon manager.
 //#define ICON_MANAGER_THREAD			// Loading image in a thread (experimental)
 //#define PORTAL_REFUSE_HOTKEY_ERROR	// Old rules for the loading of the configuration.
+//#define USE_GDI_MENU
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -97,6 +98,7 @@
 #define WINVER_XP		2
 #define WINVER_VISTA	3
 #define WINVER_7		4
+#define WINVER_8		5
 
 DWORD GetWindowsVersion();
 bool fileExists(wchar_t* filename);

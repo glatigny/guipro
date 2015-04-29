@@ -46,6 +46,37 @@ typedef struct _PortalMenuItem
 	struct _PortalMenuItem* next;
 } PortalMenuItem;
 
+typedef struct _PortalColors
+{
+	COLOR16 red;
+	COLOR16 green;
+	COLOR16 blue;
+	// COLOR16 alpha;
+} PortalColors;
+
+typedef struct _ColorPair
+{
+	COLORREF textcolor;
+	COLORREF background;
+} ColorPair;
+
+typedef struct _PortalMenuDesign
+{
+	UINT16 border_size;
+	UINT16 border_round;
+	COLORREF border_color;
+	ColorPair* base;
+	ColorPair* selected;
+	UINT16 background_grandiant_direction;
+	COLORREF background_gradiant_start;
+	COLORREF background_gradiant_end;
+} PortalMenuDesign;
+
+extern PortalMenuDesign* g_PortalMenuDesign;
+#ifdef USE_GDI_MENU
+extern boolean g_PortalMenuDesignSystem;
+#endif
+
 #define MENU_NORMAL		0x0000
 #define MENU_TITLE		0x0001
 #define MENU_SEP		0x0002
@@ -57,6 +88,7 @@ typedef struct _PortalMenuItem
 /* ------------------------------------------------------------------------------------------------- */
 
 void InitMenuVars();
+void UnInitMenuVars();
 
 BOOL AddMenuItem(HMENU hMenu, UINT uItemID, UINT uType, UINT uState, PortalMenuItem* item);
 BOOL AddSubMenu(HMENU hMenu, UINT uItemID, UINT uType, UINT uState, HMENU subMenu, PortalMenuItem* item);
@@ -73,6 +105,11 @@ void OnUninitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam);
 LRESULT OnMenuCharItem(HWND hWnd, WPARAM wParam, LPARAM lParam);
 void OnMeasureItem(HWND hWnd, WPARAM wParam, LPARAM lParam);
 void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam);
+
+#ifdef USE_GDI_MENU
+HBITMAP IconToBitmapPARGB32(UINT uIcon);
+HBITMAP IconToBitmap(UINT uIcon);
+#endif
 
 /* ------------------------------------------------------------------------------------------------- */
 

@@ -31,6 +31,20 @@
 #include "iconManager.h"
 #include "hotKey.h"
 
+#ifdef USE_GDI_MENU
+/* Some useful doc
+ *
+ * http://www.nanoant.com/programming/themed-menus-icons-a-complete-vista-xp-solution
+ * https://msdn.microsoft.com/en-us/library/windows/desktop/ms534077%28v=vs.85%29.aspx
+ * https://code.google.com/p/tortoisesvn/source/browse/tags/version-1.5.0/src/TortoiseShell/ContextMenu.cpp
+ * https://msdn.microsoft.com/en-us/library/bb757020.aspx?s=6 ( https://msdn.microsoft.com/en-us/library/bb756947.aspx )
+ * http://www.codeproject.com/Articles/16529/Simple-Menus-That-Display-Icons-Minimalistic-Appro
+ */
+#include <GdiPlus.h>
+#pragma comment (lib, "Gdiplus.lib")
+ULONG_PTR g_gdiplusToken = 0;
+#endif
+
 /* ------------------------------------------------------------------------------------------------- */
 
 BOOL g_activeMenu = FALSE;
@@ -44,6 +58,34 @@ DWORD g_TextColor;
 std::map<HMENU,PortalProg*> menus;
 
 PortalMenuItem* g_PortalMenuItem = NULL;
+PortalMenuDesign* g_PortalMenuDesign = NULL;
+#ifdef USE_GDI_MENU
+boolean g_PortalMenuDesignSystem = false;
+#endif
+
+ColorPair cp1 = { 0x000000, 0xaeaeae };
+
+PortalMenuDesign design1 = {
+	1,			// border_size
+	10,			// border_round
+	0xf9d996,	// border_color
+	NULL,		// base
+	NULL,		// selected
+	1,			// background_grandiant_direction
+	0xffffff,	// background_gradiant_start
+	0xf9d996	// background_gradiant_end
+};
+PortalMenuDesign design2 = {
+	1,			// border_size
+	0,			// border_round
+	0x3c3c3c,	// border_color
+	NULL,		// base
+	&cp1,		// selected
+	0,			// background_grandiant_direction
+	0x000000,	// background_gradiant_start
+	0x000000	// background_gradiant_end
+};
+
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -63,6 +105,27 @@ void InitMenuVars()
 	g_menuBackTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
 	g_ShotcutColor = GetSysColor(COLOR_GRAYTEXT);
 	g_TextColor = GetSysColor(COLOR_MENUTEXT);
+
+#ifdef USE_GDI_MENU
+	if(g_PortalMenuDesignSystem)
+	{
+		Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+		Gdiplus::GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, NULL);
+	}
+#endif
+
+	g_PortalMenuDesign = &design1;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+void UnInitMenuVars()
+{
+#ifdef USE_GDI_MENU
+	if (g_gdiplusToken)
+		Gdiplus::GdiplusShutdown(g_gdiplusToken);
+	g_gdiplusToken = 0;
+#endif
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -124,14 +187,30 @@ void ShowTrayMenu(PortalProg* p_menu, int param)
 
 BOOL AddMenuItem(HMENU hMenu, UINT uItemID, UINT uType, UINT uState, PortalMenuItem* item)
 {
-	if( item == NULL ) return FALSE;
-	MENUITEMINFO tMenuItemInfo;
+	if (item == NULL) return FALSE;
+	MENUITEMINFO tMenuItemInfo = { 0 };
 
-	ZeroMemory(&tMenuItemInfo, sizeof(tMenuItemInfo));
+	//ZeroMemory(&tMenuItemInfo, sizeof(tMenuItemInfo));
 	tMenuItemInfo.cbSize = sizeof(tMenuItemInfo);
 	tMenuItemInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
 	tMenuItemInfo.fType = uType;
 	tMenuItemInfo.wID = uItemID;
+#ifdef USE_GDI_MENU
+	if(g_PortalMenuDesignSystem && windowsVersion >= WINVER_VISTA)
+	{
+		if (!(uType & MFT_SEPARATOR))
+		{
+			// tMenuItemInfo.hbmpItem = (windowsVersion >= WINVER_VISTA) ? IconToBitmapPARGB32(item->iconid) : HBMMENU_CALLBACK;
+			tMenuItemInfo.hbmpItem = IconToBitmapPARGB32(item->iconid);
+			tMenuItemInfo.fMask = MIIM_ID | MIIM_BITMAP | MIIM_STRING | MIIM_DATA;
+		}
+		else
+		{
+			tMenuItemInfo.fType = uType & ~MFT_OWNERDRAW;
+			tMenuItemInfo.fMask = MIIM_FTYPE | MIIM_ID | MIIM_DATA;
+		}
+	}
+#endif
 	tMenuItemInfo.dwTypeData = item->text;
 	tMenuItemInfo.dwItemData = (ULONG_PTR)item;
 	if( uState != 0 )
@@ -144,10 +223,170 @@ BOOL AddMenuItem(HMENU hMenu, UINT uItemID, UINT uType, UINT uState, PortalMenuI
 }
 
 /* ------------------------------------------------------------------------------------------------- */
+#ifdef USE_GDI_MENU
+
+HBITMAP IconToBitmapPARGB32(UINT uIcon)
+{
+/*
+	std::map<UINT, HBITMAP>::iterator bitmap_it = bitmaps.lower_bound(uIcon);
+	if (bitmap_it != bitmaps.end() && bitmap_it->first == uIcon)
+		return bitmap_it->second;
+*/
+	if (!g_gdiplusToken)
+		return HBMMENU_CALLBACK;
+
+	HICON* hIcon = NULL;
+	if (uIcon < PORTAL_ICON_RESOURCE)
+	{
+		hIcon = getIcon(uIcon, NULL, NULL);
+	}
+	else if (uIcon > PORTAL_ICON_RESOURCE)
+	{
+		HICON icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(uIcon), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR); //LOADRESOURCEICON(uIcon - PORTAL_ICON_RESOURCE);
+		hIcon = &icon;
+	}
+
+	if (hIcon == NULL)
+		return HBMMENU_CALLBACK;
+/*
+	// Method 1
+	Gdiplus::Bitmap icon(*hIcon);
+	Gdiplus::Bitmap bmp(16, 16, PixelFormat32bppPARGB);
+	Gdiplus::Graphics g(&bmp);
+	g.DrawImage(&icon, 0, 0, 16, 16);
+
+	HBITMAP hBmp = NULL;
+	bmp.GetHBITMAP(Gdiplus::Color(255, 0, 0, 0), &hBmp);
+/*/
+	// Method 2
+	ICONINFO ii;
+	GetIconInfo(*hIcon, &ii);
+	BITMAP bmp;
+	GetObject(ii.hbmColor, sizeof(bmp), &bmp);
+
+	Gdiplus::Bitmap temp(ii.hbmColor, NULL);
+	Gdiplus::BitmapData lockedBitmapData;
+	Gdiplus::Rect rc(0, 0, 16, 16);
+
+	temp.LockBits(&rc, Gdiplus::ImageLockModeRead, temp.GetPixelFormat(), &lockedBitmapData);
+	Gdiplus::Bitmap image(lockedBitmapData.Width, lockedBitmapData.Height, lockedBitmapData.Stride, PixelFormat32bppARGB, reinterpret_cast<BYTE *>(lockedBitmapData.Scan0));
+	temp.UnlockBits(&lockedBitmapData);
+
+	HBITMAP hBmp = NULL;
+	image.GetHBITMAP(Gdiplus::Color(255, 0, 0, 0), &hBmp);
+//*/
+	if (uIcon > PORTAL_ICON_RESOURCE)
+		DestroyIcon(*hIcon);
+/*
+	if (hBmp)
+		bitmaps.insert(bitmap_it, std::make_pair(uIcon, hBmp));
+*/
+	return hBmp;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+HBITMAP IconToBitmap(UINT uIcon)
+{
+/*
+	std::map<UINT, HBITMAP>::iterator bitmap_it = bitmaps.lower_bound(uIcon);
+	if (bitmap_it != bitmaps.end() && bitmap_it->first == uIcon)
+		return bitmap_it->second;
+*/
+	HICON* hIcon = NULL;
+	if (uIcon < PORTAL_ICON_RESOURCE)
+	{
+		hIcon = getIcon(uIcon, NULL, NULL);
+	}
+	else if (uIcon > PORTAL_ICON_RESOURCE)
+	{
+		HICON icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(uIcon), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR); //LOADRESOURCEICON(uIcon - PORTAL_ICON_RESOURCE);
+		hIcon = &icon;
+	}
+
+	if (hIcon == NULL)
+		return NULL;
+
+	RECT rect;
+
+	rect.right = GetSystemMetrics(SM_CXMENUCHECK);
+	rect.bottom = GetSystemMetrics(SM_CYMENUCHECK);
+
+	rect.left = rect.top = 0;
+
+	HWND desktop = GetDesktopWindow();
+	if (desktop == NULL)
+	{
+		if (uIcon > PORTAL_ICON_RESOURCE)
+			DestroyIcon(*hIcon);
+		return NULL;
+	}
+
+	HDC screen_dev = GetDC(desktop);
+	if (screen_dev == NULL)
+	{
+		if (uIcon > PORTAL_ICON_RESOURCE)
+			DestroyIcon(*hIcon);
+		return NULL;
+	}
+
+	// Create a compatible DC
+	HDC dst_hdc = CreateCompatibleDC(screen_dev);
+	if (dst_hdc == NULL)
+	{
+		if (uIcon > PORTAL_ICON_RESOURCE)
+			DestroyIcon(*hIcon);
+		::ReleaseDC(desktop, screen_dev);
+		return NULL;
+	}
+
+	// Create a new bitmap of icon size
+	HBITMAP bmp = CreateCompatibleBitmap(screen_dev, rect.right, rect.bottom);
+	if (bmp == NULL)
+	{
+		if (uIcon > PORTAL_ICON_RESOURCE)
+			DestroyIcon(*hIcon);
+		DeleteDC(dst_hdc);
+		ReleaseDC(desktop, screen_dev);
+		return NULL;
+	}
+
+	// Select it into the compatible DC
+	HBITMAP old_dst_bmp = (HBITMAP)SelectObject(dst_hdc, bmp);
+	if (old_dst_bmp == NULL)
+	{
+		if (uIcon > PORTAL_ICON_RESOURCE)
+			DestroyIcon(*hIcon);
+		return NULL;
+	}
+
+	// Fill the background of the compatible DC with the white color
+	// that is taken by menu routines as transparent
+	SetBkColor(dst_hdc, RGB(255, 255, 255));
+	ExtTextOut(dst_hdc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
+
+	// Draw the icon into the compatible DC
+	DrawIconEx(dst_hdc, 0, 0, *hIcon, rect.right, rect.bottom, 0, NULL, DI_NORMAL);
+
+	// Restore settings
+	SelectObject(dst_hdc, old_dst_bmp);
+	DeleteDC(dst_hdc);
+	ReleaseDC(desktop, screen_dev);
+	if (uIcon > PORTAL_ICON_RESOURCE)
+		DestroyIcon(*hIcon);
+/*
+	if (bmp)
+		bitmaps.insert(bitmap_it, std::make_pair(uIcon, bmp));
+*/
+	return bmp;
+}
+#endif
+
+/* ------------------------------------------------------------------------------------------------- */
 
 BOOL AddSubMenu(HMENU hMenu, UINT uItemID, UINT uType, UINT uState, HMENU subMenu, PortalMenuItem* item)
 {
-	if( item == NULL ) return FALSE;
+	if (item == NULL) return FALSE;
 	MENUITEMINFO tMenuItemInfo;
 
 	item->options |= MENU_SUB;
@@ -156,6 +395,15 @@ BOOL AddSubMenu(HMENU hMenu, UINT uItemID, UINT uType, UINT uState, HMENU subMen
 	tMenuItemInfo.cbSize = sizeof(tMenuItemInfo);
 	tMenuItemInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA | MIIM_SUBMENU;
 	tMenuItemInfo.fType = uType;
+#ifdef USE_GDI_MENU
+	if(g_PortalMenuDesignSystem && windowsVersion >= WINVER_VISTA)
+	{
+		tMenuItemInfo.fType = uType & ~(MFT_OWNERDRAW | MFT_MENUBARBREAK);
+		tMenuItemInfo.fMask = MIIM_FTYPE | MIIM_ID | MIIM_BITMAP | MIIM_STRING | MIIM_DATA | MIIM_SUBMENU;
+		//tMenuItemInfo.hbmpItem = (windowsVersion >= WINVER_VISTA) ? IconToBitmapPARGB32(item->iconid) : HBMMENU_CALLBACK;
+		tMenuItemInfo.hbmpItem = IconToBitmapPARGB32(item->iconid);
+	}
+#endif
 	tMenuItemInfo.wID = uItemID;
 	tMenuItemInfo.dwTypeData = item->text;
 	tMenuItemInfo.dwItemData = (ULONG_PTR)item;
@@ -828,9 +1076,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	LPDRAWITEMSTRUCT ptDrawItem = (LPDRAWITEMSTRUCT)lParam;
 	HDC hDC;
-	RECT tRect;
-	RECT tRectText;
-	RECT bar;
+	RECT tRect, tRectText, bar;
 	HBRUSH hBrush;
 	int lngText;
 	PortalMenuItem* item = (PortalMenuItem*)ptDrawItem->itemData;
@@ -849,87 +1095,140 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 	if( ptDrawItem->itemState & ODS_SELECTED )
 	{
-#ifdef MENU_DRAW_V1
-		// Draw Item Menu: Version 1
-		//
-		SetBkColor(hDC, g_menuBackColor);
-		SetTextColor(hDC, g_menuBackTextColor);
+//#ifdef MENU_DRAW_V1
+		if (g_PortalMenuDesign == NULL)
+		{
+			// Draw Item Menu: Version 1
+			//
+			SetBkColor(hDC, g_menuBackColor);
+			SetTextColor(hDC, g_menuBackTextColor);
 
-		hBrush = CreateSolidBrush(g_menuBackColor);
-		FillRect(hDC, &tRect, hBrush);
-#else
-		// Draw Item Menu: Version 2
-		//
-		hBrush = CreateSolidBrush(GetBkColor(hDC));
-		FillRect(hDC, &tRect, hBrush);
-		DeleteObject(hBrush);
+			hBrush = CreateSolidBrush(g_menuBackColor);
+			FillRect(hDC, &tRect, hBrush);
+		}
+		else
+		{
+//#else
+			// Define the base color and background
+			if (g_PortalMenuDesign->base != NULL)
+			{
+				SetBkColor(hDC, g_PortalMenuDesign->base->background);
+				SetTextColor(hDC, g_PortalMenuDesign->base->textcolor);
+			}
 
-		hBrush = CreateSolidBrush(g_menuBackColor);
-		DWORD penColor = GetSysColor(COLOR_HIGHLIGHT);
-		HPEN pen = CreatePen(PS_SOLID, 1, penColor);
+			if (g_PortalMenuDesign->selected != NULL)
+			{
+				SetTextColor(hDC, g_PortalMenuDesign->selected->textcolor);
 
-		HGDIOBJ old_brush = SelectObject(hDC, hBrush);
-		HGDIOBJ old_pen = SelectObject(hDC, pen);
+				// When having round borders, we have to first display the default background
+				if (g_PortalMenuDesign->border_round == 0)
+					SetBkColor(hDC, g_PortalMenuDesign->selected->background);
+			}
 
-		SetBkColor(hDC, g_menuBackColor);
-		SetBkMode(hDC, TRANSPARENT);
+			// Draw Item Menu: Version 2
+			//
+			hBrush = CreateSolidBrush(GetBkColor(hDC));
+			FillRect(hDC, &tRect, hBrush);
+			DeleteObject(hBrush);
 
-		//Backup ClipBox for RoundRect clipping boxes
-		RECT fullRect;
-		GetClipBox(hDC, &fullRect);
+			if (g_PortalMenuDesign->selected != NULL)
+			{
+				hBrush = CreateSolidBrush(g_PortalMenuDesign->selected->background);
+			}
+			else
+			{
+				hBrush = CreateSolidBrush(g_menuBackColor);
+				SetBkColor(hDC, g_menuBackColor);
+			}
 
-		// Rounded
-		BeginPath(hDC);
-		RoundRect(hDC, tRect.left, tRect.top, tRect.right, tRect.bottom, 10, 10);
-		EndPath(hDC);
-		SelectClipPath(hDC, RGN_COPY);
+			DWORD penColor = GetSysColor(COLOR_HIGHLIGHT);
+			HPEN pen = CreatePen(PS_SOLID, 1, penColor);
 
-		TRIVERTEX vertex[2];
-		vertex[0].x = tRect.left;
-		vertex[0].y = tRect.top;
-		vertex[0].Red   = 0x9600;
-		vertex[0].Green = 0xd900;
-		vertex[0].Blue  = 0xf900;
-		vertex[0].Alpha = 0xffff;
+			HGDIOBJ old_brush = SelectObject(hDC, hBrush);
+			HGDIOBJ old_pen = SelectObject(hDC, pen);
 
-		vertex[1].x = tRect.right;
-		vertex[1].y = tRect.bottom;
-		vertex[1].Red   = 0x9600;
-		vertex[1].Green = 0xd900;
-		vertex[1].Blue  = 0xf900;
-		vertex[1].Alpha = 0x0000;
+			SetBkMode(hDC, TRANSPARENT);
 
-		GRADIENT_RECT r;
-		r.UpperLeft = 0;
-		r.LowerRight = 1;
+			// Backup ClipBox for RoundRect clipping boxes
+			RECT fullRect;
+			GetClipBox(hDC, &fullRect);
 
-		GradientFill(hDC, vertex, 2, &r, 1, GRADIENT_FILL_RECT_V);
+			// Create the zone for the rounded borders
+			if (g_PortalMenuDesign->border_round > 0)
+			{
+				BeginPath(hDC);
+				RoundRect(hDC, tRect.left, tRect.top, tRect.right, tRect.bottom, g_PortalMenuDesign->border_round, g_PortalMenuDesign->border_round);
+				EndPath(hDC);
+				SelectClipPath(hDC, RGN_COPY);
+			}
 
-		// Rounded
-		BeginPath(hDC);
-		RoundRect(hDC, tRect.left+1, tRect.top+1, tRect.right-1, tRect.bottom-1, 10, 10);
-		EndPath(hDC);
-		SelectClipPath(hDC, RGN_COPY);
+			// Display the border, if there is something to display
+			if (g_PortalMenuDesign->border_size > 0)
+			{
+				// Display the border
+				HBRUSH borderBrush = CreateSolidBrush(g_PortalMenuDesign->border_color);
+				FillRect(hDC, &tRect, borderBrush);
+				DeleteObject(borderBrush);
 
-		vertex[0].x = tRect.left+1;
-		vertex[0].y = tRect.top+1;
-		vertex[0].Red   = 0xff00;
-		vertex[0].Green = 0xff00;
-		vertex[0].Blue  = 0xff00;
-		vertex[1].x = tRect.right-1;
-		vertex[1].y = tRect.bottom-1;
+				// Select the background depending the rounded borders
+				if (g_PortalMenuDesign->border_round > 0)
+				{
+					BeginPath(hDC);
+					RoundRect(hDC, tRect.left + g_PortalMenuDesign->border_size, tRect.top + g_PortalMenuDesign->border_size, tRect.right - g_PortalMenuDesign->border_size, tRect.bottom - g_PortalMenuDesign->border_size, g_PortalMenuDesign->border_round, g_PortalMenuDesign->border_round);
+					EndPath(hDC);
+					SelectClipPath(hDC, RGN_COPY);
+				}
+			}
 
-		GradientFill(hDC, vertex, 2, &r, 1, GRADIENT_FILL_RECT_V);
+			if (g_PortalMenuDesign->background_grandiant_direction > 0)
+			{
+				TRIVERTEX vertex[2];
+				memset(vertex, 0, sizeof(vertex));
 
-		SelectObject(hDC, old_brush);
-		SelectObject(hDC, old_pen);
-		DeleteObject(pen);
+				GRADIENT_RECT r;
+				r.UpperLeft = 0;
+				r.LowerRight = 1;
 
-		BeginPath(hDC);
-		Rectangle(hDC, fullRect.left, fullRect.top, fullRect.right, fullRect.bottom);
-		EndPath(hDC);
-		SelectClipPath(hDC, RGN_COPY);
-#endif
+				// Display the background
+				vertex[0].x = tRect.left + g_PortalMenuDesign->border_size;
+				vertex[0].y = tRect.top + g_PortalMenuDesign->border_size;
+				vertex[0].Red = (COLOR16)GetRValue(g_PortalMenuDesign->background_gradiant_start) << 8;
+				vertex[0].Green = (COLOR16)GetGValue(g_PortalMenuDesign->background_gradiant_start) << 8;
+				vertex[0].Blue = (COLOR16)GetBValue(g_PortalMenuDesign->background_gradiant_start) << 8;
+				vertex[0].Alpha = 0x0000; // Alpha is not used by GradientFill
+
+				vertex[1].x = tRect.right - g_PortalMenuDesign->border_size;
+				vertex[1].y = tRect.bottom - g_PortalMenuDesign->border_size;
+				vertex[1].Red = (COLOR16)GetRValue(g_PortalMenuDesign->background_gradiant_end) << 8;
+				vertex[1].Green = (COLOR16)GetGValue(g_PortalMenuDesign->background_gradiant_end) << 8;
+				vertex[1].Blue = (COLOR16)GetBValue(g_PortalMenuDesign->background_gradiant_end) << 8;
+				vertex[1].Alpha = 0x0000; // Alpha is not used by GradientFill
+
+				if (g_PortalMenuDesign->background_grandiant_direction == 1)
+					GradientFill(hDC, vertex, 2, &r, 1, GRADIENT_FILL_RECT_V);
+				else
+					GradientFill(hDC, vertex, 2, &r, 1, GRADIENT_FILL_RECT_H);
+
+				SelectObject(hDC, old_brush);
+				SelectObject(hDC, old_pen);
+				DeleteObject(pen);
+
+				BeginPath(hDC);
+				Rectangle(hDC, fullRect.left, fullRect.top, fullRect.right, fullRect.bottom);
+				EndPath(hDC);
+				SelectClipPath(hDC, RGN_COPY);
+			}
+			else
+			{
+				tRect.left += g_PortalMenuDesign->border_size;
+				tRect.top += g_PortalMenuDesign->border_size;
+				tRect.right -= g_PortalMenuDesign->border_size;
+				tRect.bottom -= g_PortalMenuDesign->border_size;
+
+				FillRect(hDC, &tRect, hBrush);
+			}
+		}
+//#endif
 	}
 	else if( item->options & MENU_TITLE )
 	{
@@ -947,6 +1246,11 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
+		if (g_PortalMenuDesign != NULL && g_PortalMenuDesign->base != NULL)
+		{
+
+		}
+
 		hBrush = CreateSolidBrush(GetBkColor(hDC));
 		FillRect(hDC, &tRect, hBrush);
 	}
@@ -960,11 +1264,11 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 		bar.left = tRect.left + 5;
 		bar.right = tRectText.left - 2;
-		DrawEdge( hDC, &bar, EDGE_ETCHED, BF_BOTTOM);
+		DrawEdge(hDC, &bar, EDGE_ETCHED, BF_BOTTOM);
 
 		bar.left = tRectText.right + 2;
 		bar.right = tRect.right - 5;
-		DrawEdge( hDC, &bar, EDGE_ETCHED, BF_BOTTOM);
+		DrawEdge(hDC, &bar, EDGE_ETCHED, BF_BOTTOM);
 	}
 	else if( !(ptDrawItem->itemState & ODS_SELECTED) )
 	{
@@ -972,7 +1276,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		bar.bottom = tRect.bottom;
 		bar.left = g_iconSize.cx + 16;
 		bar.right = tRect.right;
-		DrawEdge( hDC, &bar, EDGE_ETCHED, BF_LEFT);
+		DrawEdge(hDC, &bar, EDGE_ETCHED, BF_LEFT);
 	}
 
 	if( item->options & MENU_SEP )
@@ -981,7 +1285,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		bar.bottom = bar.top;
 		bar.left = tRect.left + g_iconSize.cx + 17;
 		bar.right = tRect.right - 1;
-		DrawEdge( hDC, &bar, EDGE_ETCHED, BF_BOTTOM);
+		DrawEdge(hDC, &bar, EDGE_ETCHED, BF_BOTTOM);
 	}
 	else
 	{
@@ -1021,15 +1325,15 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 	SetBkMode(hDC, OPAQUE);
 
-#ifndef MENU_DRAW_V1
-	if(isArrow)
+//#ifndef MENU_DRAW_V1
+	if (g_PortalMenuDesign != NULL && isArrow)
 	{
 		SetBkMode(hDC, TRANSPARENT);
 		DWORD oldBkColor = GetBkColor(hDC);
-		SetBkColor(hDC, RGB(255,255,255) );
+		SetBkColor(hDC, RGB(255,255,255));
 
-		int arrowW  = 16;
-		int arrowH  = 16;
+		int arrowW = 16;
+		int arrowH = 16;
 		RECT tRectArrow;
 		tRectArrow.right = tRectText.right;
 		tRectArrow.left = tRectText.right - arrowW;
@@ -1069,7 +1373,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		// Exclude the clip rect in order to not redraw the system arrow.
 		ExcludeClipRect(hDC, tRectArrow.left, tRectArrow.top, tRectArrow.right, tRectArrow.bottom);
 	}
-#endif
+//#endif
 }
 
 /* ------------------------------------------------------------------------------------------------- */

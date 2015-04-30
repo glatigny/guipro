@@ -28,12 +28,17 @@
 #define PROG_OPTION_DEFAULT		(0x001)
 #define PROG_OPTION_SHELL		(0x002)
 #define PROG_OPTION_NOSHELL		(0x004)
-#define PROG_OPTION_AUTORUN		(0x008)
-#define PROG_OPTION_AUTOOPEN	(0x010)
-#define PROG_OPTION_BROWSE		(0x020)
-#define PROG_OPTION_SHOWSC		(0x040)
-#define PROG_OPTION_BREAK		(0x080)
-#define PROG_OPTION_ELEVATION	(0x100)
+#define PROG_OPTION_AUTOOPEN	(0x008)
+#define PROG_OPTION_BROWSE		(0x010)
+#define PROG_OPTION_SHOWSC		(0x020)
+#define PROG_OPTION_BREAK		(0x040)
+#define PROG_OPTION_ELEVATION	(0x080)
+
+#define PROG_EVENT_NONE			(0x000)
+#define PROG_EVENT_START		(0x001)
+#define PROG_EVENT_QUIT			(0x002)
+#define PROG_EVENT_LOCK			(0x004)
+#define PROG_EVENT_UNLOCK		(0x008)
 
 class PortalProg;
 
@@ -52,6 +57,7 @@ class PortalProg
 		bool		overriding;
 		UINT		uID;
 		UINT		options;
+		CHAR		events;
 		PortalProg*	nextSameHotkey;
 		std::vector<PortalProg*> progs;
 

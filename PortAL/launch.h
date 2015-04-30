@@ -25,6 +25,6 @@
 #include "portalConfig.h"
 
 void launch(PortalProg* prog);
-void Autorun();
+void fireEvent(UINT evt);
 
 #endif /* LAUNCH_H */

@@ -80,9 +80,6 @@ UINT getOptions(pugi::xml_node elem)
 		}
 	}
 
-	if( isTrue(elem.attribute(L"autorun").value()) ) 
-		options |= PROG_OPTION_AUTORUN;
-
 	if( isTrue(elem.attribute(L"browse").value()) )
 		options |= PROG_OPTION_BROWSE | PROG_OPTION_SHELL;
 
@@ -96,6 +93,39 @@ UINT getOptions(pugi::xml_node elem)
 		options |= PROG_OPTION_ELEVATION;
 
 	return options;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+UINT getEvents(pugi::xml_node elem)
+{
+	UINT events = PROG_EVENT_NONE;
+
+	// Retro-compatibility
+	if (isTrue(elem.attribute(L"autorun").value()))
+		events |= PROG_EVENT_START;
+
+	if (!elem.attribute(L"events").empty())
+	{
+		const wchar_t* events_list = elem.attribute(L"events").value();
+		wchar_t* next_token = NULL;
+		wchar_t* token = wcstok_s((wchar_t*)events_list, L" ,|;", &next_token);
+		while (token != NULL)
+		{
+			if (!_wcsicmp(token, L"start"))
+				events |= PROG_EVENT_START;
+			if (!_wcsicmp(token, L"exit") || !_wcsicmp(token, L"quit"))
+				events |= PROG_EVENT_QUIT;
+			if (!_wcsicmp(token, L"lock"))
+				events |= PROG_EVENT_LOCK;
+			if (!_wcsicmp(token, L"unlock"))
+				events |= PROG_EVENT_UNLOCK;
+
+			token = wcstok_s(NULL, L" ,|;", &next_token);
+		}
+	}
+
+	return events;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -146,6 +176,7 @@ void loadSubMenu(pugi::xml_node elem, PortalProg* container, PortalConfig* confi
 			if(!elem.attribute(L"param").empty())
 				l_prog->progParam = specialDirs(elem.attribute(L"param").value());
 			l_prog->options = getOptions(elem);
+			l_prog->events = getEvents(elem);
 
 			container->progs.push_back( l_prog );
 
@@ -357,6 +388,7 @@ PortalConfig* loadConfig(wchar_t* filename)
 				if (!menu.attribute(L"param").empty())
 					l_prog->progParam = specialDirs(menu.attribute(L"param").value());
 				l_prog->options = getOptions(menu);
+				l_prog->events = getEvents(menu);
 			}
 			else if (!wcscmp(menu.name(), L"group"))
 			{

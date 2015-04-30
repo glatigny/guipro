@@ -176,11 +176,11 @@ void launch(PortalProg* prog)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-void Autorun()
+void fireEvent(UINT evt)
 {
 	for(PortalProgVector::iterator i = g_portal->flat.begin(); i != g_portal->flat.end(); i++ )
 	{
-		if( (*i)->options & PROG_OPTION_AUTORUN )
+		if ((*i)->events & evt)
 		{
 			(*i)->run(true);
 		}

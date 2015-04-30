@@ -147,7 +147,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 
 			// Launch application in "autorun" mode
-			Autorun();
+			fireEvent(PROG_EVENT_START);
 
 			FlushMemory();
 		}
@@ -322,14 +322,19 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void quitPortal()
 {
+	fireEvent(PROG_EVENT_QUIT);
+
 	DestroyMyMenu(true);
 	uninstallFileNotification();
 	unregisterHotkeys();
 	uninstallHookKeyboard();
+
 	delete( g_portal );
 	g_portal = NULL;
+	
 	for(PortalProgVector::iterator i = g_portal_files.begin(); i != g_portal_files.end(); i++) { delete (*i); }
 	g_portal_files.clear();
+	
 	UnInitMenuVars();
 	DeleteTrayIcons();
 	PostQuitMessage(0);

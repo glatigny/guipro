@@ -365,3 +365,50 @@ void FlushMemory()
 }
 
 /* ------------------------------------------------------------------------------------------------- */
+#ifdef DEV_MENU_DESIGN_SUBCLASSING_FOR_BORDER
+HHOOK callWndHandle = NULL;
+
+LRESULT WINAPI CallWndProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if (nCode == HC_ACTION)
+	{
+		CWPSTRUCT* pTemp = (CWPSTRUCT*)lParam;
+	//	if (pTemp->hwnd == g_hwndMain)
+		{
+			//	HDC hdc = GetDC(g_hwndMain);
+			switch (pTemp->message)
+			{
+			case WM_NCPAINT:
+			case WM_ERASEBKGND:
+			//	LRESULT ret = CallWindowProc(callWndHandle, pTemp->hwnd, pTemp->message, pTemp->wParam, pTemp->lParam);
+				OnNcPaint(pTemp->hwnd, wParam, lParam);
+				return 1;
+			}
+			//	ReleaseDC(g_hwndMain, hdc);
+		}
+	}
+	return CallNextHookEx(callWndHandle, nCode, wParam, lParam);
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+void installCallWndHook()
+{
+	if (!callWndHandle)
+	{
+		callWndHandle = SetWindowsHookEx(WH_CALLWNDPROC, (HOOKPROC)CallWndProc, (HINSTANCE)NULL, GetCurrentThreadId());
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+void uninstallCallWndHook()
+{
+	if (callWndHandle)
+	{
+		UnhookWindowsHookEx(callWndHandle);
+		callWndHandle = NULL;
+	}
+}
+#endif
+/* ------------------------------------------------------------------------------------------------- */

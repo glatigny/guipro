@@ -64,6 +64,9 @@ boolean g_PortalMenuDesignSystem = false;
 #endif
 
 ColorPair cp1 = { 0x000000, 0xaeaeae };
+ColorPair cp2 = { 0xFFFFFF, 0x000000 };
+ColorGradient cg1 = { 1, 0xffffff, 0xf9d996 };
+ColorGradient cg2 = { 0, 0xf9d996, 0x000000 };
 
 PortalMenuDesign design1 = {
 	1,			// border_size
@@ -71,9 +74,9 @@ PortalMenuDesign design1 = {
 	0xf9d996,	// border_color
 	NULL,		// base
 	NULL,		// selected
-	1,			// background_grandiant_direction
-	0xffffff,	// background_gradiant_start
-	0xf9d996	// background_gradiant_end
+	&cg1,		// background_gradiant
+	PORTAL_ST_SEL,
+	NULL
 };
 PortalMenuDesign design2 = {
 	1,			// border_size
@@ -81,9 +84,19 @@ PortalMenuDesign design2 = {
 	0x3c3c3c,	// border_color
 	NULL,		// base
 	&cp1,		// selected
-	0,			// background_grandiant_direction
-	0x000000,	// background_gradiant_start
-	0x000000	// background_gradiant_end
+	NULL,		// background_gradiant
+	PORTAL_ST_NONE,
+	NULL
+};
+PortalMenuDesign design3 = {
+	1,			// border_size
+	0,			// border_round
+	0x3c3c3c,	// border_color
+	&cp2,		// base
+	&cp1,		// selected
+	NULL,		// background_gradiant
+	PORTAL_ST_ALL,
+	&cg2
 };
 
 
@@ -893,6 +906,25 @@ void OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	if (p_menu == NULL)
 		return;
 
+	// Set the background color for the entire menu.
+	//
+	if (g_PortalMenuDesign != NULL && g_PortalMenuDesign->base != NULL)
+	{
+		MENUINFO menuinfos = { 0 };
+		menuinfos.cbSize = sizeof(menuinfos);
+		menuinfos.fMask = MIM_BACKGROUND;
+		if (GetMenuInfo(hmenu, &menuinfos))
+		{
+			menuinfos.hbrBack = CreateSolidBrush(g_PortalMenuDesign->base->background);
+			SetMenuInfo(hmenu, &menuinfos);
+		}
+
+		/*
+		LONG lStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+		SetWindowLongPtr(hWnd, GWL_EXSTYLE, lStyle & ~(WS_EX_WINDOWEDGE | WS_EX_DLGMODALFRAME));
+		*/
+	}
+
 	PortalMenuItem* item = g_PortalMenuItem;
 	if( item != NULL )
 	{
@@ -1072,6 +1104,32 @@ void OnMeasureItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 /* ------------------------------------------------------------------------------------------------- */
 
+ULONG _getGradiant(TRIVERTEX* vertex, RECT* tRect, ColorGradient* gradiant, UINT border_size)
+{
+	memset(vertex, 0, sizeof(vertex));
+
+	// Display the background
+	vertex[0].x = tRect->left + border_size;
+	vertex[0].y = tRect->top + border_size;
+	vertex[0].Red = (COLOR16)GetRValue(gradiant->start) << 8;
+	vertex[0].Green = (COLOR16)GetGValue(gradiant->start) << 8;
+	vertex[0].Blue = (COLOR16)GetBValue(gradiant->start) << 8;
+	vertex[0].Alpha = 0x0000; // Alpha is not used by GradientFill
+
+	vertex[1].x = tRect->right - g_PortalMenuDesign->border_size;
+	vertex[1].y = tRect->bottom - g_PortalMenuDesign->border_size;
+	vertex[1].Red = (COLOR16)GetRValue(gradiant->end) << 8;
+	vertex[1].Green = (COLOR16)GetGValue(gradiant->end) << 8;
+	vertex[1].Blue = (COLOR16)GetBValue(gradiant->end) << 8;
+	vertex[1].Alpha = 0x0000; // Alpha is not used by GradientFill
+
+	if (gradiant->direction == 1)
+		return GRADIENT_FILL_RECT_V;
+	return GRADIENT_FILL_RECT_H;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
 void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	LPDRAWITEMSTRUCT ptDrawItem = (LPDRAWITEMSTRUCT)lParam;
@@ -1093,6 +1151,13 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	lngText = (int)wcslen(item->text);
 	SetBkMode(hDC, OPAQUE);
 
+	// Define the base color and background
+	if (g_PortalMenuDesign != NULL && g_PortalMenuDesign->base != NULL)
+	{
+		SetBkColor(hDC, g_PortalMenuDesign->base->background);
+		SetTextColor(hDC, g_PortalMenuDesign->base->textcolor);
+	}
+
 	if( ptDrawItem->itemState & ODS_SELECTED )
 	{
 //#ifdef MENU_DRAW_V1
@@ -1109,13 +1174,6 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		else
 		{
 //#else
-			// Define the base color and background
-			if (g_PortalMenuDesign->base != NULL)
-			{
-				SetBkColor(hDC, g_PortalMenuDesign->base->background);
-				SetTextColor(hDC, g_PortalMenuDesign->base->textcolor);
-			}
-
 			if (g_PortalMenuDesign->selected != NULL)
 			{
 				SetTextColor(hDC, g_PortalMenuDesign->selected->textcolor);
@@ -1180,34 +1238,12 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				}
 			}
 
-			if (g_PortalMenuDesign->background_grandiant_direction > 0)
+			if (g_PortalMenuDesign->background_gradiant != NULL)
 			{
 				TRIVERTEX vertex[2];
-				memset(vertex, 0, sizeof(vertex));
-
-				GRADIENT_RECT r;
-				r.UpperLeft = 0;
-				r.LowerRight = 1;
-
-				// Display the background
-				vertex[0].x = tRect.left + g_PortalMenuDesign->border_size;
-				vertex[0].y = tRect.top + g_PortalMenuDesign->border_size;
-				vertex[0].Red = (COLOR16)GetRValue(g_PortalMenuDesign->background_gradiant_start) << 8;
-				vertex[0].Green = (COLOR16)GetGValue(g_PortalMenuDesign->background_gradiant_start) << 8;
-				vertex[0].Blue = (COLOR16)GetBValue(g_PortalMenuDesign->background_gradiant_start) << 8;
-				vertex[0].Alpha = 0x0000; // Alpha is not used by GradientFill
-
-				vertex[1].x = tRect.right - g_PortalMenuDesign->border_size;
-				vertex[1].y = tRect.bottom - g_PortalMenuDesign->border_size;
-				vertex[1].Red = (COLOR16)GetRValue(g_PortalMenuDesign->background_gradiant_end) << 8;
-				vertex[1].Green = (COLOR16)GetGValue(g_PortalMenuDesign->background_gradiant_end) << 8;
-				vertex[1].Blue = (COLOR16)GetBValue(g_PortalMenuDesign->background_gradiant_end) << 8;
-				vertex[1].Alpha = 0x0000; // Alpha is not used by GradientFill
-
-				if (g_PortalMenuDesign->background_grandiant_direction == 1)
-					GradientFill(hDC, vertex, 2, &r, 1, GRADIENT_FILL_RECT_V);
-				else
-					GradientFill(hDC, vertex, 2, &r, 1, GRADIENT_FILL_RECT_H);
+				GRADIENT_RECT r = { 0, 1 };
+				ULONG d = _getGradiant(vertex, &tRect, g_PortalMenuDesign->background_gradiant, g_PortalMenuDesign->border_size);
+				GradientFill(hDC, vertex, 2, &r, 1, d);
 
 				SelectObject(hDC, old_brush);
 				SelectObject(hDC, old_pen);
@@ -1246,16 +1282,24 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		if (g_PortalMenuDesign != NULL && g_PortalMenuDesign->base != NULL)
-		{
-
-		}
-
 		hBrush = CreateSolidBrush(GetBkColor(hDC));
 		FillRect(hDC, &tRect, hBrush);
 	}
 
+	if ( !(ptDrawItem->itemState & ODS_SELECTED) && g_PortalMenuDesign != NULL && g_PortalMenuDesign->icon_gradiant != NULL)
+	{
+		RECT iRect = ptDrawItem->rcItem;
+		iRect.right = iRect.left + g_iconSize.cx + 18;
+		iRect.bottom += 1;
+		TRIVERTEX v[2];
+		GRADIENT_RECT r = { 0, 1 };
+		ULONG d = _getGradiant(v, &iRect, g_PortalMenuDesign->icon_gradiant, 0);
+		GradientFill(hDC, v, 2, &r, 1, d);
+	}
+
 	DeleteObject(hBrush);
+
+	boolean itemSelected = !(ptDrawItem->itemState & ODS_SELECTED);
 
 	if( item->options & MENU_TITLE )
 	{
@@ -1270,7 +1314,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		bar.right = tRect.right - 5;
 		DrawEdge(hDC, &bar, EDGE_ETCHED, BF_BOTTOM);
 	}
-	else if( !(ptDrawItem->itemState & ODS_SELECTED) )
+	else if ((g_PortalMenuDesign != NULL && ((itemSelected && (g_PortalMenuDesign->edge & PORTAL_ST_SEL)) || (!itemSelected && (g_PortalMenuDesign->edge & PORTAL_ST_UNSEL)))) || (g_PortalMenuDesign == NULL && itemSelected))
 	{
 		bar.top = tRect.top;
 		bar.bottom = tRect.bottom;
@@ -1295,18 +1339,22 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, item->icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
 		}
 #else
+		UINT icon_offset = 0;
+		if (ptDrawItem->itemState & ODS_SELECTED && g_PortalMenuDesign != NULL)
+			icon_offset = g_PortalMenuDesign->border_size;
+
 		if( item->iconid < PORTAL_ICON_RESOURCE )
 		{
 			HICON* icon = getIcon(item->iconid, wParam, lParam);
 			if( icon != NULL )
 			{
-				DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, *icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
+				DrawIconEx(hDC, tRect.left + 8 - icon_offset, tRect.top + 4 - icon_offset, *icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
 			}
 		}
 		else if( item->iconid > PORTAL_ICON_RESOURCE )
 		{
 			HICON icon = LOADRESOURCEICON( item->iconid - PORTAL_ICON_RESOURCE);
-			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
+			DrawIconEx(hDC, tRect.left + 8 - icon_offset, tRect.top + 4 - icon_offset, icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
 		}
 #endif
 		DrawText(hDC, item->text, lngText, &tRectText, DT_LEFT | DT_BOTTOM);
@@ -1316,11 +1364,15 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			SetTextColor(hDC, g_ShotcutColor);
 			RECT t = tRectText;
 			t.right -= 10;
-			if(isArrow) {
+			if(isArrow)
+			{
 				t.right -= 10;
 			}
 			DrawText(hDC, item->sctext, (int)wcslen(item->sctext), &t, DT_RIGHT | DT_BOTTOM);
+			
 			SetTextColor(hDC, g_TextColor);
+			if (g_PortalMenuDesign != NULL && g_PortalMenuDesign->base != NULL)
+				SetTextColor(hDC, g_PortalMenuDesign->base->textcolor);
 		}
 	}
 	SetBkMode(hDC, OPAQUE);
@@ -1328,6 +1380,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 //#ifndef MENU_DRAW_V1
 	if (g_PortalMenuDesign != NULL && isArrow)
 	{
+		SetTextColor(hDC, g_TextColor);
 		SetBkMode(hDC, TRANSPARENT);
 		DWORD oldBkColor = GetBkColor(hDC);
 		SetBkColor(hDC, RGB(255,255,255));
@@ -1353,7 +1406,16 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 		DrawFrameControl(arrowDC, &tmpArrowR, DFC_MENU, DFCS_MENUARROW);
 
-		HBRUSH arrowBrush = CreateSolidBrush(RGB(0,0,0));
+		COLORREF arrowColor = RGB(0, 0, 0);
+		if (g_PortalMenuDesign->base != NULL)
+		{
+			arrowColor = g_PortalMenuDesign->base->textcolor;
+		}
+		if (ptDrawItem->itemState & ODS_SELECTED && g_PortalMenuDesign->selected != NULL)
+		{
+			arrowColor = g_PortalMenuDesign->selected->textcolor;
+		}
+		HBRUSH arrowBrush = CreateSolidBrush(arrowColor);
 
 		FillRect(fillDC, &tmpArrowR, arrowBrush);
 		BitBlt(hDC, tRectArrow.left, tRectArrow.top, arrowW, arrowH, fillDC, 0, 0, SRCINVERT);
@@ -1376,4 +1438,36 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 //#endif
 }
 
+/* ------------------------------------------------------------------------------------------------- */
+#ifdef DEV_MENU_DESIGN_SUBCLASSING_FOR_BORDER
+void OnNcPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
+{
+	HDC hdc;
+	RECT rect, rect2;
+
+	hdc = GetDC(hWnd);
+	// hdc = GetDCEx(hWnd, (HRGN)wParam, DCX_WINDOW | DCX_INTERSECTRGN);
+	GetWindowRect(hWnd, &rect);
+	rect.top -= 2;
+	rect.bottom += 4;
+	rect.left -= 2;
+	rect.right += 4;
+	//SetRect(&rect, 0, 0, rect.right-rect.left, rect.bottom-rect.top);
+	HBRUSH hBrush = CreateSolidBrush(g_menuBackColor);
+
+	if (g_PortalMenuDesign != NULL && g_PortalMenuDesign->base != NULL)
+	{
+		hBrush = CreateSolidBrush(g_PortalMenuDesign->base->background);
+	}
+	/*
+	GetWindowRect(hWnd, rect);
+	GetClientRect(hWnd, client);
+	CPoint offset(0, 0);
+	ClientToScreen(hWnd, &offset);
+	client.OffsetRect(offset - rect.TopLeft());
+	*/
+	FillRect(hdc, &rect, hBrush);
+	ReleaseDC(hWnd, hdc);
+}
+#endif
 /* ------------------------------------------------------------------------------------------------- */

@@ -42,4 +42,9 @@ void quitPortal();
 void reloadPortalConfig();
 void FlushMemory();
 
+#ifdef DEV_MENU_DESIGN_SUBCLASSING_FOR_BORDER
+void uninstallCallWndHook();
+void installCallWndHook();
+#endif
+
 #endif

@@ -455,6 +455,9 @@ void installHookKeyboard()
 	{
 		hookKeyboardHandle  = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC)hookKeyboard, g_hInst, 0);
 	}
+#ifdef DEV_MENU_DESIGN_SUBCLASSING_FOR_BORDER
+	installCallWndHook();
+#endif
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -467,6 +470,9 @@ void uninstallHookKeyboard()
 		hookKeyboardHandle = NULL;
 	}
 	overrideKeys.clear();
+#ifdef DEV_MENU_DESIGN_SUBCLASSING_FOR_BORDER
+	uninstallCallWndHook();
+#endif
 }
 
 /* ------------------------------------------------------------------------------------------------- */

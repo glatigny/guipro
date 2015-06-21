@@ -36,6 +36,7 @@
 //#define ICON_MANAGER_THREAD			// Loading image in a thread (experimental)
 //#define PORTAL_REFUSE_HOTKEY_ERROR	// Old rules for the loading of the configuration.
 //#define USE_GDI_MENU
+//#define DEV_MENU_DESIGN_SUBCLASSING_FOR_BORDER
 
 /* ------------------------------------------------------------------------------------------------- */
 

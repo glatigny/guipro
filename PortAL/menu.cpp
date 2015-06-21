@@ -89,12 +89,12 @@ PortalMenuDesign design2 = {
 	NULL
 };
 PortalMenuDesign design3 = {
-	1,			// border_size
+	0,			// border_size
 	0,			// border_round
 	0x3c3c3c,	// border_color
 	&cp2,		// base
-	&cp1,		// selected
-	NULL,		// background_gradiant
+	NULL,		// selected
+	&cg2,		// background_gradiant
 	PORTAL_ST_ALL,
 	&cg2
 };
@@ -1443,9 +1443,10 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 void OnNcPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
-	RECT rect, rect2;
+	RECT rect;
 
-	hdc = GetDC(hWnd);
+	//hdc = GetDC(hWnd);
+	hdc = GetDCEx(hWnd, (HRGN)wParam, DCX_WINDOW | DCX_INTERSECTRGN);
 	// hdc = GetDCEx(hWnd, (HRGN)wParam, DCX_WINDOW | DCX_INTERSECTRGN);
 	GetWindowRect(hWnd, &rect);
 	rect.top -= 2;

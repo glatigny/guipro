@@ -65,7 +65,7 @@ PortalMenuDesign* g_PortalMenuDesign = NULL;
 boolean g_PortalMenuDesignSystem = false;
 #endif
 
-ColorPair cp1 = { 0x000000, 0xaeaeae };
+ColorPair cp1 = { 0x000000, 0xFCF4ED };
 ColorPair cp2 = { 0xFFFFFF, 0x000000 };
 ColorGradient cg1 = { 1, 0xffffff, 0xf9d996 };
 ColorGradient cg2 = { 0, 0xf9d996, 0x000000 };
@@ -83,7 +83,7 @@ PortalMenuDesign design1 = {
 PortalMenuDesign design2 = {
 	1,			// border_size
 	0,			// border_round
-	0x3c3c3c,	// border_color
+	0xFDD2A8,	// border_color
 	NULL,		// base
 	&cp1,		// selected
 	NULL,		// background_gradiant
@@ -93,7 +93,7 @@ PortalMenuDesign design2 = {
 PortalMenuDesign design3 = {
 	0,			// border_size
 	0,			// border_round
-	0x3c3c3c,	// border_color
+	NULL,	// border_color
 	&cp2,		// base
 	NULL,		// selected
 	&cg2,		// background_gradiant
@@ -1291,12 +1291,13 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				tRect.left += g_PortalMenuDesign->border_size;
-				tRect.top += g_PortalMenuDesign->border_size;
-				tRect.right -= g_PortalMenuDesign->border_size;
-				tRect.bottom -= g_PortalMenuDesign->border_size;
+				fullRect = tRect;
+				fullRect.left += g_PortalMenuDesign->border_size;
+				fullRect.top += g_PortalMenuDesign->border_size;
+				fullRect.right -= g_PortalMenuDesign->border_size;
+				fullRect.bottom -= g_PortalMenuDesign->border_size;
 
-				FillRect(hDC, &tRect, hBrush);
+				FillRect(hDC, &fullRect, hBrush);
 			}
 		}
 //#endif
@@ -1374,22 +1375,18 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, item->icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
 		}
 #else
-		UINT icon_offset = 0;
-		if (ptDrawItem->itemState & ODS_SELECTED && g_PortalMenuDesign != NULL)
-			icon_offset = g_PortalMenuDesign->border_size;
-
 		if( item->iconid < PORTAL_ICON_RESOURCE )
 		{
 			HICON* icon = getIcon(item->iconid, wParam, lParam);
 			if( icon != NULL )
 			{
-				DrawIconEx(hDC, tRect.left + 8, tRect.top + 4 - icon_offset, *icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
+				DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, *icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
 			}
 		}
 		else if( item->iconid > PORTAL_ICON_RESOURCE )
 		{
 			HICON icon = LOADRESOURCEICON( item->iconid - PORTAL_ICON_RESOURCE);
-			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4 - icon_offset, icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
+			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
 		}
 #endif
 		DrawText(hDC, item->text, lngText, &tRectText, DT_LEFT | DT_BOTTOM);

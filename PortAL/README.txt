@@ -55,6 +55,32 @@ Theses nodes could work without any attribute but you can still override somes.
 ------------------------------------------------
 
 ------------------------
+Release: 1.5.0
+Date   : 2015-06-22
+------------------------
+
+* Addition of a skin system.
+* Addition of the event attribute.
+* Addition of the variables section to define internal variables.
+* Addition of the clipboard variables.
+* Addition of the %config% variable.
+* Improvement of the file notification system.
+* Fix memory leak when reloading the configuration.
+* Avoid error when a percent character is not forming a variable.
+* Avoir error when loading a config file with an empty group.
+
+------------------------
+Release: 1.4.7
+Date   : 2015-02-8
+------------------------
+
+* Stop quitting when there is an hotkey conflict.
+* Removing some alert boxes to use tray balloons instead.
+* Do not open the website with generic balloons, only with the about one.
+* Updating website url
+* Using the latest pugixml library
+
+------------------------
 Release: 1.4.6
 Date   : 2014-03-15
 ------------------------

@@ -126,6 +126,9 @@ int openConfig()
 			// Store the old configuration
 			PortalConfig* temp = g_portal;
 
+			// Clean the memory
+			delete(g_portal);
+
 			// change the config
 			g_portal = l_config;
 

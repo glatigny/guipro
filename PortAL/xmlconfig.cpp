@@ -22,6 +22,7 @@
 #include "xmlconfig.h"
 #include "config.h"
 #include "hotKey.h"
+#include "menu.h"
 #include "pugixml/pugixml.hpp"
 
 UINT defaultShowShortcut = 0x0;
@@ -48,6 +49,49 @@ UINT isTrue(const wchar_t* cTemp, UINT ret = 0x0)
 
 /* ------------------------------------------------------------------------------------------------- */
 
+COLORREF getColor(const wchar_t* cTemp)
+{
+	if (cTemp == NULL)
+		return 0;
+
+	if (cTemp[0] == L'#')
+		cTemp++;
+
+	if (wcslen(cTemp) == 6)
+		return wcstol(cTemp, NULL, 16);
+
+	if (wcslen(cTemp) == 3)
+	{
+		wchar_t lTemp[6];
+		lTemp[0] = lTemp[1] = cTemp[0];
+		lTemp[2] = lTemp[3] = cTemp[1];
+		lTemp[4] = lTemp[5] = cTemp[2];
+		return wcstol(lTemp, NULL, 16);
+	}
+	return _wtoi(cTemp);
+}
+/* ------------------------------------------------------------------------------------------------- */
+
+ColorPair* getColorPair(const wchar_t* cTemp)
+{
+	if (cTemp == NULL)
+		return NULL;
+
+	wchar_t* next_token = NULL;
+	wchar_t* token = wcstok_s((wchar_t*)cTemp, L" ,|:", &next_token);
+	if (token != NULL)
+	{
+		ColorPair* ret = (ColorPair*)malloc(sizeof(ColorPair));
+		ret->textcolor = getColor(token);
+		token = wcstok_s(NULL, L" ,|:", &next_token);
+		ret->background = getColor(token);
+		return ret;
+	}
+	return NULL;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
 void getGeneralOptions(PortalConfig* config, pugi::xml_node elem)
 {
 	if( isTrue(elem.attribute(L"defaultshell").value() ) ) 
@@ -56,6 +100,9 @@ void getGeneralOptions(PortalConfig* config, pugi::xml_node elem)
 	defaultShowShortcut = 0x0;
 	if( isTrue(elem.attribute(L"showshortcut").value() ) ) 
 		defaultShowShortcut = 0x1;
+
+	if( !elem.attribute(L"skin").empty() )
+		setMenuSkin(elem.attribute(L"skin").value());
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -318,6 +365,92 @@ void loadVariables(pugi::xml_node elem, PortalVariableVector* variables)
 
 /* ------------------------------------------------------------------------------------------------- */
 
+void loadMenuSkin(pugi::xml_node elem)
+{
+	clearMenuSkin();
+	g_PortalMenuDesign = (PortalMenuDesign*)malloc(sizeof(PortalMenuDesign));
+	memset(g_PortalMenuDesign, 0, sizeof(PortalMenuDesign));
+
+	const wchar_t* tmp = NULL;
+	ColorPair* cptmp = NULL;
+
+	if (!elem.attribute(L"base").empty())
+		g_PortalMenuDesign->base = getColorPair(elem.attribute(L"base").value());
+	
+	if (!elem.attribute(L"selected").empty())
+		g_PortalMenuDesign->selected = getColorPair(elem.attribute(L"selected").value());
+
+	if (!elem.attribute(L"edge").empty())
+	{
+		tmp = elem.attribute(L"edge").value();
+		if (isTrue(tmp))
+			g_PortalMenuDesign->edge = PORTAL_ST_ALL;
+		else if (!wcscmp(tmp, L"sel"))
+			g_PortalMenuDesign->edge = PORTAL_ST_SEL;
+		else if (!wcscmp(tmp, L"unsel"))
+			g_PortalMenuDesign->edge = PORTAL_ST_UNSEL;
+	}
+
+	pugi::xml_node item = elem.first_child();
+	while (item)
+	{
+		if (!wcscmp(item.name(), L"border"))
+		{
+			if (!item.attribute(L"size").empty())
+				g_PortalMenuDesign->border_size = _wtoi(item.attribute(L"size").value());
+
+			if (!item.attribute(L"round").empty())
+				g_PortalMenuDesign->border_round = _wtoi(item.attribute(L"round").value());
+
+			if (!item.attribute(L"color").empty())
+				g_PortalMenuDesign->border_color = getColor(item.attribute(L"round").value());
+		}
+		else if (!wcscmp(item.name(), L"background") && !item.attribute(L"color").empty())
+		{
+			cptmp = getColorPair(item.attribute(L"color").value());
+			if (cptmp != NULL)
+			{
+				g_PortalMenuDesign->background_gradiant = (ColorGradient*)malloc(sizeof(ColorGradient));
+				g_PortalMenuDesign->background_gradiant->start = cptmp->textcolor;
+				g_PortalMenuDesign->background_gradiant->end = cptmp->background;
+
+				g_PortalMenuDesign->background_gradiant->direction = 0;
+				if (!item.attribute(L"direction").empty() && !wcscmp(item.attribute(L"direction").value(), L"v"))
+					g_PortalMenuDesign->background_gradiant->direction = 1;
+
+				free(cptmp);
+			}
+			else
+				g_PortalMenuDesign->selected->background = getColor(item.attribute(L"color").value());
+
+		}
+		else if (!wcscmp(item.name(), L"icon"))
+		{
+			cptmp = getColorPair(item.attribute(L"color").value());
+			g_PortalMenuDesign->icon_gradiant = (ColorGradient*)malloc(sizeof(ColorGradient));
+			if (cptmp != NULL)
+			{
+				g_PortalMenuDesign->icon_gradiant->start = cptmp->textcolor;
+				g_PortalMenuDesign->icon_gradiant->end = cptmp->background;
+
+				g_PortalMenuDesign->icon_gradiant->direction = 0;
+				if (!item.attribute(L"direction").empty() && !wcscmp(item.attribute(L"direction").value(), L"v"))
+					g_PortalMenuDesign->icon_gradiant->direction = 1;
+
+				free(cptmp);
+			}
+			else
+			{
+				g_PortalMenuDesign->icon_gradiant->start = getColor(item.attribute(L"color").value());
+				g_PortalMenuDesign->icon_gradiant->end = g_PortalMenuDesign->icon_gradiant->start;
+			}
+		}
+		item = item.next_sibling();
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
 void pushHotkey(PortalConfig* config, PortalProg* l_prog)
 {
 	if (l_prog->hkey <= 0)
@@ -440,6 +573,10 @@ PortalConfig* loadConfig(wchar_t* filename)
 			if (!g_variables)
 				g_variables = new PortalVariableVector();
 			loadVariables(menu.first_child(), g_variables);
+		}
+		else if (!wcscmp(menu.name(), L"skin"))
+		{
+			loadMenuSkin(menu);
 		}
 
 		menu = menu.next_sibling();

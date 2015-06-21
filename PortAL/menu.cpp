@@ -39,6 +39,8 @@
  * https://code.google.com/p/tortoisesvn/source/browse/tags/version-1.5.0/src/TortoiseShell/ContextMenu.cpp
  * https://msdn.microsoft.com/en-us/library/bb757020.aspx?s=6 ( https://msdn.microsoft.com/en-us/library/bb756947.aspx )
  * http://www.codeproject.com/Articles/16529/Simple-Menus-That-Display-Icons-Minimalistic-Appro
+ *
+ * http://www.podetti.com/NewMenu/
  */
 #include <GdiPlus.h>
 #pragma comment (lib, "Gdiplus.lib")
@@ -126,8 +128,41 @@ void InitMenuVars()
 		Gdiplus::GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, NULL);
 	}
 #endif
+}
 
-	g_PortalMenuDesign = &design1;
+/* ------------------------------------------------------------------------------------------------- */
+
+void clearMenuSkin()
+{
+	if (g_PortalMenuDesign != NULL && g_PortalMenuDesign != &design1 && g_PortalMenuDesign != &design2 && g_PortalMenuDesign != &design3)
+	{
+		if (g_PortalMenuDesign->base != NULL)
+			free(g_PortalMenuDesign->base);
+		if (g_PortalMenuDesign->selected != NULL)
+			free(g_PortalMenuDesign->selected);
+		if (g_PortalMenuDesign->background_gradiant != NULL)
+			free(g_PortalMenuDesign->background_gradiant);
+		if (g_PortalMenuDesign->icon_gradiant != NULL)
+			free(g_PortalMenuDesign->icon_gradiant);
+		free(g_PortalMenuDesign);
+	}
+	g_PortalMenuDesign = NULL;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+void setMenuSkin(const wchar_t* name)
+{
+	clearMenuSkin();
+	if( (name == NULL) || (name[0] == L'\0') || !_wcsicmp(name, L"none") )
+		return;
+
+	if( !_wcsicmp(name, L"default") )
+		g_PortalMenuDesign = &design1;
+	else if( !_wcsicmp(name, L"flat") )
+		g_PortalMenuDesign = &design2;
+	else if (!_wcsicmp(name, L"black") || !_wcsicmp(name, L"dark"))
+		g_PortalMenuDesign = &design3;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -1348,13 +1383,13 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			HICON* icon = getIcon(item->iconid, wParam, lParam);
 			if( icon != NULL )
 			{
-				DrawIconEx(hDC, tRect.left + 8 - icon_offset, tRect.top + 4 - icon_offset, *icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
+				DrawIconEx(hDC, tRect.left + 8, tRect.top + 4 - icon_offset, *icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
 			}
 		}
 		else if( item->iconid > PORTAL_ICON_RESOURCE )
 		{
 			HICON icon = LOADRESOURCEICON( item->iconid - PORTAL_ICON_RESOURCE);
-			DrawIconEx(hDC, tRect.left + 8 - icon_offset, tRect.top + 4 - icon_offset, icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
+			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4 - icon_offset, icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
 		}
 #endif
 		DrawText(hDC, item->text, lngText, &tRectText, DT_LEFT | DT_BOTTOM);

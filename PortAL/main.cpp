@@ -123,6 +123,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (openConfig() == FALSE)
 			{
 				uninstallHookKeyboard();
+				clearMenuSkin();
 
 				MessageBox(g_hwndMain, L"Configuration file not found or invalid", ERR_MSGBOX_TITLE, NULL);
 
@@ -328,6 +329,7 @@ void quitPortal()
 	uninstallFileNotification();
 	unregisterHotkeys();
 	uninstallHookKeyboard();
+	clearMenuSkin();
 
 	delete( g_portal );
 	g_portal = NULL;

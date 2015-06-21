@@ -67,7 +67,7 @@ typedef struct _PortalMenuDesign
 	ColorPair* base;
 	ColorPair* selected;
 	ColorGradient* background_gradiant;
-	BOOLEAN edge;
+	BYTE edge;
 	ColorGradient* icon_gradiant;
 } PortalMenuDesign;
 
@@ -110,6 +110,9 @@ LRESULT OnMenuCharItem(HWND hWnd, WPARAM wParam, LPARAM lParam);
 void OnMeasureItem(HWND hWnd, WPARAM wParam, LPARAM lParam);
 void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam);
 void OnNcPaint(HWND hWnd, WPARAM wParam, LPARAM lParam);
+
+void clearMenuSkin();
+void setMenuSkin(const wchar_t* name);
 
 #ifdef USE_GDI_MENU
 HBITMAP IconToBitmapPARGB32(UINT uIcon);

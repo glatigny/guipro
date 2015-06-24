@@ -333,10 +333,10 @@ void quitPortal()
 
 	delete( g_portal );
 	g_portal = NULL;
-	
+
 	for(PortalProgVector::iterator i = g_portal_files.begin(); i != g_portal_files.end(); i++) { delete (*i); }
 	g_portal_files.clear();
-	
+
 	UnInitMenuVars();
 	DeleteTrayIcons();
 	PostQuitMessage(0);
@@ -346,6 +346,8 @@ void quitPortal()
 
 void reloadPortalConfig()
 {
+	uninstallFileNotification();
+
 	int ret = openConfig();
 	if( ret == TRUE )
 	{
@@ -356,6 +358,8 @@ void reloadPortalConfig()
 	{
 		ShowBalloon(WC_PORTAL_ABOUT_TEXT_TITLE, WC_PORTAL_RLDCONF_TEXT_ERR, 0, NIIF_ERROR);
 	}
+
+	installFileNotification();
 	FlushMemory();
 }
 

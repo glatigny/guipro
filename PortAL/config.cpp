@@ -317,7 +317,7 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 #define THREAD_FILENAME_SIZE 512
 	wchar_t* szBuff = NULL;
 	wchar_t* szPath = NULL;
-	
+
 	int n = 0;
 	if (lpthis != NULL) {
 		szBuff = (wchar_t*)lpthis;
@@ -335,7 +335,7 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 		while (n >= 0 && szBuff[n] != L'\\') n--;
 		szPath = (wchar_t*)malloc(sizeof(wchar_t) * (n + 1));
 		memset(szPath, 0, sizeof(wchar_t) * (n + 1));
-		lstrcpyn(szPath, szBuff, n+1);
+		lstrcpyn(szPath, szBuff, n + 1);
 	}
 #undef THREAD_FILENAME_SIZE
 
@@ -344,37 +344,50 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 
 	if (n == 0)
 		return false;
-
 	HANDLE g_hDir;
 	FILE_NOTIFY_INFORMATION Buffer[8];
-	DWORD BytesReturned;
+	memset(Buffer, 0, sizeof(Buffer));
+	DWORD BytesReturned = 0;
 	DWORD notifyFlags = FILE_NOTIFY_CHANGE_LAST_WRITE;
 
-	g_hDir = CreateFile( szPath,
+	g_hDir = CreateFile(szPath,
 		FILE_LIST_DIRECTORY,
-		FILE_SHARE_READ|FILE_SHARE_DELETE,
+		FILE_SHARE_READ | FILE_SHARE_DELETE,
 		NULL,
 		OPEN_EXISTING,
 		FILE_FLAG_BACKUP_SEMANTICS,
-		NULL 
+		NULL
 	);
 
 	if (szPath != NULL)
 		free(szPath);
 
-	while( ReadDirectoryChangesW( g_hDir, &Buffer, sizeof(Buffer), FALSE, notifyFlags, &BytesReturned, NULL, NULL) )
+	boolean modified = false;
+
+	while (!modified && ReadDirectoryChangesW(g_hDir, &Buffer, sizeof(Buffer), FALSE, notifyFlags, &BytesReturned, NULL, NULL))
 	{
-		int i = 0;
-		do
+		if (BytesReturned > 0)
 		{
-			if(! wcsncmp(Buffer[i].FileName, WC_PORTAL_XML_FILENAME, wcslen(WC_PORTAL_XML_FILENAME) ) )
+			int i = 0;
+			do
 			{
-				// Send the command via "PostMessage" because we are in a thread !
-				PostMessage(g_hwndMain, WM_COMMAND, IDM_RELOAD, NULL);
-			}
-		} while( !Buffer[++i].NextEntryOffset );
+				if (!modified && !wcsncmp(Buffer[i].FileName, WC_PORTAL_XML_FILENAME, wcslen(WC_PORTAL_XML_FILENAME)))
+				{
+					modified = true;
+					// Send the command via "PostMessage" because we are in a thread !
+					PostMessage(g_hwndMain, WM_COMMAND, IDM_RELOAD, NULL);
+				}
+			} while (!modified && !Buffer[++i].NextEntryOffset);
+		}
+
+		if (!modified)
+		{
+			BytesReturned = 0;
+			Sleep(500);
+		}
 	}
 
+	CloseHandle(g_hDir);
 	return false;
 }
 
@@ -382,6 +395,13 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 
 bool installFileNotification(wchar_t* xmlfilename)
 {
+	if (g_FileNotif_threadHandle != NULL)
+	{
+		DWORD dwWait = WaitForSingleObject(g_FileNotif_threadHandle, 0);
+		if (dwWait == WAIT_TIMEOUT)
+			g_FileNotif_threadHandle = NULL;
+	}
+
 	if( g_FileNotif_threadHandle == NULL )
 	{
 		wchar_t* filename = NULL;

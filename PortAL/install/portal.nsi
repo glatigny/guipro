@@ -52,9 +52,9 @@
 	!define MUI_FINISHPAGE_TEXT "PortAL was successfully installed"
 	!define MUI_FINISHPAGE_RUN "$INSTDIR\PortAL.exe"
 	!define MUI_FINISHPAGE_RUN_TEXT "Start PortAL"
-;	!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\doc\index.html"
-;	!define MUI_FINISHPAGE_SHOWREADME_TEXT "Read the documentation"
-;	!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+	!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\doc\index.html"
+	!define MUI_FINISHPAGE_SHOWREADME_TEXT "Read the documentation"
+	!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
 
 	!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of PortAL : Portable Application Launcher.$\r$\n$\r$\nIt is recommended that you close current $\"Portable Application Launcher$\" applications.$\r$\nThis setup doesn't need to reboot your computer.$\r$\n$\r$\nClick Next to continue."
 
@@ -175,8 +175,8 @@ PortalExeOk:
 	File ..\portal.xml
 	SetOverwrite on
 	
-;	SetOutPath "$INSTDIR\doc"
-;	File /r /x .svn ..\doc\*.*
+	SetOutPath "$INSTDIR\doc"
+	File /r /x .svn ..\doc\*.*
 
 	;Store installation folder
 	WriteRegStr HKCU "Software\GUIPro\PortAL" "" $INSTDIR
@@ -213,7 +213,7 @@ SectionGroup /e "Install On Computer"
 		CreateDirectory "$SMPROGRAMS\GUIPro\PortAL"
 		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\PortAL.lnk" "$INSTDIR\PortAL.exe" "" "$INSTDIR\PortAL.exe" 0
-;		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\documentation.lnk" "$INSTDIR\doc\index.html" "" "$INSTDIR\doc\index.html" 0
+		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\documentation.lnk" "$INSTDIR\doc\index.html" "" "$INSTDIR\doc\index.html" 0
 		CreateShortCut "$SMPROGRAMS\GUIPro\PortAL\edit config.lnk" "$WINDIR\notepad.exe" "$INSTDIR\portal.xml" "" 0
 	SectionEnd
 
@@ -263,7 +263,7 @@ Section "!un.Uninstall Portal" secUnRemove
 	Delete "$INSTDIR\Uninstall.exe"
 
 	RMDir /r "$SMPROGRAMS\GUIPro\PortAL"
-;	RMDir /r "$INSTDIR\doc"
+	RMDir /r "$INSTDIR\doc"
 	RMDir "$SMPROGRAMS\GUIPro"
 	RMDir "$INSTDIR"
 

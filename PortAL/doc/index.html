@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Language" content="en">
+	<meta name="description" content="guipro - Graphical User Interface Productivity">
+	<meta name="go-import" content="github.com/obsidev/guipro git https://github.com/obsidev/guipro.git">
+	<title>PortAL Configuration · obsidev/guipro Wiki</title>
+	<link href="style.css" media="all" rel="stylesheet" />
+</head>
+<body>
+<div class="markdown-body">
+<h2>The PortAL configuration file</h2>
+
+<p>The configuration file is a XML file named <strong>portal.xml</strong>.
+Portal automatically reload the configuration when the XML file is modified.
+By default PortAL will load the file in the same folder than the binary ; but you can create your personal configuration file</p>
+
+<pre><code>%localappdata%\GUIPro\portal.xml
+</code></pre>
+
+<p>On recent Windows Operating Systems, you need administrator rights to edit a file in the <code>Program Files</code> folder. Using a configuration in your local application data folder will be easier for you to edit and if you have administrator rights, you can customize the default configuration file for every user in the computer.</p>
+
+<h3>
+<a id="user-content-portal-main-element" class="anchor" href="#portal-main-element" aria-hidden="true"><span class="octicon octicon-link"></span></a>Portal main element</h3>
+
+<p>The configuration is a simple XML file but it has to follow some rules.</p>
+
+<div class="highlight highlight-XML"><pre>&lt;?<span class="pl-ent">xml</span><span class="pl-e"> version</span>=<span class="pl-s"><span class="pl-pds">"</span>1.0<span class="pl-pds">"</span></span><span class="pl-e"> encoding</span>=<span class="pl-s"><span class="pl-pds">"</span>UTF-8<span class="pl-pds">"</span></span>?&gt;
+&lt;<span class="pl-ent">portal</span>&gt;
+  <span class="pl-c">&lt;!-- Your configuration here --&gt;</span>
+&lt;/<span class="pl-ent">portal</span>&gt;</pre></div>
+
+<p>The file must contain a <code>portal</code> root element (and only one).</p>
+
+<p>This root element have two possible parameters.</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">portal</span> <span class="pl-e">defaultshell</span>=<span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span> <span class="pl-e">showshortcut</span>=<span class="pl-s"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span> <span class="pl-e">skin</span>=<span class="pl-s"><span class="pl-pds">"</span>default<span class="pl-pds">"</span></span>&gt;</pre></div>
+
+<ul>
+<li>
+<strong>defaultshell</strong> (<em>false</em>/<em>true</em>) indicates if you want to launch by default the applications using the windows shell or if you let PortAL execute the application.
+The windows shell has the possibility to open documents. If the "application" is a HTML file, it will open your default browser to open the page.</li>
+<li>
+<strong>showshortcut</strong> (<em>false</em>/<em>true</em>) indicates if you want to display (by default) the application shortcut in the PortAL menu.</li>
+<li>
+<strong>skin</strong> (<em>name</em>) indicate the preset skin that you want to use ; you can otherwise create your own skin (describe below in the documentation).
+There is for the moment three skins: <strong>default</strong>, <strong>flat</strong> and <strong>dark</strong>.
+If you do not specify a value, it will use the <em>fourth</em> skin based on your operation system configuration.</li>
+</ul>
+
+<p>The elements you will place directly in the <code>portal</code> root will be displayed in the system tray (systray).</p>
+
+<ul>
+<li>If you place a <code>group</code>, PortAL will display a menu when you will click on the systray icon.</li>
+<li>If you place an <code>app</code>, PortAL will launch directly the application when you will click on the systray icon.</li>
+</ul>
+
+<h3>
+<a id="user-content-generic-node" class="anchor" href="#generic-node" aria-hidden="true"><span class="octicon octicon-link"></span></a>Generic node</h3>
+
+<p>Every node (<code>group</code>, <code>app</code> or the special nodes) have the basic same parameters.
+They can also have some specific parameters, specially for the <code>app</code> node.</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span> <span class="pl-e">key</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> <span class="pl-e">mod</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> <span class="pl-e">over</span>=<span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span> <span class="pl-e">ico</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> <span class="pl-e">default</span>=<span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span> <span class="pl-e">showsc</span>=<span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span> <span class="pl-e">break</span>=<span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span>/&gt;</pre></div>
+
+<ul>
+<li>
+<strong>name</strong> (<em>text</em>) the display name of the node. If you place an <code>&amp;</code> (<code>&amp;amp;</code> to respect the XML convention) the next letter will become the accelerator key while browsing the menu.</li>
+<li>
+<strong>key</strong>/<strong>mod</strong> the hotkey (combination of the key and his modifier).
+Please check the HotKey part of his documentation for more details.</li>
+<li>
+<strong>over</strong> (<em>true</em>/<em>false</em>) is the option to activate the hotkey override.</li>
+<li>
+<strong>ico</strong> (<em>file path</em>) specify an icon for the group, which will be display in the systray or in the menu depending the context.</li>
+<li>
+<strong>default</strong> (<em>true</em>/<em>false</em>) the node will be display as the default item in the menu (in bold)</li>
+<li>
+<strong>showsc</strong> (<em>true</em>/<em>false</em>) override the default configuration for "show shortcut".</li>
+<li>
+<strong>break</strong> (<em>true</em>/<em>false</em>) display a menu break after the item (it will create a new column in the menu).</li>
+</ul>
+
+<p>Note that you can assign several hotkeys for a node (<code>group</code>, <code>app</code>, etc).</p>
+
+<h3>
+<a id="user-content-group" class="anchor" href="#group" aria-hidden="true"><span class="octicon octicon-link"></span></a>Group</h3>
+
+<p>A <code>group</code> contain other <code>group</code>/<code>app</code>/<em>special</em> nodes, PortAL display the group as a menu or a sub-menu.
+Here the minimal requirement for a group node:</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">group</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>Group name<span class="pl-pds">"</span></span>&gt;
+  <span class="pl-c">&lt;!-- group content --&gt;</span>
+&lt;/<span class="pl-ent">group</span>&gt;</pre></div>
+
+<p>If the group is directly under the <code>portal</code> root, it will be display in the systray.
+If the group is in another group, it will be display as a sub-menu of his parent group.</p>
+
+<p>By activating the hotkey (or several), PortAL will open the group and display it as a popup menu directly where your mouse is.</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">group</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>Group name<span class="pl-pds">"</span></span> <span class="pl-e">key</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> <span class="pl-e">mod</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> <span class="pl-e">over</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> <span class="pl-e">ico</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>&gt;
+  <span class="pl-c">&lt;!-- group content --&gt;</span>
+&lt;/<span class="pl-ent">group</span>&gt;</pre></div>
+
+<p>The <code>group</code> node have a special parameter which allow PortAL to automatically open a systray menu when the mouse is moving over the systray icon.</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">group</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>Group name<span class="pl-pds">"</span></span> <span class="pl-e">autoopen</span>=<span class="pl-s"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span>&gt;</pre></div>
+
+<p><em>This option is not recommended but it has been requested !</em></p>
+
+<h3>
+<a id="user-content-application" class="anchor" href="#application" aria-hidden="true"><span class="octicon octicon-link"></span></a>Application</h3>
+
+<p>The application is one of the most important node in the PortAL configuration. It allow you to launch an application, to open a file or even more !</p>
+
+<p>Here a generic <code>app</code> node:</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span> <span class="pl-e">exe</span>=<span class="pl-s"><span class="pl-pds">"</span>filepath<span class="pl-pds">"</span></span> <span class="pl-e">param</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> <span class="pl-e">path</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> /&gt;</pre></div>
+
+<ul>
+<li>
+<strong>exe</strong> (<em>text</em>) is the application you want to execute.</li>
+<li>
+<strong>param</strong> (<em>text</em> / <em>optional</em>) are the parameter that you will pass to the application.</li>
+<li>
+<strong>path</strong> (<em>text</em> / <em>optional</em>) is the execution path that you can override if you want to launch the application to start in a specific path (like a shell or a window explorer).</li>
+</ul>
+
+<p>By default, PortAL will load the icon of the <strong>exe</strong> to display it in the menu or the systray (depending the context).
+But you can override it ; like some other elements.</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>Name<span class="pl-pds">"</span></span> <span class="pl-e">exe</span>=<span class="pl-s"><span class="pl-pds">"</span>filepath<span class="pl-pds">"</span></span> <span class="pl-e">ico</span>=<span class="pl-s"><span class="pl-pds">"</span>filepath<span class="pl-pds">"</span></span> <span class="pl-e">shell</span>=<span class="pl-s"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span> <span class="pl-e">elevate</span>=<span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span> <span class="pl-e">events</span>=<span class="pl-s"><span class="pl-pds">"</span>start,exit<span class="pl-pds">"</span></span> /&gt;</pre></div>
+
+<ul>
+<li>
+<strong>shell</strong> (<em>true</em>/<em>false</em>) override the default configuration for "shell execute".</li>
+<li>
+<strong>autorun</strong> <em>deprecated</em> (<em>true</em>/<em>false</em>) will indicate that the application will be automatically launch when PortAL is executed (<em>like autoopen, this feature was a special request</em>). Please use <em>events start</em> instead.</li>
+<li>
+<strong>elevate</strong> (<em>true</em>/<em>false</em>) if you are not using the "shell" option, PortAL can launch the application with administrator elevation (depending your OS configuration, you might have a elevation approval alert box).</li>
+<li>
+<strong>events</strong> (<em>text</em>) specify the different events when the application will be executed. You can use several events separated by a comma.
+
+<ul>
+<li>start - launch when portal start.</li>
+<li>exit - launch when just portal quit.</li>
+<li>lock - <em>not yet available</em>
+</li>
+<li>unlock - <em>not yet available</em>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>More than launch an application, the <code>app</code> node can also browse a folder and list his content.</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">app</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>My documents<span class="pl-pds">"</span></span> <span class="pl-e">exe</span>=<span class="pl-s"><span class="pl-pds">"</span>%mydocs%<span class="pl-pds">"</span></span> <span class="pl-e">browse</span>=<span class="pl-s"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span> <span class="pl-e">param</span>=<span class="pl-s"><span class="pl-pds">"</span>*.*<span class="pl-pds">"</span></span> <span class="pl-e">path</span>=<span class="pl-s"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span> /&gt;</pre></div>
+
+<ul>
+<li>
+<strong>browse</strong> (<em>true</em>/<em>false</em>) activate the special browse feature.</li>
+<li>
+<strong>exe (browse)</strong> (<em>folder path</em>) indicates the folder that will be browse.</li>
+<li>
+<strong>param (browse)</strong> (<em>file extension filter</em>) filters the files which will be display in the menus.</li>
+<li>
+<strong>path (browse)</strong> (<em>true</em>/<em>empty value</em>) display or not the sub directories.</li>
+</ul>
+
+<h3>
+<a id="user-content-special-nodes" class="anchor" href="#special-nodes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Special nodes</h3>
+
+<h4>
+<a id="user-content-separator" class="anchor" href="#separator" aria-hidden="true"><span class="octicon octicon-link"></span></a>Separator</h4>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">sep</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>/&gt;</pre></div>
+
+<h4>
+<a id="user-content-about" class="anchor" href="#about" aria-hidden="true"><span class="octicon octicon-link"></span></a>About</h4>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">about</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>/&gt;</pre></div>
+
+<h4>
+<a id="user-content-reload-deprecated" class="anchor" href="#reload-deprecated" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reload (deprecated)</h4>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">reload</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>/&gt;</pre></div>
+
+<h4>
+<a id="user-content-quit" class="anchor" href="#quit" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quit</h4>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">quit</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>/&gt;</pre></div>
+
+<h3>
+<a id="user-content-variables" class="anchor" href="#variables" aria-hidden="true"><span class="octicon octicon-link"></span></a>Variables</h3>
+
+<p>The <code>variables</code> node is a special node under the <code>portal</code> root node.
+It allows you to create new variables which could be use afterwards in your configuration file.</p>
+
+<p>Here an example:</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">portal</span>&gt;
+  &lt;<span class="pl-ent">variables</span>&gt;
+    &lt;<span class="pl-ent">var</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>test<span class="pl-pds">"</span></span> <span class="pl-e">value</span>=<span class="pl-s"><span class="pl-pds">"</span>my test value<span class="pl-pds">"</span></span>/&gt;
+    &lt;<span class="pl-ent">var</span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>docs<span class="pl-pds">"</span></span> <span class="pl-e">value</span>=<span class="pl-s"><span class="pl-pds">"</span>%mydocs%/documents/<span class="pl-pds">"</span></span>/&gt;
+  &lt;<span class="pl-ent">variables</span>&gt;
+  &lt;<span class="pl-ent">group</span>&gt;
+     <span class="pl-c">&lt;!-- your config where you can use %test% or %docs% --&gt;</span>
+  &lt;/<span class="pl-ent">group</span>&gt;
+&lt;/<span class="pl-ent">portal</span>&gt;</pre></div>
+
+<h3>
+<a id="user-content-skin" class="anchor" href="#skin" aria-hidden="true"><span class="octicon octicon-link"></span></a>Skin</h3>
+
+<p>There is two way to set a skin in Portal ; with the <code>skin</code> attribute for the <code>portal</code> node (see above in the documentation) or using the <code>skin</code> node. That node allow you to create your own skin.</p>
+
+<p>The <code>skin</code> node have three possible attributes:</p>
+
+<ul>
+<li>
+<strong>base</strong> (<em>color pair</em>) defines the text color and the background color for all items.</li>
+<li>
+<strong>selected</strong> (<em>color pair</em>) define the text color and the background color for an item when selected.</li>
+<li>
+<strong>edge</strong> (<em>true</em> / <em>sel</em> / <em>unsel</em> / empty value) define if there is an edge display between the icon and the text.</li>
+</ul>
+
+<p>A <strong>color pair</strong> is formed by two colors separated by a comma or a space.
+A color should be describe in hexadecimal format, you can add a <code>#</code> before in order to read it easily.</p>
+
+<p>Please note that PortAL can understand color with 3 or 6 characters ; otherwise the black color will be returned.</p>
+
+<p>The <code>skin</code> node can have three child node ; which are all optional.</p>
+
+<ul>
+<li>
+<strong>border</strong> (<em>border node</em>) composed of a border <code>size</code>, border <code>round</code> and border <code>color</code>. A non-referenced element will have a 0 value.</li>
+<li>
+<strong>background</strong> (<em>gradiant node</em>) composed of a <code>color</code> pair and a <code>direction</code> (<em>h</em>/<em>v</em> ; optional).</li>
+<li>
+<strong>icon</strong> (<em>gradiant node</em>) composed of a <code>color</code> pair and a <code>direction</code> (<em>h</em>/<em>v</em> ; optional).</li>
+</ul>
+
+<p>Example (an ugly one):</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">portal</span>&gt;
+  &lt;<span class="pl-ent">skin</span> <span class="pl-e">base</span>=<span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> <span class="pl-e">selected</span>=<span class="pl-s"><span class="pl-pds">"</span>#000:#FCF4ED<span class="pl-pds">"</span></span> <span class="pl-e">edge</span>=<span class="pl-s"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">border</span> <span class="pl-e">size</span>=<span class="pl-s"><span class="pl-pds">"</span>1<span class="pl-pds">"</span></span> <span class="pl-e">round</span>=<span class="pl-s"><span class="pl-pds">"</span>5<span class="pl-pds">"</span></span> <span class="pl-e">color</span>=<span class="pl-s"><span class="pl-pds">"</span>#ffffff<span class="pl-pds">"</span></span>/&gt;
+    &lt;<span class="pl-ent">background</span> <span class="pl-e">color</span>=<span class="pl-s"><span class="pl-pds">"</span>#000000:#ffffff<span class="pl-pds">"</span></span> <span class="pl-e">direction</span>=<span class="pl-s"><span class="pl-pds">"</span>v<span class="pl-pds">"</span></span>/&gt;
+    &lt;<span class="pl-ent">icon</span> <span class="pl-e">color</span>=<span class="pl-s"><span class="pl-pds">"</span>#ffffff:#000000<span class="pl-pds">"</span></span>/&gt;
+  &lt;/<span class="pl-ent">skin</span>&gt;
+&lt;/<span class="pl-ent">portal</span>&gt;</pre></div>
+
+<h2>
+<a id="user-content-hotkeys" class="anchor" href="#hotkeys" aria-hidden="true"><span class="octicon octicon-link"></span></a>Hotkeys</h2>
+
+<h3>
+<a id="user-content-keys" class="anchor" href="#keys" aria-hidden="true"><span class="octicon octicon-link"></span></a>Keys</h3>
+
+<p>There is three differents way to configure a key in PortAL.</p>
+
+<ul>
+<li>A letter or a number like <code>A</code> or <code>1</code>
+</li>
+<li>A special name like <code>F1</code>, <code>NUM_0</code> or <code>SPACE</code>.</li>
+<li>The keycode number like <code>222</code> (which is the key just below "escape")</li>
+</ul>
+
+<p><a class="internal present" href="keybinding.html">View the special key binding</a></p>
+
+<h3>
+<a id="user-content-modifiers" class="anchor" href="#modifiers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Modifiers</h3>
+
+<p>By default, if you do not specialy a modifier, PortAL will use the <code>Win</code> key. So you have to use the <code>None</code> modifier if you do not want a modifier.
+The modifier value ask for letters in order to determine which modifier will be used for your hotkey.</p>
+
+<ul>
+<li>C - Ctrl</li>
+<li>A - Alt</li>
+<li>S - Shift</li>
+<li>W - Win</li>
+<li>Other letter - None
+Please note that PortAL need to uppercase to work properly.</li>
+</ul>
+
+<p><code>mod="C"</code> or <code>mod="Ctrl"</code> set the <code>Ctrl</code> modifier. You should press the Ctrl key with the another key configure with key value.</p>
+
+<p><code>mod="AS"</code> or <code>mod="Alt Shift"</code> set the <code>Alt and Shift</code> modifier. You should press the Alt key and Shift key with the another key configure with key value.</p>
+
+<p><code>mod="N"</code> is the standard to not use a modifier with the key.</p>
+
+<h3>
+<a id="user-content-override" class="anchor" href="#override" aria-hidden="true"><span class="octicon octicon-link"></span></a>Override</h3>
+
+<p>The override option allow to bypass the system and create an hotkey on a system hotkey.
+For example, <code>Win + E</code> is a generic system hotkey which start a file explorer.</p>
+
+<p>Using <code>over="true"</code>, you would override the system an catch the original hotkey with PortAL. </p>
+
+<h3>
+<a id="user-content-several-hotkeys-per-node" class="anchor" href="#several-hotkeys-per-node" aria-hidden="true"><span class="octicon octicon-link"></span></a>Several hotkeys per node</h3>
+
+<p>PortAL handle up to 10 hotkeys per node. You can use the combo <code>key</code>/<code>mod</code>/<code>over</code> but you can also use <code>key1</code>/<code>mod1</code>/<code>over1</code>, then <code>key2</code>/<code>mod2</code>/<code>over2</code>, then <code>key3</code>/<code>mod3</code>/<code>over3</code>, etc.
+Please note that if you do not configure <code>key2</code>, you won't be able to use <code>key3</code></p>
+
+<h2>
+<a id="user-content-variables-replacement" class="anchor" href="#variables-replacement" aria-hidden="true"><span class="octicon octicon-link"></span></a>Variables replacement</h2>
+
+<ul>
+<li>
+<code>%win%</code> - The windows directory (generally C:\windows\ or C:\WINNT\ for Windows 2000 systems).</li>
+<li>
+<code>%programfiles%</code> - The Program Files directories (generally C:\program files\ and c:\program files x86). Look into both directories on x64 platforms.</li>
+<li>
+<code>%programfiles86%</code> - The x86 program file folder while running under x64 platform.</li>
+<li>
+<code>%system%</code> - The System directory (generally C:\windows\system).</li>
+<li>
+<code>%system86%</code> - The x64 System directory while running under x64 platform.</li>
+<li>
+<code>%mydocs%</code> - My documents directory.</li>
+<li>
+<code>%mymusic%</code> - My Music directory.</li>
+<li>
+<code>%myvideo%</code> - My Videos directory.</li>
+<li>
+<code>%desktop%</code> - The Desktop directory.</li>
+<li>
+<code>%appdata%</code> - The Application Data directory.</li>
+<li>
+<code>%portal%</code> - The PortAL directory.</li>
+<li>
+<code>%config%</code> - The current open configuration file.</li>
+<li>
+<code>%clipboard%</code> - The current clipboard content.
+It supports text and file. When there are several files in the clipboard, it only paste the first one.</li>
+<li>
+<code>%clipboards%</code> - The current clipboard content.
+It supports text and files. When there are several files in the clipboard, it paste them all with a space as separator.</li>
+</ul>
+
+<p>PortAL also handle OS common variables and will perform some dynamic replacements.</p>
+
+<h2>
+<a id="user-content-icons" class="anchor" href="#icons" aria-hidden="true"><span class="octicon octicon-link"></span></a>Icons</h2>
+
+<p>When you specify an icon for a node, you can select a specific icon in the file.</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">app</span> <span class="pl-e">exe</span>=<span class="pl-s"><span class="pl-pds">"</span>%win%\explorer.exe<span class="pl-pds">"</span></span> <span class="pl-e">ico</span>=<span class="pl-s"><span class="pl-pds">"</span>%win%\explorer.exe<span class="pl-pds">"</span></span>/&gt;</pre></div>
+
+<p>Will use the default explorer icon ; at this moment the <em>ico</em> is optional because PortAL will by default take the icon from the <em>exe</em>.</p>
+
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">app</span> <span class="pl-e">exe</span>=<span class="pl-s"><span class="pl-pds">"</span>%win%\explorer.exe<span class="pl-pds">"</span></span> <span class="pl-e">ico</span>=<span class="pl-s"><span class="pl-pds">"</span>%win%\explorer.exe,6<span class="pl-pds">"</span></span>/&gt;</pre></div>
+
+<p>will use the 6° icon in the explorer binary file (in this case it is the full recycle bin icon).</p>
+
+</div>
+</body>
+</html>

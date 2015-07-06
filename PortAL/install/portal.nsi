@@ -178,9 +178,6 @@ PortalExeOk:
 	SetOutPath "$INSTDIR\doc"
 	File /r /x .svn ..\doc\*.*
 
-	;Store installation folder
-	WriteRegStr HKCU "Software\GUIPro\PortAL" "" $INSTDIR
-
 SectionEnd
 
 SectionGroup /e "Install On Computer"
@@ -190,6 +187,9 @@ SectionGroup /e "Install On Computer"
 		SectionIn 2 3
 		;Create uninstaller
 		WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+		;Store installation folder
+		WriteRegStr HKCU "Software\GUIPro\PortAL" "" $INSTDIR
 		
 		WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" 		"Portable Application Launcher"
 		WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" 	"$\"$INSTDIR\Uninstall.exe$\""
@@ -218,7 +218,6 @@ SectionGroup /e "Install On Computer"
 	SectionEnd
 
 SectionGroupEnd
-
 
 Function .onInit
 	SetRegView 64

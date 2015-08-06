@@ -991,22 +991,22 @@ void OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		WIN32_FIND_DATA findData;
 		HANDLE find = INVALID_HANDLE_VALUE;
 
-		memset(search,0,sizeof(wchar_t)*MAX_FILE_LEN);
-		memset(&findData,0,sizeof(WIN32_FIND_DATA));
+		memset(search, 0, sizeof(wchar_t) * MAX_FILE_LEN);
+		memset(&findData, 0 ,sizeof(WIN32_FIND_DATA));
 
-		wcscpy_s(search,p_menu->progExe);
-		wcscat_s(search,L"\\");
+		wcscpy_s(search, p_menu->progExe);
+		wcscat_s(search, L"\\");
 		if( subDirectory )
 		{
-			wcscat_s(search,L"*");
+			wcscat_s(search, L"*");
 		}
 		else if( p_menu->progParam )
 		{
-			wcscat_s(search,p_menu->progParam);
+			wcscat_s(search, p_menu->progParam);
 		}
 		else
 		{
-			wcscat_s(search,L"*.*");
+			wcscat_s(search, L"*.*");
 		}
 
 		find = FindFirstFileW(search, &findData);
@@ -1020,7 +1020,7 @@ void OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				display = false;
 				if( !(findData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN ) )
 				{
-					if(findData.dwFileAttributes & (FILE_ATTRIBUTE_NORMAL|FILE_ATTRIBUTE_ARCHIVE))
+					if(findData.dwFileAttributes & (FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_ARCHIVE))
 					{
 						display = true;
 					}

@@ -84,7 +84,7 @@ wchar_t* getConfigurationFilename()
 
 	if (xmlfilename == NULL)
 	{
-		xmlfilename = specialDirs(L"%appdata%\\GUIPro\\"WC_PORTAL_XML_FILENAME);
+		xmlfilename = specialDirs(L"%appdata%\\GUIPro\\" WC_PORTAL_XML_FILENAME);
 		if (!fileExists(xmlfilename))
 		{
 			free(xmlfilename);
@@ -94,7 +94,7 @@ wchar_t* getConfigurationFilename()
 
 	if (xmlfilename == NULL)
 	{
-		xmlfilename = specialDirs(L"%portal%\\"WC_PORTAL_XML_FILENAME);
+		xmlfilename = specialDirs(L"%portal%\\" WC_PORTAL_XML_FILENAME);
 	}
 
 	return xmlfilename;

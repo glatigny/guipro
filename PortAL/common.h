@@ -84,7 +84,7 @@
 #define WC_PORTAL_QUIT_ITEM_TEXT		L"Quit"
 
 #define PORTAL_VERSION					L"1.5.0"
-#define WC_PORTAL_ABOUT_TEXT_TITLE		L"PortAL "PORTAL_VERSION
+#define WC_PORTAL_ABOUT_TEXT_TITLE		L"PortAL " PORTAL_VERSION
 #define WC_PORTAL_ABOUT_TEXT			L"Portable Application Launcher\nhttp://obsidev.github.io/guipro/"
 
 #define WC_PORTAL_RLDCONF_TEXT_OK		L"Configuration reloaded with success"

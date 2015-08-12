@@ -51,7 +51,7 @@ void launch(PortalProg* prog)
 		return;
 	}
 
-	bool relative = (s_szConfig[1] != ':');
+	bool relative = (s_szConfig[1] != ':') && wcsncmp(s_szConfig, L"app#", 4);
 
 	if( relative )
 	{
@@ -126,6 +126,10 @@ void launch(PortalProg* prog)
 		else
 			ShellExecute(g_hwndMain, TEXT("open"), szBuff, szParam, szDirName, SW_SHOW);
 	}
+	else if (!wcsncmp(szBuff, L"app#", 4))
+	{
+		launchRTApp(&szBuff[4]);
+	}
 	else
 	{
 		STARTUPINFO si = { sizeof(STARTUPINFO) };
@@ -172,6 +176,56 @@ void launch(PortalProg* prog)
 			CloseHandle(pi.hProcess);
 		}
 	}
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+HRESULT launchRTApp(wchar_t* app)
+{
+#ifndef _USING_V110_SDK71_ // WIN8_SUPPORT
+	HRESULT hr = E_FAIL;
+	hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+	if (!SUCCEEDED(hr))
+		return hr;
+
+	wchar_t* app_name = app;
+#define IS_APP(a, b) if(!_wcsicmp(app, L ## a)) app_name = L ## b
+
+	IS_APP("edge", "Microsoft.MicrosoftEdge_8wekyb3d8bbwe!MicrosoftEdge");
+else IS_APP("reader", "Microsoft.Reader_8wekyb3d8bbwe!Microsoft.Reader");
+	else IS_APP("windows.photos", "Microsoft.Windows.Photos_8wekyb3d8bbwe!App");
+	else IS_APP("windows.alarms", "Microsoft.WindowsAlarms_8wekyb3d8bbwe!App");
+	else IS_APP("windows.calculator", "Microsoft.WindowsCalculator_8wekyb3d8bbwe!App");
+	else IS_APP("windows.maps", "Microsoft.WindowsMaps_8wekyb3d8bbwe!App");
+	else IS_APP("windows.scan", "Microsoft.WindowsScan_8wekyb3d8bbwe!App");
+	else IS_APP("windows.store", "Microsoft.WindowsStore_8wekyb3d8bbwe!App");
+	else IS_APP("zune.music", "Microsoft.ZuneMusic_8wekyb3d8bbwe!Microsoft.ZuneMusic");
+	else IS_APP("zune.video", "Microsoft.ZuneVideo_8wekyb3d8bbwe!Microsoft.ZuneVideo");
+
+#undef IS_APP
+
+	CComPtr<IApplicationActivationManager> activationManager;
+	//	hr = CoCreateInstance(CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&activationManager));
+	hr = CoCreateInstance(CLSID_ApplicationActivationManager, NULL, CLSCTX_LOCAL_SERVER, IID_IApplicationActivationManager, (LPVOID*)&activationManager);
+
+	if (SUCCEEDED(hr))
+	{
+		hr = CoAllowSetForegroundWindow(activationManager, NULL);
+	}
+
+	if (SUCCEEDED(hr))
+	{
+		DWORD newProcessId;
+		hr = activationManager->ActivateApplication(app_name, NULL, AO_NONE, &newProcessId);
+	}
+
+	CoUninitialize();
+	FlushMemory();
+
+	return hr;
+#else /* _USING_V110_SDK71_ / WIN8_SUPPORT */
+	return 0;
+#endif /* _USING_V110_SDK71_ / WIN8_SUPPORT */
 }
 
 /* ------------------------------------------------------------------------------------------------- */

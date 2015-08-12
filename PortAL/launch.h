@@ -24,7 +24,20 @@
 #include <windows.h>
 #include "portalConfig.h"
 
+#ifndef _USING_V110_SDK71_ // WIN8_SUPPORT
+
+#include <atlbase.h>
+//#include <atlstr.h>
+#include <Shobjidl.h>
+
+#else
+
+typedef long HRESULT;
+
+#endif /* _USING_V110_SDK71_ / WIN8_SUPPORT */
+
 void launch(PortalProg* prog);
 void fireEvent(UINT evt);
+HRESULT launchRTApp(wchar_t* app);
 
 #endif /* LAUNCH_H */

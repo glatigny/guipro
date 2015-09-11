@@ -1,7 +1,7 @@
 /*
-	PortAL - GUIPro Project ( http://obsidev.github.io/guipro/ )
+	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
+	Author : Glatigny Jérôme <jerome@darksage.fr>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -27,5 +27,5 @@
 
 void checkGuiproVersion() {
 	// http://sourceforge.net/api/file/index/project-id/190801/mtime/desc/limit/20/rss?path=Portal
-	ShellExecute(g_hwndMain, TEXT("open"), L"http://obsidev.github.io/guipro/", NULL, NULL, SW_SHOW);
+	ShellExecute(g_hwndMain, TEXT("open"), L"http://glatigny.github.io/guipro/", NULL, NULL, SW_SHOW);
 }

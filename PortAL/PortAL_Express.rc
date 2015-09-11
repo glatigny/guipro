@@ -63,15 +63,14 @@ BEGIN
         BLOCK "040c04b0"
         BEGIN
             VALUE "Comments", "Glatigny Jerome"
-            VALUE "CompanyName", "Obsidev - http://www.obsidev.com"
             VALUE "FileDescription", "Portable Application Launcher - GuiPro project"
-            VALUE "FileVersion", "1.4.7.0"
+            VALUE "FileVersion", "1.5.0.0"
             VALUE "InternalName", "PortAL"
             VALUE "LegalCopyright", "GPL 2007-2015"
-            VALUE "LegalTrademarks", "GuiPro project - http://obsidev.github.io/guipro/"
+            VALUE "LegalTrademarks", "GuiPro project - http://glatigny.github.io/guipro/"
             VALUE "OriginalFilename", "PortAL.exe"
             VALUE "ProductName", "Portable Application Launcher"
-            VALUE "ProductVersion", "1.4.7.0"
+            VALUE "ProductVersion", "1.5.0.0"
         END
     END
     BLOCK "VarFileInfo"

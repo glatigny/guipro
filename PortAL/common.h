@@ -1,7 +1,7 @@
 /*
-	PortAL - GUIPro Project ( http://obsidev.github.io/guipro/ )
+	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
+	Author : Glatigny Jérôme <jerome@darksage.fr>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@
 
 #define PORTAL_VERSION					L"1.5.0"
 #define WC_PORTAL_ABOUT_TEXT_TITLE		L"PortAL " PORTAL_VERSION
-#define WC_PORTAL_ABOUT_TEXT			L"Portable Application Launcher\nhttp://obsidev.github.io/guipro/"
+#define WC_PORTAL_ABOUT_TEXT			L"Portable Application Launcher\nhttp://glatigny.github.io/guipro/"
 
 #define WC_PORTAL_RLDCONF_TEXT_OK		L"Configuration reloaded with success"
 #define WC_PORTAL_RLDCONF_TEXT_ERR		L"Error while reloading the configuration"

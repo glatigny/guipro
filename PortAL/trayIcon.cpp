@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny JÃ©rÃ´me <jerome@darksage.fr>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -50,8 +50,8 @@ BOOL DeleteTrayIcon(HWND hwnd, UINT uID)
 {
 	NOTIFYICONDATA nid; 
 	nid.cbSize = sizeof(NOTIFYICONDATA);
-    nid.hWnd = hwnd;
-    nid.uID = uID;
+	nid.hWnd = hwnd;
+	nid.uID = uID;
 	return(Shell_NotifyIcon(NIM_DELETE, &nid));
 }
 
@@ -62,8 +62,8 @@ BOOL ReloadTrayIcon(HWND hwnd, UINT uID, HICON hIcon, PCWSTR szTip)
 	NOTIFYICONDATA nid; 
 	nid.cbSize = sizeof(NOTIFYICONDATA);
 	nid.uFlags = NIF_STATE;
-    nid.hWnd = hwnd;
-    nid.uID = uID;
+	nid.hWnd = hwnd;
+	nid.uID = uID;
 	if( hIcon != NULL )
 	{
 		nid.hIcon = hIcon;
@@ -81,7 +81,16 @@ BOOL ReloadTrayIcon(HWND hwnd, UINT uID, HICON hIcon, PCWSTR szTip)
 
 void ShowAbout(int pos)
 {
-	ShowBalloon(WC_PORTAL_ABOUT_TEXT_TITLE, WC_PORTAL_ABOUT_TEXT, pos, NIIF_USER);
+	DWORD type = NIIF_USER;
+	if(windowsVersion >= WINVER_XP)
+	{
+		type |= NIIF_NOSOUND;
+	}
+	if(windowsVersion >= WINVER_VISTA)
+	{
+		type |= NIIF_LARGE_ICON;
+	}
+	ShowBalloon(WC_PORTAL_ABOUT_TEXT_TITLE, WC_PORTAL_ABOUT_TEXT, pos, type);
 	g_aboutbaloon = 1;
 }
 
@@ -108,18 +117,30 @@ void ShowBalloon(wchar_t* title, wchar_t* text, int pos, DWORD type)
 		else
 			nid.dwInfoFlags = type;
 		// Display 10 seconds
-		nid.uTimeout = 15;
+		nid.uTimeout = 10;
 	}
 	else
 	{
 		nid.cbSize = sizeof(NOTIFYICONDATA);
 		nid.dwInfoFlags = type;
 		nid.hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON));
+		nid.uVersion = NOTIFYICON_VERSION;
+		
+		if(windowsVersion >= WINVER_VISTA)
+		{
+			nid.uVersion = NOTIFYICON_VERSION_4;
+			nid.hBalloonIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON));
+		}
 	}
 
 	nid.hWnd = g_hwndMain;
 	nid.uID = IDI_MAIN_ICON + pos;
 	nid.uFlags = NIF_INFO;
+	
+	if(windowsVersion >= WINVER_VISTA)
+	{
+		nid.uFlags |= NIF_SHOWTIP;
+	}
 	
 	ZeroMemory(nid.szInfoTitle, SIZEOF_ARRAY(nid.szInfoTitle));
 	ZeroMemory(nid.szInfo, SIZEOF_ARRAY(nid.szInfo));

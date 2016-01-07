@@ -67,6 +67,7 @@ wchar_t* getConfigurationFilename()
 	wchar_t* xmlfilename = NULL;
 	int args;
 	wchar_t** argList = CommandLineToArgvW(GetCommandLineW(), &args);
+	bool lookAppData = true;
 	if (argList != NULL)
 	{
 		for (int i = 1; i < args; i++)
@@ -78,11 +79,16 @@ wchar_t* getConfigurationFilename()
 				if (i < args && xmlfilename == NULL)
 					xmlfilename = specialDirs(argList[i]);
 			}
+
+			if (!wcsncmp(n, L"-local", 6))
+			{
+				lookAppData = false;
+			}
 		}
 		LocalFree(argList);
 	}
 
-	if (xmlfilename == NULL)
+	if (xmlfilename == NULL && lookAppData)
 	{
 		xmlfilename = specialDirs(L"%appdata%\\GUIPro\\" WC_PORTAL_XML_FILENAME);
 		if (!fileExists(xmlfilename))

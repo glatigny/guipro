@@ -83,7 +83,7 @@
 #define WC_PORTAL_ABOUT_ITEM_TEXT		L"About"
 #define WC_PORTAL_QUIT_ITEM_TEXT		L"Quit"
 
-#define PORTAL_VERSION					L"1.5.0"
+#define PORTAL_VERSION					L"1.5.1"
 #define WC_PORTAL_ABOUT_TEXT_TITLE		L"PortAL " PORTAL_VERSION
 #define WC_PORTAL_ABOUT_TEXT			L"Portable Application Launcher\nhttp://glatigny.github.io/guipro/"
 

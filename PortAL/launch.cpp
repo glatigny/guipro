@@ -57,7 +57,8 @@ void launch(PortalProg* prog)
 	{
 		n = GetModuleFileName(g_hInst, szBuff, nMaxLen);
 		if (n > 0 && n < nMaxLen) {
-			while (n >= 0 && szBuff[n] != L'\\') n--;
+			while (n >= 0 && szBuff[n] != L'\\')
+				n--;
 			lstrcpyn(szBuff + n + 1, s_szConfig, SIZEOF_ARRAY(szBuff) - (int)n);
 		}
 	}
@@ -115,7 +116,8 @@ void launch(PortalProg* prog)
 	else
 	{
 		n = wcslen(szBuff);
-		while( n >= 0 && (szBuff[n] != L'\\')) n--;
+		while( n >= 0 && (szBuff[n] != L'\\'))
+			n--;
 		wcsncpy_s(szDirName, szBuff, n + 1);
 	}
 
@@ -192,7 +194,7 @@ HRESULT launchRTApp(wchar_t* app)
 #define IS_APP(a, b) if(!_wcsicmp(app, L ## a)) app_name = L ## b
 
 	IS_APP("edge", "Microsoft.MicrosoftEdge_8wekyb3d8bbwe!MicrosoftEdge");
-else IS_APP("reader", "Microsoft.Reader_8wekyb3d8bbwe!Microsoft.Reader");
+	else IS_APP("reader", "Microsoft.Reader_8wekyb3d8bbwe!Microsoft.Reader");
 	else IS_APP("windows.photos", "Microsoft.Windows.Photos_8wekyb3d8bbwe!App");
 	else IS_APP("windows.alarms", "Microsoft.WindowsAlarms_8wekyb3d8bbwe!App");
 	else IS_APP("windows.calculator", "Microsoft.WindowsCalculator_8wekyb3d8bbwe!App");

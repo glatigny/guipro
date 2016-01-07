@@ -28,6 +28,15 @@
 #define NIIF_USER       0x00000004
 #endif
 
+#ifndef NIIF_LARGE_ICON
+#define NIIF_LARGE_ICON 0x00000020
+#endif
+
+#ifndef NIF_SHOWTIP
+#define NIF_SHOWTIP     0x00000080
+#endif
+
+
 /* ------------------------------------------------------------------------------------------------- */
 
 BOOL AddTrayIcon(HWND hwnd, UINT uID, HICON hIcon, PCWSTR szTip)
@@ -126,11 +135,13 @@ void ShowBalloon(wchar_t* title, wchar_t* text, int pos, DWORD type)
 		nid.hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON));
 		nid.uVersion = NOTIFYICON_VERSION;
 		
+#if (NTDDI_VERSION >= NTDDI_VISTA)
 		if(windowsVersion >= WINVER_VISTA)
 		{
 			nid.uVersion = NOTIFYICON_VERSION_4;
 			nid.hBalloonIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON));
 		}
+#endif
 	}
 
 	nid.hWnd = g_hwndMain;

@@ -26,6 +26,6 @@
 /* ------------------------------------------------------------------------------------------------- */
 
 void checkGuiproVersion() {
-	// http://sourceforge.net/api/file/index/project-id/190801/mtime/desc/limit/20/rss?path=Portal
-	ShellExecute(g_hwndMain, TEXT("open"), L"http://glatigny.github.io/guipro/", NULL, NULL, SW_SHOW);
+	// https://api.github.com/repos/glatigny/guipro/releases
+	ShellExecute(g_hwndMain, TEXT("open"), L"https://glatigny.github.io/guipro/", NULL, NULL, SW_SHOW);
 }

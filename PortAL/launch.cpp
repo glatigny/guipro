@@ -185,6 +185,9 @@ void launch(PortalProg* prog)
 HRESULT launchRTApp(wchar_t* app)
 {
 #ifndef _USING_V110_SDK71_ // WIN8_SUPPORT
+	if (windowsVersion < WINVER_8)
+		return E_FAIL;
+
 	HRESULT hr = E_FAIL;
 	hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 	if (!SUCCEEDED(hr))

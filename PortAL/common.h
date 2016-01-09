@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny JÃ©rÃ´me <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@darksage.fr>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #  define _WIN32_IE 0x0800 // IE 8
 #endif
 
-#else  /* _USING_V110_SDK71_ / WIN8_SUPPORT */
+#else /* _USING_V110_SDK71_ / WIN8_SUPPORT */
 
 #ifndef _WIN32_WINNT
 #  define _WIN32_WINNT 0x0501 // Windows XP

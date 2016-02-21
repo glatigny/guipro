@@ -18,11 +18,11 @@ More details about the PortAL configuration in the [Wiki](https://github.com/gla
 
 When some tools exists to move the windows by pressing a key and clicking with the mouse ; HulK provide a set of features to help the management of the windows.
 
-* The "Alt + F4" shortcut is not very good for the hand ; while using "Win + Esc" is easier and faster.
-* There is not shortcut to minimize a window, so HulK propose to use the "Win + ~" one (and "Win + ²" for Azerty keyboards).
+* The "Alt + F4" shortcut is not very good for the hand while using "Win + Esc" is easier and faster.
+* There is no shortcut to minimize a window, so HulK propose to use "Win + ~" one (and "Win + ²" for Azerty keyboards).
 * HulK also allow to resize windows using the right button of the mouse (when the left button allow to move).
 * It also provide features to minimize the windows into the systray ; using a shortcut or by clicking with the right mouse button on the "min" window icon.
-* If you do not like the systray to really hide a window, HulK can minimize a window in his systray menu ; so you can launch a program and completly hide it from you desktop.
+* If you do not like the systray to really hide a window, HulK can minimize a window in his systray menu so you can launch a program and completly hide it from you desktop.
 
 ## Volume Changer - _VulCan_
 

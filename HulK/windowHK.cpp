@@ -1,7 +1,7 @@
 /*
-	HulK - GUIPro Project ( http://obsidev.github.io/guipro/ )
+	HulK - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
+	Author : Glatigny Jérôme <jerome@darksage.fr>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ void closeWindow( HWND p_hwnd )
 
 void maximizeWindow( HWND p_hwnd )
 {
-	DWORD dwStyle = GetWindowLongPtr(p_hwnd, GWL_STYLE);
+	LONG_PTR dwStyle = GetWindowLongPtr(p_hwnd, GWL_STYLE);
 	if( dwStyle & WS_MAXIMIZE )
 	{
 		SendMessage(p_hwnd, WM_SYSCOMMAND, SC_RESTORE, NULL);

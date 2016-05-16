@@ -1,7 +1,7 @@
 /*
-	HulK - GUIPro Project ( http://obsidev.github.io/guipro/ )
+	HulK - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
+	Author : Glatigny Jérôme <jerome@darksage.fr>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 */
 
 #include "mouse.h"
+#include "keyboard.h"
 #include "main.h"
 #include "hotKey.h"
 #include "windowHK.h"
@@ -101,8 +102,8 @@ __declspec(dllexport) LRESULT CALLBACK hookMouse(int nCode, WPARAM wParam, LPARA
 
 BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
-	DWORD dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
-	DWORD dwStyleEx = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+	LONG_PTR dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
+	LONG_PTR dwStyleEx = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
 	if( (dwStyle & WS_VISIBLE) && !(dwStyleEx & WS_EX_TOPMOST) )
 	{
@@ -143,8 +144,9 @@ UINT mouseEvent(UINT p_event, bool status, LPARAM lParam)
 		{
 			if( MOUSE_OPTION(DRAG, ALT) || MOUSE_OPTION(DRAG, WIN) )
 			{
-				keybd_event( VK_RSHIFT, 0x36, KEYEVENTF_EXTENDEDKEY | 0, 0 );
-				keybd_event( VK_RSHIFT, 0x36, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0 );
+				key_press_code(VK_RSHIFT);
+				//keybd_event( VK_RSHIFT, 0x36, KEYEVENTF_EXTENDEDKEY | 0, 0 );
+				//keybd_event( VK_RSHIFT, 0x36, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0 );
 			}
 
 			if( status )
@@ -171,8 +173,9 @@ UINT mouseEvent(UINT p_event, bool status, LPARAM lParam)
 		{
 			if( MOUSE_OPTION(RESIZE, ALT) || MOUSE_OPTION(RESIZE, WIN) )
 			{
-				keybd_event( VK_RSHIFT, 0x36, KEYEVENTF_EXTENDEDKEY | 0, 0 );
-				keybd_event( VK_RSHIFT, 0x36, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0 );
+				key_press_code(VK_RSHIFT);
+				//keybd_event( VK_RSHIFT, 0x36, KEYEVENTF_EXTENDEDKEY | 0, 0 );
+				//keybd_event( VK_RSHIFT, 0x36, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0 );
 			}
 
 			if( status )
@@ -195,12 +198,15 @@ UINT mouseEvent(UINT p_event, bool status, LPARAM lParam)
 			(KEYSTATE(LSHIFT) == MOUSE_OPTION(SWITCH, SHIFT)) && 
 			(KEYSTATE(LWIN) == MOUSE_OPTION(SWITCH, WIN)))
 		{
-			if( MOUSE_OPTION(SWITCH, ALT) )
-				keybd_event(VK_LMENU, 0, KEYEVENTF_KEYUP, 0);
+			if (MOUSE_OPTION(SWITCH, ALT))
+				//keybd_event(VK_LMENU, 0, KEYEVENTF_KEYUP, 0);
+				key_send_code(VK_LMENU, KEYEVENTF_KEYUP);
 			if( MOUSE_OPTION(SWITCH, CONTROL) )
-				keybd_event(VK_LCONTROL, 0, KEYEVENTF_KEYUP, 0);
+				//keybd_event(VK_LCONTROL, 0, KEYEVENTF_KEYUP, 0);
+				key_send_code(VK_LCONTROL, KEYEVENTF_KEYUP);
 			if( MOUSE_OPTION(SWITCH, SHIFT) )
-				keybd_event(VK_LSHIFT, 0, KEYEVENTF_KEYUP, 0);
+				//keybd_event(VK_LSHIFT, 0, KEYEVENTF_KEYUP, 0);
+				key_send_code(VK_LSHIFT, KEYEVENTF_KEYUP);
 
 			change_current_window(lParam);
 			ret = 1;
@@ -214,7 +220,7 @@ UINT mouseEvent(UINT p_event, bool status, LPARAM lParam)
 	{
 		MOUSEHOOKSTRUCT ms = *((MOUSEHOOKSTRUCT *)lParam);
 		HWND destHwnd = WindowFromPoint(ms.pt);
-		DWORD dw;
+		LRESULT dw;
 
 		dw = SendMessage(destHwnd, WM_NCHITTEST, 0, MAKELPARAM((WORD)ms.pt.x, (WORD)ms.pt.y));
 		if (dw == HTMINBUTTON)

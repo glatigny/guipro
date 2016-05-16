@@ -45,6 +45,7 @@ HWND g_deskWindow	= NULL;
 HWND g_shell_tray	= NULL;
 
 /* ------------------------------------------------------------------------------------------------- */
+#include <stdio.h>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {

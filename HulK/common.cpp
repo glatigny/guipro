@@ -1,7 +1,7 @@
 /*
-	HulK - GUIPro Project ( http://obsidev.github.io/guipro/ )
+	HulK - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
+	Author : Glatigny Jérôme <jerome@darksage.fr>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -67,11 +67,11 @@ wchar_t* AnsiToUnicode(const char* cTemp)
 /* ------------------------------------------------------------------------------------------------- */
 
 typedef struct _DllVersionInfo {
-    DWORD cbSize;
-    DWORD dwMajorVersion;
-    DWORD dwMinorVersion;
-    DWORD dwBuildNumber;
-    DWORD dwPlatformID;
+	DWORD cbSize;
+	DWORD dwMajorVersion;
+	DWORD dwMinorVersion;
+	DWORD dwBuildNumber;
+	DWORD dwPlatformID;
 } DLLVERSIONINFO;
 
 #ifndef DLLGETVERSIONPROC
@@ -80,40 +80,40 @@ typedef int (FAR WINAPI *DLLGETVERSIONPROC) (DLLVERSIONINFO *);
 
 DWORD GetDllVersion(LPCTSTR lpszDllName)
 {
-    /* For security purposes, LoadLibrary should be provided with a 
-       fully-qualified path to the DLL. The lpszDllName variable should be
-       tested to ensure that it is a fully qualified path before it is used. */
+	/* For security purposes, LoadLibrary should be provided with a 
+	   fully-qualified path to the DLL. The lpszDllName variable should be
+	   tested to ensure that it is a fully qualified path before it is used. */
 
-    DWORD dwVersion = 0;
-    HINSTANCE hinstDll = LoadLibrary(lpszDllName);
-	
-    if(hinstDll)
-    {
-        /* Because some DLLs might not implement this function, you
-        must test for it explicitly. Depending on the particular 
-        DLL, the lack of a DllGetVersion function can be a useful
-        indicator of the version. */
+	DWORD dwVersion = 0;
+	HINSTANCE hinstDll = LoadLibrary(lpszDllName);
 
-        DLLGETVERSIONPROC pDllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(hinstDll, "DllGetVersion");
+	if(hinstDll)
+	{
+		/* Because some DLLs might not implement this function, you
+		   must test for it explicitly. Depending on the particular 
+		   DLL, the lack of a DllGetVersion function can be a useful
+		   indicator of the version. */
 
-        if(pDllGetVersion)
-        {
-            DLLVERSIONINFO dvi;
+		DLLGETVERSIONPROC pDllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(hinstDll, "DllGetVersion");
 
-            ZeroMemory(&dvi, sizeof(dvi));
-            dvi.cbSize = sizeof(dvi);
+		if(pDllGetVersion)
+		{
+			DLLVERSIONINFO dvi;
 
-            HRESULT hr = (*pDllGetVersion)(&dvi);
+			ZeroMemory(&dvi, sizeof(dvi));
+			dvi.cbSize = sizeof(dvi);
 
-            if(SUCCEEDED(hr))
-            {
-               dwVersion = WINVERSION(dvi.dwMajorVersion, dvi.dwMinorVersion);
-            }
-        }
+			HRESULT hr = (*pDllGetVersion)(&dvi);
 
-        FreeLibrary(hinstDll);
-    }
-    return dwVersion;
+			if(SUCCEEDED(hr))
+			{
+				dwVersion = WINVERSION(dvi.dwMajorVersion, dvi.dwMinorVersion);
+			}
+		}
+
+		FreeLibrary(hinstDll);
+	}
+	return dwVersion;
 }
 
 /* ------------------------------------------------------------------------------------------------- */

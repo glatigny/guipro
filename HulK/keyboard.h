@@ -18,18 +18,13 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef WINDOW_HK_H
-#define WINDOW_HK_H
+#ifndef KEYBOARD_H
+#define KEYBOARD_H
 
-#include "common.h"
+UINT key_send_code(WORD keycode, DWORD flags);
+void key_press_code(WORD keycode);
 
-void minimizeWindow( HWND p_hwnd );
-void closeWindow( HWND p_hwnd );
-void maximizeWindow( HWND p_hwnd );
-void iconizeWindow( HWND p_hwnd );
-void traynizeWindow( HWND p_hwnd );
-void alwaysOnTop( HWND p_hwnd );
+UINT key_send_scan(WORD scan, DWORD flags);
+void key_press_scan(WORD scan);
 
-void setWindow( HWND p_hwnd );
-
-#endif /* WINDOW_HK_H */
+#endif

@@ -1,7 +1,7 @@
 /*
-	HulK - GUIPro Project ( http://obsidev.github.io/guipro/ )
+	HulK - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
+	Author : Glatigny Jérôme <jerome@darksage.fr>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by

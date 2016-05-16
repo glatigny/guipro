@@ -1,7 +1,7 @@
 /*
-	HulK - GUIPro Project ( http://obsidev.github.io/guipro/ )
+	HulK - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@obsidev.com> - http://www.obsidev.com/
+	Author : Glatigny Jérôme <jerome@darksage.fr>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -21,13 +21,27 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifdef WIN10_SUPPORT
+
 #ifndef _WIN32_WINNT
-#  define _WIN32_WINNT 0x0501
+#  define _WIN32_WINNT 0x0603 // Windows 8.1
+#endif
+#ifndef _WIN32_IE
+#  define _WIN32_IE 0x0800 // IE 8
 #endif
 
-#ifndef _WIN32_IE
-#  define _WIN32_IE 0x0600
+#else /* WIN10_SUPPORT */
+
+#ifndef _WIN32_WINNT
+#  define _WIN32_WINNT 0x0501 // Windows XP
 #endif
+#define TEST _WIN32_WINNT_WINBLUE
+
+#ifndef _WIN32_IE
+#  define _WIN32_IE 0x0600 // IE 6
+#endif
+
+#endif /* WIN10_SUPPORT */
 
 /* ------------------------------------------------------------------------------------------------- */
 

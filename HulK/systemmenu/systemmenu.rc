@@ -13,10 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// French (France) resources
+// Français (France) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -50,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,0,0
- PRODUCTVERSION 0,1,0,0
+ FILEVERSION 0,3,0,0
+ PRODUCTVERSION 0,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -59,7 +60,7 @@ VS_VERSION_INFO VERSIONINFO
  FILEFLAGS 0x0L
 #endif
  FILEOS 0x40004L
- FILETYPE 0x1L
+ FILETYPE 0x2L
  FILESUBTYPE 0x0L
 BEGIN
     BLOCK "StringFileInfo"
@@ -68,13 +69,13 @@ BEGIN
         BEGIN
             VALUE "Comments", "Glatigny Jerome"
             VALUE "FileDescription", "Automatic System Menu plugin for HulK"
-            VALUE "FileVersion", "0, 1, 0, 0"
+            VALUE "FileVersion", "0.3.0.0"
             VALUE "InternalName", "HulK SystemMenu"
-            VALUE "LegalCopyright", "GPL 2007-2015"
+            VALUE "LegalCopyright", "GPL 2007-2018"
             VALUE "LegalTrademarks", "GuiPro project - http://obsidev.github.io/guipro/"
             VALUE "OriginalFilename", "systemmenu.dll"
             VALUE "ProductName", "Automatic System Menu plugin for HulK"
-            VALUE "ProductVersion", "0, 1, 0, 0"
+            VALUE "ProductVersion", "0.3.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -83,8 +84,9 @@ BEGIN
     END
 END
 
-#endif    // French (France) resources
+#endif    // Français (France) resources
 /////////////////////////////////////////////////////////////////////////////
+
 
 
 #ifndef APSTUDIO_INVOKED

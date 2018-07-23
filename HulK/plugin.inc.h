@@ -51,7 +51,9 @@
 /* ----------------------------------------------------- */
 
 typedef UINT (pluginInitFct)(HWND p_owner, UINT id);
-typedef UINT (pluginDblWcharFct)(wchar_t*, wchar_t*);
+typedef UINT (pluginWcharFct)(const wchar_t*);
+typedef UINT (pluginDblWcharFct)(const wchar_t*, const wchar_t*);
+typedef UINT (pluginUintHwndFct)(UINT, HWND);
 typedef UINT (pluginVoidFct)(void);
 typedef wchar_t* (pluginRetStrFct)(void);
 

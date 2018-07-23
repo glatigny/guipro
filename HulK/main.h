@@ -33,6 +33,9 @@ extern HWND g_hwndMain;
 extern HICON g_hIconTray;
 extern DWORD windows_version;
 
+//
+extern LPWSTR g_loadingmessage;
+
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void QuitHulK();

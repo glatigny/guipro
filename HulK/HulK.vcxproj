@@ -113,7 +113,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -136,7 +136,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -161,13 +161,16 @@
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="mouse.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="pugixml\pugixml.cpp" />
     <ClCompile Include="trayIcon.cpp" />
     <ClCompile Include="windowHK.cpp" />
+    <ClCompile Include="xmlconfig.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="hotKey.h" />
+    <ClInclude Include="hulkConfig.h" />
     <ClInclude Include="iconize.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="main.h" />
@@ -175,9 +178,12 @@
     <ClInclude Include="mouse.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="plugin.inc.h" />
+    <ClInclude Include="pugixml\pugiconfig.hpp" />
+    <ClInclude Include="pugixml\pugixml.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="trayIcon.h" />
     <ClInclude Include="windowHK.h" />
+    <ClInclude Include="xmlconfig.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="hulk.ini">
@@ -192,6 +198,15 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Hulk.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="hulk.xml">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
+      <SubType>Designer</SubType>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="hulk.minimal.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

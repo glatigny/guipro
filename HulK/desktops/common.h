@@ -18,24 +18,26 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef HOTKEY_H
-#define HOTKEY_H
+#ifndef COMMON_H
+#define COMMON_H
 
-#include "common.h"
+#ifndef _WIN32_WINNT
+#  define _WIN32_WINNT 0x0501
+#endif
 
-#define IDH_HOTKEY_BASE			(1000)
+#ifndef _WIN32_IE
+#  define _WIN32_IE 0x0600
+#endif
 
-#define IDH_HOTKEY_PLUGIN_BASE	(1100)
+#define MAX_FILE_LEN	(1024)
 
-bool RegisterHK(UINT key, UINT mod, int id);
-bool UnregisterHK(int id);
+#define SYSTEMMENU_ACTIVATE_TEXT		L"Automatic System Menu\nActivated"
+#define SYSTEMMENU_DEACTIVATE_TEXT		L"Automatic System Menu\nDeactivated"
 
-UINT getModifier(const wchar_t* p_ascii);
-wchar_t* getInverseHotKeyCode(UINT key);
+#include <windows.h>
 
-UINT getHotKeyCode(const wchar_t* p_ascii);
-wchar_t* getInverseModifier(UINT mod);
+UINT16 GetWinBuildNumber();
+bool isWindows10();
+void FlushMemory();
 
-UINT getMouseBtn(const wchar_t* p_ascii);
-
-#endif /* HOTKEY_H */
+#endif /* COMMON_H */

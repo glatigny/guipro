@@ -22,64 +22,64 @@
 #define CONFIG_H
 
 #include <windows.h>
+#include <vector>
 
+//
+//
+//
 #define TYPE_HK					(0x01)
 #define TYPE_MOUSE				(0x02)
 
-// Keep it at first element
-#define HK_ACT_CONFIG			(0x00)
-#define HK_TXT_CONFIG			L"[CONFIG]"
-#define HK_ACT_MINIMISE_POINTED	(0x01)
-#define HK_TXT_MINIMISE_POINTED	L"[MINIMIZE POINTED]"
-#define HK_ACT_MINIMISE_CURRENT	(0x02)
-#define HK_TXT_MINIMISE_CURRENT	L"[MINIMIZE CURRENT]"
-#define HK_ACT_CLOSE_POINTED	(0x03)
-#define HK_TXT_CLOSE_POINTED	L"[CLOSE POINTED]"
-#define HK_ACT_CLOSE_CURRENT	(0x04)
-#define HK_TXT_CLOSE_CURRENT	L"[CLOSE CURRENT]"
-#define HK_ACT_MAXIMISE_POINTED	(0x05)
-#define HK_TXT_MAXIMISE_POINTED	L"[MAXIMISE POINTED]"
-#define HK_ACT_MAXIMISE_CURRENT	(0x06)
-#define HK_TXT_MAXIMISE_CURRENT	L"[MAXIMISE CURRENT]"
-#define HK_ACT_ICONIZE_POINTED	(0x07)
-#define HK_TXT_ICONIZE_POINTED	L"[ICONIZE POINTED]"
-#define HK_ACT_ICONIZE_CURRENT	(0x08)
-#define HK_TXT_ICONIZE_CURRENT	L"[ICONIZE CURRENT]"
-#define HK_ACT_TRAYNIZE_POINTED	(0x09)
-#define HK_TXT_TRAYNIZE_POINTED	L"[TRAYNIZE POINTED]"
-#define HK_ACT_TRAYNIZE_CURRENT	(0x0A)
-#define HK_TXT_TRAYNIZE_CURRENT	L"[TRAYNIZE CURRENT]"
-#define HK_ACT_UNICONIZE		(0x0B)
-#define HK_TXT_UNICONIZE		L"[UNICONIZE]"
-#define HK_ACT_ALWTOP_POINTED	(0x0C)
-#define HK_TXT_ALWTOP_POINTED	L"[ALWAYS ON TOP POINTED]"
-#define HK_ACT_ALWTOP_CURRENT	(0x0D)
-#define HK_TXT_ALWTOP_CURRENT	L"[ALWAYS ON TOP CURRENT]"
+//
+//
+//
+#define HK_TARGET_NONE			(0x00)
+#define HK_TARGET_HWND_CURRENT	(0x01)
+#define HK_TARGET_HWND_POINTED	(0x02)
 
-#define HK_ACT_PLUGIN			(0x0E)
-#define HK_TXT_PLUGIN			L"[PLUGIN "
-
-#define HK_ACT_QUIT				(0x0F)
-#define HK_TXT_QUIT				L"[QUIT]"
-
-// Keep it at last element
-#define HK_ACT_NONE				(0x10)
+//
+//
+//
+#define HK_ACT_CONFIG			(0x00)	// Keep it at first element
+#define HK_CFG_TXT_CONFIG		L"config"
+//
+#define HK_ACT_QUIT				(0x01)
+#define HK_CFG_TXT_QUIT			L"quit"
+#define HK_ACT_MINIMIZE			(0x02)
+#define HK_CFG_TXT_MINIMIZE		L"minimize"
+#define HK_ACT_CLOSE			(0x03)
+#define HK_CFG_TXT_CLOSE		L"close"
+#define HK_ACT_MAXIMIZE			(0x04)
+#define HK_CFG_TXT_MAXIMIZE		L"maximize"
+#define HK_ACT_ICONIZE			(0x05)
+#define HK_CFG_TXT_ICONIZE		L"iconize"
+#define HK_ACT_TRAYNIZE			(0x06)
+#define HK_CFG_TXT_TRAYNIZE		L"traynize"
+#define HK_ACT_UNICONIZE		(0x07)
+#define HK_CFG_TXT_UNICONIZE	L"uniconize"
+#define HK_ACT_ALWTOP			(0x08)
+#define HK_CFG_TXT_ALWTOP		L"ontop"
+//
+#define HK_ACT_NONE				(0x09)	// Keep it at last element
 
 typedef struct _hkConfig {
+	UINT8 action;
+	UINT8 plugin;
 	UINT key;
 	UINT mod;
-	UINT action;
-	struct _hkConfig* next;
+	UINT8 target;
+	// struct _hkConfig* next;
 } hkConfig;
+typedef std::vector<hkConfig*> hkConfigVector;
 
+//
+//
+//
 #define MOUSE_ACT_DRAG			(0x01)
-#define MOUSE_TXT_DRAG			L"[DRAG]"
 #define MOUSE_ACT_RESIZE		(0x02)
-#define MOUSE_TXT_RESIZE		L"[RESIZE]"
 #define MOUSE_ACT_SWITCH		(0x03)
-#define MOUSE_TXT_SWITCH		L"[SWITCH]"
 
-#define MOUSE_ACT_NONE			(0x03)
+#define MOUSE_ACT_NONE			(0x04)
 
 #define MOUSE_BTN_LEFT			(0x01)
 #define MOUSE_BTN_RIGHT			(0x02)
@@ -87,16 +87,28 @@ typedef struct _hkConfig {
 #define MOUSE_BTN_WHEEL			(0x04)
 
 typedef struct _mouseConfig {
-	UINT btn;
-	UINT mod;
+	UINT8 btn;
+	UINT8 mod;
 } mouseConfig;
+typedef std::vector<mouseConfig*> mouseConfigVector;
 
-extern mouseConfig g_mouse_options[MOUSE_ACT_NONE];
-extern hkConfig* g_hkConfig;
+//
+//
+//
+typedef struct _hulkConfig {
+	hkConfigVector		hotkeys;
+	mouseConfig			mouses[MOUSE_ACT_NONE];
+} HulkConfig;
 
+extern HulkConfig* g_hulk;
+
+//
+//
+//
 int openConfig();
 int registerConfig(int alert);
 int registerHotkeys(LPWSTR p_registerErrors);
 void clearConfig();
+wchar_t* getConfigurationFilename();
 
 #endif /* CONFIG_H */

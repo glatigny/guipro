@@ -9,11 +9,11 @@
 ;General
 	;Name and file
 	Name "HotKey UnLimited"
-	OutFile "HulK-0.9.5.exe"
+	OutFile "HulK-0.9.9.exe"
 	BrandingText "Graphical User Interface Productivity : HulK"
 
 	!define PRODUCT_NAME "HulK"
-	!define PRODUCT_VERSION "0.9.5"
+	!define PRODUCT_VERSION "0.9.9"
 	!define PRODUCT_PUBLISHER "Graphical User Interface Productivity"
 	!define PRODUCT_WEB_SITE "http://obsidev.github.io/guipro/"
 	!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -150,28 +150,32 @@ installAuto:
 		File /oname=HulK.exe x64\HulK.exe
 		File /oname=systemmenu.dll x64\systemmenu.dll
 		File /oname=wdhook.dll x64\wdhook.dll
+		File /oname=desktops.dll x64\desktops.dll
 	${Else}
 		File /oname=HulK.exe x86\HulK.exe
 		File /oname=systemmenu.dll x86\systemmenu.dll
 		File /oname=wdhook.dll x86\wdhook.dll
+		File /oname=desktops.dll x86\desktops.dll
 	${EndIf}
 	Goto HulkExeOk
 installx86:
 	File /oname=HulK.exe x86\HulK.exe
 	File /oname=systemmenu.dll x86\systemmenu.dll
 	File /oname=wdhook.dll x86\wdhook.dll
+	File /oname=desktops.dll x86\desktops.dll
 	Goto HulkExeOk
 
 installx64:
 	File /oname=HulK.exe x64\HulK.exe
 	File /oname=systemmenu.dll x64\systemmenu.dll
 	File /oname=wdhook.dll x64\wdhook.dll
+	File /oname=desktops.dll x64\desktops.dll
 	Goto HulkExeOk
 ;*/
 
 HulkExeOk:	
 	SetOverwrite off
-	File ..\hulk.ini
+	File ..\hulk.xml
 	SetOverwrite on
 	
 ;	SetOutPath "$INSTDIR\doc"
@@ -213,7 +217,7 @@ SectionGroup /e "Install On Computer"
 		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\HulK.lnk" "$INSTDIR\HulK.exe" "" "$INSTDIR\HulK.exe" 0
 ;		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\documentation.lnk" "$INSTDIR\doc\index.html" "" "$INSTDIR\doc\index.html" 0
-		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\edit config.lnk" "$WINDIR\notepad.exe" "$INSTDIR\hulk.ini" "" 0
+		CreateShortCut "$SMPROGRAMS\GUIPro\HulK\edit config.lnk" "$WINDIR\notepad.exe" "$INSTDIR\hulk.xml" "" 0
 	SectionEnd
 
 SectionGroupEnd
@@ -260,6 +264,7 @@ Section "!un.Uninstall HulK" secUnRemove
 	Delete "$INSTDIR\license.txt"
 	Delete "$INSTDIR\systemmenu.dll"
 	Delete "$INSTDIR\wdhook.dll"
+	Delete "$INSTDIR\desktops.dll"
 	Delete "$INSTDIR\Uninstall.exe"
 
 	RMDir /r "$SMPROGRAMS\GUIPro\HulK"
@@ -273,7 +278,7 @@ Section "!un.Uninstall HulK" secUnRemove
 SectionEnd
 
 Section /o "un.Remove Configuration" secUnConfig
-	Delete "$INSTDIR\hulk.ini"
+	Delete "$INSTDIR\hulk.xml"
 	RMDir "$INSTDIR"
 SectionEnd
 
@@ -282,7 +287,7 @@ SectionEnd
 
 	;Language strings
 	LangString DESC_Un_RemoveSec	${LANG_ENGLISH} "Remove HulK"
-	LangString DESC_Un_ConfigSec	${LANG_ENGLISH} "Delete your config file (hulk.ini)"
+	LangString DESC_Un_ConfigSec	${LANG_ENGLISH} "Delete your config file (hulk.xml)"
 
 	;Assign language strings to sections
 	!insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN

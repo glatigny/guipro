@@ -1,0 +1,20 @@
+<hulk>
+	<plugins>
+		<plugin name="wdhook" load="false"/>
+		<plugin name="systemmenu" load="true">
+			<option name="active" value="true"/>
+		</plugin>
+		<plugin name="desktops" load="true"/>
+	</plugins>
+	<mouse>
+		<drag btn="left" mod="alt"/>
+		<resize btn="right" mod="alt"/>
+		<!-- <switch btn="wheel" mod="alt"/> -->
+	</mouse>
+	<hotkeys>
+		<hotkey key="222" mod="win" action="minimize" target="pointed"/>
+		<hotkey key="escape" mod="win" action="close" target="pointed"/>
+		<hotkey key="left" mod="win alt" action="moveleft" plugin="desktops"/>
+		<hotkey key="right" mod="win alt" action="moveright" plugin="desktops"/>
+	</hotkeys>
+</hulk>

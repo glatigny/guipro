@@ -24,9 +24,9 @@
 #include "systemmenu.h"
 #include "../plugin.inc.h"
 
-#define SC_SMSEP 2
-#define SC_TRAY 3
-#define SC_ICONIZE 4
+#define SC_SMSEP	0xA001
+#define SC_TRAY		0xA002
+#define SC_ICONIZE	0xA003
 
 HINSTANCE g_hModule =  NULL;
 wchar_t* text = NULL;
@@ -50,7 +50,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserv
 		case DLL_PROCESS_ATTACH:
 		case DLL_THREAD_ATTACH:
 		case DLL_THREAD_DETACH:
+			break;
 		case DLL_PROCESS_DETACH:
+			//releasePlugin();
 			break;
 	}
 	return TRUE;
@@ -105,6 +107,8 @@ BOOL activatePlugin()
 		UnhookWindowsHookEx(g_hook2);
 		g_hook2 = NULL;
 
+		PostMessage(HWND_BROADCAST, WM_NULL, 0, 0);
+
 		if( text )
 		{
 			free(text);
@@ -118,6 +122,7 @@ BOOL activatePlugin()
 	{
 		g_hook1 = SetWindowsHookEx(WH_CALLWNDPROC, (HOOKPROC)CALLProc, g_hModule, 0);
 		g_hook2 = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC)GETMSGProc, g_hModule, 0);
+		PostMessage(HWND_BROADCAST, WM_NULL, 0, 0);
 
 		if( text )
 		{
@@ -172,6 +177,35 @@ BOOL setOption(wchar_t* name, wchar_t* value)
 
 /* ------------------------------------------------------------------------------------------------- */
 
+void addSysMenuItems(HWND hwnd, HMENU menu)
+{
+	if (g_sysmenu_currHwnd == hwnd)
+		return;
+	g_sysmenu_currHwnd = hwnd;
+	HMENU sysMenu = GetSystemMenu(g_sysmenu_currHwnd, FALSE);
+	if (menu != INVALID_HANDLE_VALUE && menu != sysMenu)
+		return;
+	// Insert is made in reverse
+	InsertMenu(sysMenu, SC_CLOSE, MF_BYCOMMAND | MF_STRING, SC_ICONIZE, L"Iconize");
+	InsertMenu(sysMenu, SC_CLOSE, MF_BYCOMMAND | MF_STRING, SC_TRAY, L"Tray");
+	InsertMenu(sysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, SC_SMSEP, NULL);
+}
+
+void removeSysMenuItems(HWND hwnd, HMENU menu)
+{
+	if (g_sysmenu_currHwnd != hwnd)
+		return;
+	HMENU sysMenu = GetSystemMenu(g_sysmenu_currHwnd, FALSE);
+	if (menu != INVALID_HANDLE_VALUE && menu != sysMenu)
+		return;
+	DeleteMenu(sysMenu, SC_SMSEP, MF_BYCOMMAND);
+	DeleteMenu(sysMenu, SC_TRAY, MF_BYCOMMAND);
+	DeleteMenu(sysMenu, SC_ICONIZE, MF_BYCOMMAND);
+	g_sysmenu_currHwnd = NULL;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
 LRESULT CALLBACK CALLProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if( nCode >= 0 )
@@ -185,12 +219,24 @@ LRESULT CALLBACK CALLProc(int nCode, WPARAM wParam, LPARAM lParam)
 				// menu is being closed
 				if(wps->lParam == NULL && HIWORD(wps->wParam) == 0xFFFF)
 				{
-					if(g_sysmenu_currHwnd == (HWND)wps->hwnd){
-						HMENU sysMenu = GetSystemMenu(g_sysmenu_currHwnd, FALSE);
-						RemoveMenu(sysMenu, SC_SMSEP, MF_BYCOMMAND);
-						RemoveMenu(sysMenu, SC_TRAY, MF_BYCOMMAND);
-						RemoveMenu(sysMenu, SC_ICONIZE, MF_BYCOMMAND);
-					}
+					removeSysMenuItems(wps->hwnd, (HMENU)INVALID_HANDLE_VALUE);
+				}
+			}
+			break;
+
+			case WM_UNINITMENUPOPUP:
+			{
+				removeSysMenuItems(wps->hwnd, (HMENU)wps->wParam);
+			}
+			break;
+
+			case WM_ENTERIDLE:
+			{
+				// Some applications trigger WM_INITMENUPOPUP never or to late, thats why we use WM_ENTERIDLE
+				// CF: https://github.com/Eun/MoveToDesktop/
+				if (wps->wParam == MSGF_MENU)
+				{
+					addSysMenuItems(wps->hwnd, (HMENU)INVALID_HANDLE_VALUE);
 				}
 			}
 			break;
@@ -201,19 +247,15 @@ LRESULT CALLBACK CALLProc(int nCode, WPARAM wParam, LPARAM lParam)
 				// get the menu handle
 				HMENU hMenu = (HMENU)wps->wParam;
 				// check if it is a menu
-				if(IsMenu(hMenu) && (HIWORD(wps->lParam) == TRUE) )
-				{				
-					g_sysmenu_currHwnd = (HWND)wps->hwnd;
-					HMENU sysMenu = GetSystemMenu(g_sysmenu_currHwnd, FALSE);
-					AppendMenu(sysMenu, MF_BYPOSITION|MF_SEPARATOR, SC_SMSEP, NULL);
-					AppendMenu(sysMenu, MF_BYPOSITION|MF_STRING, SC_TRAY, L"Tray");
-					AppendMenu(sysMenu, MF_BYPOSITION|MF_STRING, SC_ICONIZE, L"Iconize");
+				if(IsMenu(hMenu) && (HIWORD(wps->lParam) == TRUE) && g_sysmenu_currHwnd != (HWND)wps->hwnd)
+				{
+					addSysMenuItems(wps->hwnd, hMenu);
 				}
 			}
 			break;
 		}
 	}
-	return CallNextHookEx(0, nCode, wParam, lParam);
+	return CallNextHookEx(g_hook1, nCode, wParam, lParam);
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -239,7 +281,7 @@ LRESULT CALLBACK GETMSGProc(int nCode, WPARAM wParam, LPARAM lParam)
 			}
 		}
 	}
-	return CallNextHookEx(0, nCode, wParam, lParam);
+	return CallNextHookEx(g_hook2, nCode, wParam, lParam);
 }
 
 /* ------------------------------------------------------------------------------------------------- */

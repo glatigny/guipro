@@ -28,34 +28,38 @@
 typedef struct pluginElement
 {
 	HMODULE module;
-	UINT	key;
-	UINT	mod;
-	UINT	id;
+#ifdef _WIN64
+	HMODULE module_x86;
+#endif
+	UINT8	id;
 } pluginElem;
 
 /* ----------------------------------------------------- */
 
-extern UINT g_pluginId;
-
-/* ----------------------------------------------------- */
-
-bool installPlugin(wchar_t* name);
-bool removePlugin(wchar_t* name);
+bool installPlugin(const wchar_t* name);
+bool removePlugin(const wchar_t* name);
 bool removePlugin(pluginElem* plugin);
+void uninstallPlugins();
+
+pluginElem* getPlugin(const wchar_t* pluginName);
+pluginElem* getPlugin(UINT8 id);
+HMODULE getPluginModule(UINT8 id);
 
 UINT activatePlugin(HMODULE module);
 wchar_t* getPluginText(HMODULE module);
 
-bool setPluginOption(wchar_t* pluginName, wchar_t* option, wchar_t* value);
-void setPluginKey(wchar_t* pluginName, UINT value);
-void setPluginMod(wchar_t* pluginName, UINT value);
+bool setPluginOption(const wchar_t* pluginName, const wchar_t* option, const wchar_t* value);
+//void setPluginKey(const wchar_t* pluginName, UINT value);
+//void setPluginMod(const wchar_t* pluginName, UINT value);
 
-pluginElem* pluginGetModule(UINT id);
+UINT getPluginActionId(HMODULE module, const wchar_t* function);
+UINT getPluginActionId(const wchar_t* pluginName, const wchar_t* function);
+
+bool callPluginAction(HMODULE module, UINT function, HWND hwnd);
+bool callPluginAction(const wchar_t* pluginName, UINT function, HWND hwnd);
+
+// void pluginHotkey(UINT id);
 void pluginBalloon(pluginElem* plugin, UINT retId);
-
-void pluginHotkey(UINT id);
-int registerHKPlugins(LPWSTR p_registerErrors, int error);
-void uninstallPlugins();
 
 /* ----------------------------------------------------- */
 

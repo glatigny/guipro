@@ -36,42 +36,75 @@ struct strCmp
 typedef std::map<wchar_t*, pluginElem*, strCmp> pluginMap;
 
 pluginMap g_pluginList;
-UINT g_pluginId = 0;
+UINT8 g_pluginId = 1;
 
 /* ------------------------------------------------------------------------------------------------- */
 
-bool installPlugin(wchar_t* name)
+bool installPlugin(const wchar_t* name)
 {
-	if( g_pluginList.find(name) == g_pluginList.end() )
+	// Already loaded
+	if (g_pluginList.find((wchar_t*)name) != g_pluginList.end())
+		return true;
+
+	wchar_t full_name[MAX_FILE_LEN];
+	
+	wchar_t *sp = specialDirs(L"%hulk%\\");
+	wcscpy_s(full_name, sp);
+	free(sp);
+	wcscat_s(full_name, name);
+	wcscat_s(full_name, L".dll");
+
+	HMODULE hkPlugin = LoadLibrary(full_name);
+	if (hkPlugin == NULL)
+		return false;
+
+	pluginInitFct* initPluginFct = (pluginInitFct*)GetProcAddress( hkPlugin, "initPlugin" );
+	if (initPluginFct == NULL)
 	{
-		HMODULE hkPlugin = LoadLibrary(name);
-		if( hkPlugin != NULL )
-		{
-			pluginInitFct* fct = (pluginInitFct*)GetProcAddress( hkPlugin, "initPlugin" );
-			if( fct != NULL )
-			{
-				pluginElem* elem = (pluginElem*)malloc(sizeof(pluginElem));
-				elem->module = hkPlugin;
-				elem->id = g_pluginId++;
-				elem->key = 0;
-				elem->mod = MOD_WIN;
-
-				g_pluginList[_wcsdup(name)] = elem;
-
-				fct(g_hwndMain, elem->id);
-
-				return true;
-			}
-		}
+		FreeLibrary(hkPlugin);
+		return false;
 	}
-	return false;
+
+	pluginElem* elem = (pluginElem*)malloc(sizeof(pluginElem));
+	elem->module = hkPlugin;
+	elem->id = g_pluginId++;
+
+	UINT ret = initPluginFct(g_hwndMain, elem->id);
+	if (ret == FALSE)
+	{
+		FreeLibrary(hkPlugin);
+		free(elem);
+		g_pluginId--;
+		return false;
+	}
+
+#ifdef _WIN64
+	wchar_t x86name[256];
+	memset(x86name, 0, sizeof(x86name));
+	wcscpy_s(x86name, name);
+	wcscat_s(x86name, L"_x86");
+	HMODULE hk86Plugin = LoadLibrary(x86name);
+	if (hk86Plugin)
+	{
+		initPluginFct = (pluginInitFct*)GetProcAddress(hk86Plugin, "initPlugin");
+		if (initPluginFct != NULL)
+		{
+			initPluginFct(g_hwndMain, elem->id);
+		}
+		elem->module_x86 = hk86Plugin;
+	}
+#endif
+
+	g_pluginList[_wcsdup(name)] = elem;
+
+	return true;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
 
-bool removePlugin(wchar_t* name)
+bool removePlugin(const wchar_t* name)
 {
-	pluginMap::iterator item = g_pluginList.find(name);
+	pluginMap::iterator item = g_pluginList.find((wchar_t*)name);
 
 	if( item != g_pluginList.end() )
 	{
@@ -88,23 +121,70 @@ bool removePlugin(wchar_t* name)
 
 bool removePlugin(pluginElem* plugin)
 {
-	if( plugin->module )
-	{
-		pluginVoidFct* fct = (pluginVoidFct*)GetProcAddress( plugin->module, "releasePlugin" );
-		if( fct != NULL )
-		{
-			fct();
-		}
-		BOOL ret = FreeLibrary(plugin->module);
-		plugin->module = NULL;
+	if (!plugin->module)
+		return true;
 
-		return (ret == TRUE);
-	}
-	if( plugin->key > 0 )
+	pluginVoidFct* fct = (pluginVoidFct*)GetProcAddress( plugin->module, "releasePlugin" );
+	if( fct != NULL )
 	{
-		UnregisterHK(IDH_HOTKEY_PLUGIN_BASE + plugin->id);
+		fct();
 	}
-	return true;
+
+	BOOL ret = FreeLibrary(plugin->module);
+	plugin->module = NULL;
+
+	return (ret == TRUE);
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+void uninstallPlugins()
+{
+	for (pluginMap::iterator i = g_pluginList.begin(); i != g_pluginList.end(); i++)
+	{
+		removePlugin(i->second);
+		free(i->second);
+		free(i->first);
+	}
+	g_pluginList.clear();
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+pluginElem* getPlugin(const wchar_t* pluginName)
+{
+	pluginMap::iterator item = g_pluginList.find((wchar_t*)pluginName);
+	if (item == g_pluginList.end())
+		return NULL;
+	return item->second;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+pluginElem* getPlugin(UINT8 id)
+{
+	for (pluginMap::iterator i = g_pluginList.begin(); i != g_pluginList.end(); i++)
+	{
+		if (i->second->id == id)
+		{
+			return i->second;
+		}
+	}
+	return NULL;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+HMODULE getPluginModule(UINT8 id)
+{
+	for (pluginMap::iterator i = g_pluginList.begin(); i != g_pluginList.end(); i++)
+	{
+		if (i->second->id == id)
+		{
+			return i->second->module;
+		}
+	}
+	return 0;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -135,9 +215,9 @@ wchar_t* getPluginText(HMODULE module)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-bool setPluginOption(wchar_t* pluginName, wchar_t* option, wchar_t* value)
+bool setPluginOption(const wchar_t* pluginName, const wchar_t* option, const wchar_t* value)
 {
-	pluginMap::iterator item = g_pluginList.find(pluginName);
+	pluginMap::iterator item = g_pluginList.find((wchar_t*)pluginName);
 
 	if( item != g_pluginList.end() )
 	{
@@ -154,26 +234,49 @@ bool setPluginOption(wchar_t* pluginName, wchar_t* option, wchar_t* value)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-void setPluginKey(wchar_t* pluginName, UINT value)
+UINT getPluginActionId(HMODULE module, const wchar_t* function)
 {
-	pluginMap::iterator item = g_pluginList.find(pluginName);
-
-	if( item != g_pluginList.end() )
+	pluginWcharFct* fct = (pluginWcharFct*)GetProcAddress(module, "getAction");
+	if (fct != NULL)
 	{
-		item->second->key = value;
-	}	
+		return fct((wchar_t*)function);
+	}
+	return 0;
+}
+
+UINT getPluginActionId(const wchar_t* pluginName, const wchar_t* function)
+{
+	pluginMap::iterator item = g_pluginList.find((wchar_t*)pluginName);
+
+	if (item != g_pluginList.end())
+	{
+		return getPluginActionId((HMODULE)item->second->module, function);
+	}
+	return 0;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
 
-void setPluginMod(wchar_t* pluginName, UINT value)
+ bool callPluginAction(HMODULE module, UINT action, HWND hwnd)
 {
-	pluginMap::iterator item = g_pluginList.find(pluginName);
-
-	if( item != g_pluginList.end() )
+	pluginUintHwndFct* fct = (pluginUintHwndFct*)GetProcAddress(module, "callAction");
+	if (fct != NULL)
 	{
-		item->second->mod = value;
+		fct(action, hwnd);
+		return true;
 	}
+	return false;
+}
+
+bool callPluginAction(const wchar_t* pluginName, UINT action, HWND hwnd)
+{
+	pluginMap::iterator item = g_pluginList.find((wchar_t*)pluginName);
+
+	if (item != g_pluginList.end())
+	{
+		return callPluginAction((HMODULE)item->second->module, action, hwnd);
+	}
+	return false;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -191,20 +294,6 @@ void pluginHotkey(UINT id)
 			return;
 		}
 	}
-}
-
-/* ------------------------------------------------------------------------------------------------- */
-
-pluginElem* pluginGetModule(UINT id)
-{
-	for( pluginMap::iterator i = g_pluginList.begin(); i != g_pluginList.end(); i++ )
-	{
-		if( i->second->id == id )
-		{
-			return i->second;
-		}
-	}
-	return NULL;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -229,44 +318,3 @@ void pluginBalloon(pluginElem* plugin, UINT retId)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-int registerHKPlugins(LPWSTR p_registerErrors, int error)
-{
-	for( pluginMap::iterator i = g_pluginList.begin(); i != g_pluginList.end(); i++ )
-	{
-		if( i->second->key > 0 )
-		{
-			if( !RegisterHK(i->second->key, i->second->mod, IDH_HOTKEY_PLUGIN_BASE + i->second->id) )
-			{
-				error++;
-
-				LPWSTR l_errkey = (LPWSTR)malloc(sizeof(PWSTR) * MAX_ERRHKLEN);
-				wcscpy_s(l_errkey, MAX_ERRHKLEN, getInverseModifier(i->second->mod));
-				wcscat_s(l_errkey, MAX_ERRHKLEN, getInverseHotKeyCode(i->second->key));
-				
-				if( (wcslen(p_registerErrors) + wcslen(l_errkey)) >= MAX_LENGTH)
-				{
-					return error;	
-				}
-
-				wcscat_s(p_registerErrors, MAX_LENGTH, l_errkey);
-				wcscat_s(p_registerErrors, MAX_LENGTH, (wchar_t*)"\n");
-			}
-		}
-	}
-	return error;
-}
-
-/* ------------------------------------------------------------------------------------------------- */
-
-void uninstallPlugins()
-{
-	for( pluginMap::iterator i = g_pluginList.begin(); i != g_pluginList.end(); i++ )
-	{
-		removePlugin( i->second );
-		free( i->second );
-		free( i->first );
-	}
-	g_pluginList.clear();
-}
-
-/* ------------------------------------------------------------------------------------------------- */

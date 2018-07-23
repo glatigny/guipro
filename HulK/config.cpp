@@ -18,189 +18,119 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "config.h"
 #include "common.h"
+#include "config.h"
 #include "main.h"
 #include "hotkey.h"
 #include "plugin.h"
+#include "xmlconfig.h"
+#include "resource.h"
 
-#include <fstream>
+HulkConfig* g_hulk;
 
-mouseConfig g_mouse_options[MOUSE_ACT_NONE];
-hkConfig* g_hkConfig = NULL;
+unsigned long	g_FileNotif_ThreadId;
+HANDLE			g_FileNotif_threadHandle;
+
+int registerHotkeys(LPWSTR p_registerErrors);
+void unregisterHotkeys();
+bool installFileNotification(const wchar_t* xmlfilename);
+bool uninstallFileNotification();
 
 /* ------------------------------------------------------------------------------------------------- */
 
-int openConfig()
+wchar_t* getConfigurationFilename()
 {
-	clearConfig();
-
-	wchar_t szConfigName[] = L"hulk.ini";
-	wchar_t szFilename[FILENAME_MAX] = L"";
-
-	// retrieve the path of the binary
-	GetModuleFileName(g_hInst, szFilename, FILENAME_MAX);
-	wchar_t* pos = wcsrchr(szFilename, L'\\');
-	if( pos != NULL )
+	wchar_t* xmlfilename = NULL;
+	int args;
+	wchar_t** argList = CommandLineToArgvW(GetCommandLineW(), &args);
+	bool lookAppData = true;
+	if (argList != NULL)
 	{
-		pos++;
-		wcscpy_s(pos, szFilename - pos + SIZEOF_ARRAY(szFilename), szConfigName);
-	}
-	else
-	{
-		return 1;
-	}
-
-	wchar_t buff[LINE_MAX_SIZE];
-	wchar_t *tmp;
-
-	std::wifstream l_file(szFilename);
-	if( l_file.is_open())
-	{
-		hkConfig* lastHkConfig = g_hkConfig;
-		UINT mod = HK_ACT_CONFIG;
-		UINT type = 0;
-		wchar_t pluginName[MAX_PLUGIN_LEN];
-
-		char memory[HK_ACT_NONE];
-		memset(memory, 0, sizeof(memory));
-
-		while( !l_file.eof() )
+		for (int i = 1; i < args; i++)
 		{
-			l_file.getline(buff, LINE_MAX_SIZE);
-			
-			if( buff[0] == L'[' )
+			wchar_t* n = argList[i];
+			if (!wcsncmp(n, L"-config", 7))
 			{
-				UINT ex = mod;
-				UINT exT = type;
-
-#define CMP_HK(id) if( !wcsncmp(buff, HK_TXT_ ## id, wcslen(HK_TXT_ ## id)) ) { mod = HK_ACT_ ## id; type = TYPE_HK; }
-#define CMP_MOUSE(id) if( !wcsncmp(buff, MOUSE_TXT_ ## id, wcslen(MOUSE_TXT_ ## id)) ) { mod = MOUSE_ACT_ ## id; type = TYPE_MOUSE; }
-	
-				CMP_HK( CONFIG )
-				else CMP_HK( MINIMISE_POINTED )
-				else CMP_HK( MINIMISE_CURRENT )
-				else CMP_HK( CLOSE_POINTED )
-				else CMP_HK( CLOSE_CURRENT )
-				else CMP_HK( MAXIMISE_POINTED )
-				else CMP_HK( MAXIMISE_CURRENT )
-				else CMP_HK( ICONIZE_POINTED )
-				else CMP_HK( ICONIZE_CURRENT )
-				else CMP_HK( TRAYNIZE_POINTED )
-				else CMP_HK( TRAYNIZE_CURRENT )
-				else CMP_HK( UNICONIZE )
-				else CMP_HK( ALWTOP_POINTED )
-				else CMP_HK( ALWTOP_CURRENT )
-				else CMP_HK( QUIT )
-				else CMP_MOUSE( DRAG )
-				else CMP_MOUSE( RESIZE )
-				else CMP_MOUSE( SWITCH )
-				else if( !wcsncmp(buff, HK_TXT_PLUGIN, wcslen(HK_TXT_PLUGIN)) )
-				{
-					mod = HK_ACT_PLUGIN;
-
-					ZeroMemory(pluginName, sizeof(pluginName));
-					size_t size1 = wcslen(buff);
-					size_t size2 = wcslen(HK_TXT_PLUGIN);
-					wcsncpy_s(pluginName, &buff[size2], size1-size2-1);
-					wcscat_s(pluginName, L".dll");
-
-					installPlugin(pluginName);
-				}
-#undef CMP_HK
-#undef CMP_MOUSE
-				
-				if( ((ex != mod) || exT != type)&& (mod != HK_ACT_PLUGIN) )
-				{
-					if( (type == TYPE_HK) && (memory[mod] == 0) )
-					{
-						if( lastHkConfig == NULL )
-						{
-							g_hkConfig = (hkConfig*)malloc(sizeof(hkConfig));
-							lastHkConfig = g_hkConfig;
-						}
-						else
-						{
-							lastHkConfig->next = (hkConfig*)malloc(sizeof(hkConfig));
-							lastHkConfig = lastHkConfig->next;
-						}
-
-						lastHkConfig->action = IDH_HOTKEY_BASE + mod;
-						lastHkConfig->key = 0;
-						lastHkConfig->mod = MOD_WIN; // Set "Windows" key by default
-						lastHkConfig->next = NULL;
-					}
-				}
+				i++;
+				if (i < args && xmlfilename == NULL)
+					xmlfilename = specialDirs(argList[i]);
 			}
-			else if( buff[0] != L';' )
+
+			if (!wcsncmp(n, L"-local", 6))
 			{
-				tmp = wcsstr(buff, L"=");
-				if( tmp != NULL )
-				{
-					tmp[0] = L'\0';
-
-					if( (mod == HK_ACT_CONFIG) && (type == TYPE_HK) )
-					{
-// #define powa !
-// This is a special technique in order to have a final ";" when using the macro.
-// It could be very usefull if the number of option increase.
-#define CONFIG_CMP(txt, opt) if( !wcscmp( buff, txt ) ) do { \
-								if( (tmp[1] == L'y') || (tmp[1] == L'o') ) opt = true; \
-								else opt = false; } while(0)
-
-					//	CONFIG_CMP( L"switcher", g_option_switcher );
-					//	CONFIG_CMP( L"drag", g_option_drag );
-					//	CONFIG_CMP( L"resize", g_option_resize );
-#undef CONFIG_CMP
-					}
-					else if( (mod == HK_ACT_PLUGIN) && (type == TYPE_HK) )
-					{
-						if( !wcscmp( buff, L"key" ) )
-						{
-							setPluginKey(pluginName, getHotKeyCode( &tmp[1] ));
-						}
-						else if( !wcscmp( buff, L"mod" ) )
-						{
-							setPluginMod(pluginName, getModifier( &tmp[1] ));
-						}
-						else
-						{
-							setPluginOption(pluginName, buff, &tmp[1]);
-						}
-					}
-					else
-					{
-						if( type == TYPE_HK )
-						{
-							if( !wcscmp( buff, L"key" ) )
-							{
-								lastHkConfig->key = getHotKeyCode( &tmp[1] );
-							}
-							else if( !wcscmp( buff, L"mod" ) )
-							{
-								lastHkConfig->mod = getModifier( &tmp[1] );
-							}
-						}
-						else if( type == TYPE_MOUSE )
-						{
-							if( !wcscmp( buff, L"btn" ) )
-							{
-								g_mouse_options[mod].btn = getMouseBtn( &tmp[1] );
-							}
-							else if( !wcscmp( buff, L"mod" ) )
-							{
-								g_mouse_options[mod].mod = getModifier( &tmp[1] );
-							}
-						}
-					}
-					tmp[0] = L'=';
-				}
+				lookAppData = false;
 			}
 		}
-		l_file.close();
+		LocalFree(argList);
 	}
 
-	return 0;
+	if (xmlfilename == NULL && lookAppData)
+	{
+		xmlfilename = specialDirs(L"%appdata%\\GUIPro\\" WC_HULK_XML_FILENAME);
+		if (!fileExists(xmlfilename))
+		{
+			free(xmlfilename);
+			xmlfilename = NULL;
+		}
+	}
+
+	if (xmlfilename == NULL)
+	{
+		xmlfilename = specialDirs(L"%hulk%\\" WC_HULK_XML_FILENAME);
+	}
+
+	return xmlfilename;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+
+int openConfig()
+{
+	wchar_t* xmlfilename = NULL;
+
+	int ret = FALSE;
+
+	xmlfilename = getConfigurationFilename();
+	HulkConfig* l_config = loadConfig(xmlfilename);
+	if (l_config != NULL)
+	{
+		bool first = true;
+
+		if (g_hulk)
+		{
+			first = false;
+
+			uninstallFileNotification();
+			unregisterHotkeys();
+
+			// Store the old configuration
+			HulkConfig* temp = g_hulk;
+
+			// Clean the memory
+			delete(g_hulk);
+		}
+		
+		// change the config
+		g_hulk = l_config;
+
+		ret = TRUE;
+		if (registerConfig(TRUE) == FALSE)
+			ret = HULK_CONFIG_LOAD_PARTIAL;
+
+		if (!first && g_loadingmessage != NULL) {
+			free(g_loadingmessage);
+			g_loadingmessage = NULL;
+		}
+	}
+
+	if (xmlfilename)
+	{
+//		installFileNotification(xmlfilename);
+		free(xmlfilename);
+	}
+
+	return ret;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -218,11 +148,21 @@ int registerConfig(int alert)
 			wcscpy_s(l_message, l_size, ERR_HOTKEYS_MSG);
 			wcscat_s(l_message, l_size, l_registerErrors);
 			
-			MessageBox(g_hwndMain, l_message, ERR_MSGBOX_TITLE, NULL);
+			// If we do not have any tray icon ; we store the message in a global variable
+			//
+			if (!g_hIconTray)
+			{
+				g_loadingmessage = _wcsdup(l_message);
+			}
+			else
+			{
+				ShowBalloon(ERR_MSGBOX_TITLE, l_message, NIIF_ERROR);
+			}
+			// MessageBox(g_hwndMain, l_message, ERR_MSGBOX_TITLE, NULL);
 			
 			free(l_message);
-			free(l_registerErrors);
 		}
+		free(l_registerErrors);
 		return FALSE;
 	}
 	free(l_registerErrors);
@@ -234,55 +174,192 @@ int registerConfig(int alert)
 int registerHotkeys(LPWSTR p_registerErrors)
 {
 	int error = 0;
+	int i = 0;
 
-	hkConfig* elem = g_hkConfig;
-	while( elem != NULL )
+	if (g_hulk == NULL)
+		return error;
+
+	if (g_hulk->hotkeys.size() == 0)
+		return error;
+
+	wchar_t* l_wc;
+
+	for (hkConfigVector::iterator hk = g_hulk->hotkeys.begin(); hk != g_hulk->hotkeys.end(); ++hk, ++i)
 	{
-		if( elem->key > 0 )
+		if (RegisterHK((*hk)->key, (*hk)->mod, i))
 		{
-			if( !RegisterHK(elem->key, elem->mod, elem->action) )
-			{
-				error++;
-
-				LPWSTR l_errkey = (LPWSTR)malloc(sizeof(PWSTR) * MAX_ERRHKLEN);
-				wcscpy_s(l_errkey, MAX_ERRHKLEN, getInverseModifier(elem->mod));
-				wcscat_s(l_errkey, MAX_ERRHKLEN, getInverseHotKeyCode(elem->key));
-
-				if( (wcslen(p_registerErrors) + wcslen(l_errkey)) >= MAX_LENGTH)
-				{
-					return error;	
-				}
-
-				wcscat_s(p_registerErrors, MAX_LENGTH, l_errkey);
-				wcscat_s(p_registerErrors, MAX_LENGTH, (wchar_t*)"\n");
-			}
+			continue;
 		}
-		elem = elem->next;
-	}
 
-	error = registerHKPlugins(p_registerErrors, error);
+		error++;
+
+		LPWSTR l_errkey = (LPWSTR)malloc(sizeof(PWSTR) * MAX_ERRHKLEN);
+		l_wc = getInverseModifier((*hk)->mod);
+		wcscpy_s(l_errkey, MAX_ERRHKLEN, l_wc);
+		free(l_wc);
+		l_wc = getInverseHotKeyCode((*hk)->key);
+		wcscat_s(l_errkey, MAX_ERRHKLEN, l_wc);
+		free(l_wc);
+
+		if ((wcslen(p_registerErrors) + wcslen(l_errkey)) >= MAX_LENGTH)
+		{
+			free(l_errkey);
+			return error;
+		}
+
+		wcscat_s(p_registerErrors, MAX_LENGTH, l_errkey);
+		wcscat_s(p_registerErrors, MAX_LENGTH, (wchar_t*)"\n");
+
+		free(l_errkey);
+	}
 
 	return error;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
 
+void unregisterHotkeys()
+{
+	if (!g_hulk)
+		return;
+
+	int cpt = 0;
+	for (hkConfigVector::iterator hk = g_hulk->hotkeys.begin(); hk != g_hulk->hotkeys.end(); hk++)
+	{
+		UnregisterHK(cpt++);
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+DWORD WINAPI threadFileNotification(LPVOID lpthis)
+{
+#define THREAD_FILENAME_SIZE 512
+	wchar_t* szBuff = NULL;
+	wchar_t* szPath = NULL;
+
+	int n = 0;
+	if (lpthis != NULL) {
+		szBuff = (wchar_t*)lpthis;
+		n = (int)wcslen(szBuff);
+	}
+
+	// Get file path
+	if (n == 0) {
+		szBuff = (wchar_t*)malloc(sizeof(wchar_t) * THREAD_FILENAME_SIZE);
+		n = GetModuleFileName(g_hInst, szBuff, THREAD_FILENAME_SIZE);
+	}
+
+	// Extract folder
+	if (n != 0 && n < THREAD_FILENAME_SIZE) {
+		while (n >= 0 && szBuff[n] != L'\\') n--;
+		szPath = (wchar_t*)malloc(sizeof(wchar_t) * (n + 1));
+		memset(szPath, 0, sizeof(wchar_t) * (n + 1));
+		lstrcpyn(szPath, szBuff, n + 1);
+	}
+#undef THREAD_FILENAME_SIZE
+
+	if (szBuff != NULL)
+		free(szBuff);
+
+	if (n == 0)
+		return false;
+	HANDLE g_hDir;
+	FILE_NOTIFY_INFORMATION Buffer[8];
+	memset(Buffer, 0, sizeof(Buffer));
+	DWORD BytesReturned = 0;
+	DWORD notifyFlags = FILE_NOTIFY_CHANGE_LAST_WRITE;
+
+	g_hDir = CreateFile(szPath,
+		FILE_LIST_DIRECTORY,
+		FILE_SHARE_READ | FILE_SHARE_DELETE,
+		NULL,
+		OPEN_EXISTING,
+		FILE_FLAG_BACKUP_SEMANTICS,
+		NULL
+	);
+
+	if (szPath != NULL)
+		free(szPath);
+
+	boolean modified = false;
+
+	while (!modified && ReadDirectoryChangesW(g_hDir, &Buffer, sizeof(Buffer), FALSE, notifyFlags, &BytesReturned, NULL, NULL))
+	{
+		if (BytesReturned > 0)
+		{
+			int i = 0;
+			do
+			{
+				if (!modified && !wcsncmp(Buffer[i].FileName, WC_HULK_XML_FILENAME, wcslen(WC_HULK_XML_FILENAME)))
+				{
+					modified = true;
+					// Send the command via "PostMessage" because we are in a thread !
+					PostMessage(g_hwndMain, WM_COMMAND, IDM_RELOAD, NULL);
+				}
+			} while (!modified && !Buffer[++i].NextEntryOffset);
+		}
+
+		if (!modified)
+		{
+			BytesReturned = 0;
+			Sleep(500);
+		}
+	}
+
+	CloseHandle(g_hDir);
+	return false;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+bool installFileNotification(const wchar_t* xmlfilename)
+{
+	if (g_FileNotif_threadHandle != NULL)
+	{
+		DWORD dwWait = WaitForSingleObject(g_FileNotif_threadHandle, 0);
+		if (dwWait == WAIT_TIMEOUT)
+			g_FileNotif_threadHandle = NULL;
+	}
+
+	if (g_FileNotif_threadHandle == NULL)
+	{
+		wchar_t* filename = NULL;
+		if (xmlfilename != NULL)
+			filename = _wcsdup(xmlfilename);
+		g_FileNotif_threadHandle = CreateThread(NULL, NULL, threadFileNotification, (LPVOID)filename, NULL, &g_FileNotif_ThreadId);
+		return true;
+	}
+	return false;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+bool uninstallFileNotification()
+{
+	if (g_FileNotif_threadHandle != NULL && CloseHandle(g_FileNotif_threadHandle))
+	{
+		g_FileNotif_threadHandle = NULL;
+		return true;
+	}
+	return false;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
 void clearConfig()
 {
-	memset(g_mouse_options, 0, sizeof(g_mouse_options));
+	memset(g_hulk->mouses, 0, sizeof(g_hulk->mouses));
 
-	hkConfig* tmp = g_hkConfig;
-	while( tmp != NULL )
+	unregisterHotkeys();
+	for (hkConfigVector::iterator hk = g_hulk->hotkeys.begin(); hk != g_hulk->hotkeys.end(); hk++)
 	{
-		g_hkConfig = tmp->next;
-		if( tmp->key > 0 )
-		{
-			UnregisterHK(tmp->action);
-		}
-		free(tmp);
-		tmp = g_hkConfig;
+		free((*hk));
 	}
-	g_hkConfig = NULL;
+	g_hulk->hotkeys.clear();
+
+	free(g_hulk);
+	g_hulk = NULL;
 }
 
 /* ------------------------------------------------------------------------------------------------- */

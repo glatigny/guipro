@@ -28,28 +28,22 @@
 
 bool RegisterHK(UINT key, UINT mod, int id)
 {
-	if( !RegisterHotKey(g_hwndMain, id, mod, key) )
+	if (!RegisterHotKey(g_hwndMain, IDH_HOTKEY_BASE + id, mod, key))
 	{
 		return false;
 	}
-	else
-	{
-		return true;
-	}
+	return true;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
 
 bool UnregisterHK(int id)
 {
-	if( !UnregisterHotKey(g_hwndMain, id) )
+	if (!UnregisterHotKey(g_hwndMain, IDH_HOTKEY_BASE + id))
 	{
 		return false;
 	}
-	else
-	{
-		return true;
-	}
+	return true;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -370,7 +364,7 @@ wchar_t* getInverseModifier(UINT mod)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-UINT getMouseBtn( wchar_t* p_ascii )
+UINT getMouseBtn(const wchar_t* p_ascii)
 {
 	UINT btn = 0;
 

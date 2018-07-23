@@ -53,7 +53,7 @@
 
 #define IDM_TRAYS				200
 #define IDM_EXIT				303
-#define IDM_ABOUT				304
+//#define IDM_ABOUT				304
 #define IDM_OPEN_ICONIZE		305
 #define IDM_CLOSE_ICONIZE		306
 #define IDM_ICONIZE_MENU		307
@@ -68,9 +68,22 @@
 
 /* ------------------------------------------------------------------------------------------------- */
 
-#define WC_HULK_ABOUT_TEXT_TITLE	L"HulK 0.9.5"
-#define WC_HULK_ABOUT_TEXT			L"HotKey UnLimited\nhttp://obsidev.github.io/guipro/"
+#define HULK_CONFIG_LOAD_PARTIAL	2
+
+/* ------------------------------------------------------------------------------------------------- */
+
+#define WC_HULK_XML_FILENAME		L"hulk.xml"
+
+#define WC_HULK_ABOUT_ITEM_TEXT		L"About"
+#define WC_HULK_QUIT_ITEM_TEXT		L"Quit"
+
+#define HULK_VERSION				L"0.9.9"
+#define WC_HULK_ABOUT_TEXT_TITLE	L"HulK " HULK_VERSION
+#define WC_HULK_ABOUT_TEXT			L"HotKey UnLimited\nhttp://glatigny.github.io/guipro/"
+
 #define WC_HULK_ERROR_MAX_APPS		L"Iconized windows limit reached"
+#define WC_HULK_RLDCONF_TEXT_OK		L"Configuration reloaded with success"
+#define WC_HULK_RLDCONF_TEXT_ERR	L"Error while reloading the configuration"
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -85,10 +98,27 @@
 
 #include <windows.h>
 
+#ifndef NDEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#define DBG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#define new DBG_NEW
+#define DBG_MALLOC(size) _malloc_dbg(size, _NORMAL_BLOCK, __FILE__, __LINE__ )
+#undef malloc
+#define malloc(size) DBG_MALLOC(size)
+#define DBG_FREE(el) _free_dbg(el, _NORMAL_BLOCK)
+#undef free
+#define free(el) DBG_FREE(el)
+#endif
+
 LPSTR UnicodeToAnsi(LPCWSTR s);
 wchar_t* AnsiToUnicode(const char* cTemp);
 
 #define WINVERSION(major,minor) MAKELONG(minor,major)
 DWORD GetDllVersion(LPCTSTR lpszDllName);
+
+bool fileExists(wchar_t* filename);
+wchar_t* specialDirs(const wchar_t* cTemp, int mode = 0);
 
 #endif /* COMMON_H */

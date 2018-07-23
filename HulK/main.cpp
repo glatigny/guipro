@@ -28,7 +28,6 @@
 #include "mouse.h"
 #include "windowHK.h"
 #include "plugin.h"
-#include <crtdbg.h>
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -44,16 +43,18 @@ HWND g_hwndShell	= NULL;
 HWND g_deskWindow	= NULL;
 HWND g_shell_tray	= NULL;
 
+LPWSTR g_loadingmessage = NULL;
+
 /* ------------------------------------------------------------------------------------------------- */
 #include <stdio.h>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 #ifndef NDEBUG
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-flag |= _CRTDBG_LEAK_CHECK_DF;
+flag |= _CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF;
 _CrtSetDbgFlag(flag);
+_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
 #endif 
 
 	// Keep the instance handle of the application
@@ -94,6 +95,153 @@ _CrtSetDbgFlag(flag);
 
 /* ------------------------------------------------------------------------------------------------- */
 
+inline void hulk_handle_Create(HWND hwnd)
+{
+	g_hwndMain = hwnd;
+
+	g_hwndShell = GetShellWindow();
+	g_deskWindow = GetDesktopWindow();
+	g_shell_tray = FindWindow(L"Shell_TrayWnd", L"");
+
+	// Set icons
+	SendMessage(hwnd, WM_SETICON, ICON_BIG,
+		(LONG)(LONG_PTR)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON), IMAGE_ICON,
+			GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR));
+
+	SendMessage(hwnd, WM_SETICON, ICON_SMALL,
+		(LONG)(LONG_PTR)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TRAY_ICON), IMAGE_ICON,
+			GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR));
+
+	windows_version = GetDllVersion(TEXT("Shell32.dll"));
+
+	// Configuration Loading
+	//  bycursor and borderless options
+	// (see below this file for more informations about theses options)
+	// openConfig();
+	if (openConfig() == FALSE)
+	{
+		MessageBox(g_hwndMain, L"Configuration file not found or invalid", ERR_MSGBOX_TITLE, NULL);
+		PostQuitMessage(0);
+		return;
+	}
+
+	// Set the Tray Icon
+	ReloadExTrayIcon();
+
+	// Show loading error messages
+	if (g_loadingmessage != NULL) {
+		ShowBalloon(ERR_MSGBOX_TITLE, g_loadingmessage, NIIF_ERROR);
+		free(g_loadingmessage);
+		g_loadingmessage = NULL;
+	}
+
+	InitMenuVars();
+
+	// Set up the drag window feature
+	installHookMouse();
+
+#ifdef HULK_USE_SHELLHOOK
+	// Register for shell hook
+	RegisterShellHookWindow(g_hwndMain);
+#endif
+
+	// Clean the memory in order to have a light application
+	FlushMemory();
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+inline void hulk_handle_Hotkey(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	HWND l_hwnd = NULL;
+
+	if (wParam < IDH_HOTKEY_BASE)
+		return;
+
+	size_t nb = g_hulk->hotkeys.size();
+	if (wParam > IDH_HOTKEY_BASE + nb)
+		return;
+
+	nb = (wParam - IDH_HOTKEY_BASE);
+	hkConfig* cfg = g_hulk->hotkeys.at(nb);
+	if (!cfg)
+		return;
+
+	l_hwnd = (cfg->target == HK_TARGET_HWND_POINTED) ? HulkGetPointedWindow() : HulkGetActiveWindow();
+
+	if (cfg->plugin == 0)
+	{
+		switch (cfg->action)
+		{
+		case HK_ACT_QUIT:
+			QuitHulK();
+			break;
+		case HK_ACT_MINIMIZE:
+			minimizeWindow(l_hwnd);
+			break;
+		case HK_ACT_CLOSE:
+			closeWindow(l_hwnd);
+			break;
+		case HK_ACT_MAXIMIZE:
+			maximizeWindow(l_hwnd);
+			break;
+		case HK_ACT_ICONIZE:
+			iconizeWindow(l_hwnd);
+			break;
+		case HK_ACT_TRAYNIZE:
+			traynizeWindow(l_hwnd);
+			break;
+		case HK_ACT_UNICONIZE:
+			UnIconizeLast();
+			break;
+		case HK_ACT_ALWTOP:
+			alwaysOnTop(l_hwnd);
+			break;
+		}
+		return;
+	}
+
+	HMODULE module = getPluginModule(cfg->plugin);
+	if (module == 0)
+		return;
+	callPluginAction(module, cfg->action, l_hwnd);
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+inline void hulk_handle_PluginEvent(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (lParam)
+	{
+	case PORTAL_MINIMIZE:
+		minimizeWindow((HWND)wParam);
+		break;
+	case PORTAL_MAXIMISE:
+		maximizeWindow((HWND)wParam);
+		break;
+	case PORTAL_CLOSE:
+		closeWindow((HWND)wParam);
+		break;
+	case PORTAL_ICONIZE:
+		iconizeWindow((HWND)wParam);
+		break;
+	case PORTAL_TRAYNIZE:
+		traynizeWindow((HWND)wParam);
+		break;
+	case PORTAL_UNICONIZE:
+		UnIconizeLast();
+		break;
+	case PORTAL_ONTOP:
+		alwaysOnTop((HWND)wParam);
+		break;
+	case PORTAL_BALLOON:
+		pluginBalloon(getPlugin((UINT)wParam), PORTAL_PLUGIN_RETURN_TXT);
+		break;
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static UINT s_uTaskBarCreated = 0;
@@ -108,138 +256,16 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #ifdef HULK_USE_SHELLHOOK
 		s_uShellHook = RegisterWindowMessage(L"SHELLHOOK");
 #endif
-		g_hwndMain = hwnd;
-
-		g_hwndShell = GetShellWindow();
-		g_deskWindow = GetDesktopWindow();
-		g_shell_tray = FindWindow(L"Shell_TrayWnd",L"");
-
-		// Set icons
-		SendMessage(hwnd, WM_SETICON, ICON_BIG, 
-			(LONG)(LONG_PTR)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON), IMAGE_ICON, 
-			GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR));
-
-		SendMessage(hwnd, WM_SETICON, ICON_SMALL, 
-			(LONG)(LONG_PTR)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TRAY_ICON), IMAGE_ICON, 
-			GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR));
-
-		windows_version = GetDllVersion(TEXT("Shell32.dll"));
-		
-		// Configuration Loading
-		//  bycursor and borderless options
-		// (see below this file for more informations about theses options)
-		openConfig();
-
-		// Set the Tray Icon
-		ReloadExTrayIcon();
-
-		InitMenuVars();
-
-		if( !registerConfig(TRUE) )
-		{
-			DeleteTrayIcon(g_hwndMain, IDI_MAIN_ICON);
-			PostQuitMessage(0);
-			return 0;
-		}
-		
-		// Set up the drag window feature
-		installHookMouse();
-
-#ifdef HULK_USE_SHELLHOOK
-		// Register for shell hook
-		RegisterShellHookWindow(g_hwndMain);
-#endif
-
-		// Clean the memory in order to have a light application
-		FlushMemory();
+		hulk_handle_Create(hwnd);
 		break;
 
 	case WM_HOTKEY:
-		{
-			HWND l_hwnd = NULL;
-
-			if( (wParam >= IDH_HOTKEY_PLUGIN_BASE) && (wParam <= IDH_HOTKEY_PLUGIN_BASE + g_pluginId) )
-			{
-				pluginHotkey( (UINT) wParam);
-			}
-			else
-			{
-				switch( wParam )
-				{
-					case IDH_HOTKEY_BASE + HK_ACT_MINIMISE_POINTED:
-							l_hwnd = HulkGetPointedWindow();
-							minimizeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_MINIMISE_CURRENT:
-							l_hwnd = HulkGetActiveWindow();
-							minimizeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_CLOSE_POINTED:
-							l_hwnd = HulkGetPointedWindow();
-							closeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_CLOSE_CURRENT:
-							l_hwnd = HulkGetActiveWindow();
-							closeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_MAXIMISE_POINTED:
-							l_hwnd = HulkGetPointedWindow();
-							maximizeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_MAXIMISE_CURRENT:
-							l_hwnd = HulkGetActiveWindow();
-							maximizeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_ICONIZE_POINTED:
-							l_hwnd = HulkGetPointedWindow();
-							iconizeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_ICONIZE_CURRENT:
-							l_hwnd = HulkGetActiveWindow();
-							iconizeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_TRAYNIZE_POINTED:
-							l_hwnd = HulkGetPointedWindow();
-							traynizeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_TRAYNIZE_CURRENT:
-							l_hwnd = HulkGetActiveWindow();
-							traynizeWindow(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_UNICONIZE:
-							UnIconizeLast();
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_ALWTOP_POINTED:
-							l_hwnd = HulkGetPointedWindow();
-							alwaysOnTop(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_ALWTOP_CURRENT:
-							l_hwnd = HulkGetActiveWindow();
-							alwaysOnTop(l_hwnd);
-						break;
-
-					case IDH_HOTKEY_BASE + HK_ACT_QUIT:
-							QuitHulK();
-						break;
-				}
-			}
-		}
+		hulk_handle_Hotkey(hwnd, uMsg, wParam, lParam);
 		FlushMemory();
 		break;
 
 	case WM_DESTROY:
+	case WM_QUERYENDSESSION:
 		QuitHulK();
 		break;
 
@@ -253,49 +279,19 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				FlushMemory();
 			}
 		}
-		else
+		else if( (UINT)lParam == WM_LBUTTONUP )
 		{
-			if( (UINT)lParam == WM_LBUTTONUP )
-			{
-				UnIconize( (UINT)wParam );
-			}
-			else if( (UINT)lParam == WM_RBUTTONUP )
-			{
-				ShowIconizeMenu( (UINT)wParam );
-			}
+			UnIconize( (UINT)wParam );
 		}
-
+		else if( (UINT)lParam == WM_RBUTTONUP )
+		{
+			ShowIconizeMenu( (UINT)wParam );
+		}
 		FlushMemory();
 		break;
 
 	case WM_PLUGIN_EVENT:
-		switch( lParam )
-		{
-			case PORTAL_MINIMIZE:
-				minimizeWindow( (HWND)wParam );
-				break;
-			case PORTAL_MAXIMISE:
-				maximizeWindow( (HWND)wParam );
-				break;
-			case PORTAL_CLOSE:
-				closeWindow( (HWND)wParam );
-				break;
-			case PORTAL_ICONIZE:
-				iconizeWindow( (HWND)wParam );
-				break;
-			case PORTAL_TRAYNIZE:
-				traynizeWindow( (HWND)wParam );
-				break;
-			case PORTAL_UNICONIZE:
-				UnIconizeLast();
-				break;
-			case PORTAL_ONTOP:
-				alwaysOnTop( (HWND)wParam );
-				break;
-			case PORTAL_BALLOON:
-				pluginBalloon(pluginGetModule( (UINT)wParam ), PORTAL_PLUGIN_RETURN_TXT);
-				break;
-		}
+		hulk_handle_PluginEvent(hwnd, uMsg, wParam, lParam);
 		FlushMemory();
 		break;
 
@@ -404,6 +400,11 @@ BOOL isBanishedHandle(HWND hwnd)
 	if( !wcscmp(buffer, L"ImmersiveSplashScreenWindowClass") )
 		return true;
 	if( !wcscmp(buffer, L"Windows.UI.Core.CoreWindow") )
+		return true;
+
+	// Windows 10 specific
+
+	if (!wcscmp(buffer, L"MultitaskingViewFrame"))
 		return true;
 
 	return false;

@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Lib">
+      <UniqueIdentifier>{ea62e87f-bb9c-4ebe-929a-63f2cec59b1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib\pugixml">
+      <UniqueIdentifier>{491c4674-107e-4d44-97ec-50e4c124d762}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp">
@@ -46,6 +52,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="keyboard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pugixml\pugixml.cpp">
+      <Filter>Lib\pugixml</Filter>
+    </ClCompile>
+    <ClCompile Include="xmlconfig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -89,6 +101,18 @@
     <ClInclude Include="keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pugixml\pugiconfig.hpp">
+      <Filter>Lib\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="pugixml\pugixml.hpp">
+      <Filter>Lib\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="xmlconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hulkConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="hulk_icon_16.ico">
@@ -104,8 +128,18 @@
     </CustomBuildStep>
   </ItemGroup>
   <ItemGroup>
+    <Xml Include="hulk.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
     <ResourceCompile Include="Hulk.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="hulk.minimal.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

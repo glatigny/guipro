@@ -130,10 +130,14 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 UINT mouseEvent(UINT p_event, bool status, LPARAM lParam)
 {
 	UINT ret = 0;
-#define KEYSTATE(a) ((GetKeyState(VK_ ## a) & (1<<15)) != 0)
-#define MOUSE_OPTION(a,b) ((g_mouse_options[MOUSE_ACT_ ## a].mod & MOD_ ## b) != 0)
 
-	if( g_mouse_options[MOUSE_ACT_DRAG].btn == p_event )
+	if (g_hulk == NULL)
+		return ret;
+
+#define KEYSTATE(a) ((GetKeyState(VK_ ## a) & (1<<15)) != 0)
+#define MOUSE_OPTION(a,b) ((g_hulk->mouses[MOUSE_ACT_ ## a].mod & MOD_ ## b) != 0)
+
+	if( g_hulk->mouses[MOUSE_ACT_DRAG].btn == p_event )
 	{
 		if( ((!movingInProgress == status) &&
 			(KEYSTATE(LMENU) == MOUSE_OPTION(DRAG, ALT)) && 
@@ -162,7 +166,7 @@ UINT mouseEvent(UINT p_event, bool status, LPARAM lParam)
 		}
 	}
 
-	if( g_mouse_options[MOUSE_ACT_RESIZE].btn == p_event) 
+	if(g_hulk->mouses[MOUSE_ACT_RESIZE].btn == p_event)
 	{
 		if( ((!resizeInProgress && status) &&
 			(KEYSTATE(LMENU) == MOUSE_OPTION(RESIZE, ALT)) && 
@@ -191,7 +195,7 @@ UINT mouseEvent(UINT p_event, bool status, LPARAM lParam)
 		}
 	}
 
-	if( g_mouse_options[MOUSE_ACT_SWITCH].btn == p_event )
+	if(g_hulk->mouses[MOUSE_ACT_SWITCH].btn == p_event )
 	{
 		if( (KEYSTATE(LMENU) == MOUSE_OPTION(SWITCH, ALT)) && 
 			(KEYSTATE(LCONTROL) == MOUSE_OPTION(SWITCH, CONTROL)) && 

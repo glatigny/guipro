@@ -93,7 +93,7 @@ void ShowBalloon(wchar_t* title, wchar_t* text, DWORD type)
 	else
 	{
 		nid.cbSize = sizeof(NOTIFYICONDATA);
-		nid.dwInfoFlags = type;
+		nid.dwInfoFlags = type | NIIF_NOSOUND;
 	}
 
 	nid.hWnd = g_hwndMain;

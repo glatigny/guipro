@@ -18,11 +18,13 @@ More details about the PortAL configuration in the [Wiki](https://github.com/gla
 
 When some tools exists to move the windows by pressing a key and clicking with the mouse ; HulK provide a set of features to help the management of the windows.
 
+* Drag your windows simply by clicking in with the "alt" pressed (also called "alt drag").
 * The "Alt + F4" shortcut is not very good for the hand while using "Win + Esc" is easier and faster.
 * There is no shortcut to minimize a window, so HulK propose to use "Win + ~" one (and "Win + ²" for Azerty keyboards).
 * HulK also allow to resize windows using the right button of the mouse (when the left button allow to move).
 * It also provide features to minimize the windows into the systray ; using a shortcut or by clicking with the right mouse button on the "min" window icon.
 * If you do not like the systray to really hide a window, HulK can minimize a window in his systray menu so you can launch a program and completly hide it from you desktop.
+* Extend features via plugins, like "desktops" which handle Win10 Virtual Desktops.
 
 ## Volume Changer - _VulCan_
 
@@ -41,5 +43,5 @@ Download binaries from: http://glatigny.github.io/guipro/ (or in the [releases s
 
 # License
 
-* Copyright (C) 2007 - 2016 Glatigny Jerome. All rights reserved.
+* Copyright (C) 2007 - 2018 Glatigny Jerome. All rights reserved.
 * Distributed under the GNU General Public License version 2 or later

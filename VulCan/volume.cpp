@@ -83,6 +83,11 @@ int changeVolumeUp()
 	if (FAILED(hr))
 		return -1;
 
+	if (g_volume_step >= 1.0)
+		g_volume_step = (float)0.3;
+	if (g_volume_step <= 0.01)
+		g_volume_step = (float)0.02;
+
 	fVolume += (float)g_volume_step;
 	if (fVolume > 1)
 		fVolume = 1;
@@ -105,6 +110,11 @@ int changeVolumeDown()
 	hr = g_pEndptVol->GetMasterVolumeLevelScalar(&fVolume);
 	if (FAILED(hr))
 		return -1;
+
+	if (g_volume_step >= 1.0)
+		g_volume_step = (float)0.3;
+	if (g_volume_step <= 0.01)
+		g_volume_step = (float)0.02;
 
 	fVolume -= (float)g_volume_step;
 	if (fVolume < 0)

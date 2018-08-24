@@ -50,8 +50,8 @@ BOOL DeleteTrayIcon(HWND hwnd, UINT uID)
 {
 	NOTIFYICONDATA nid; 
 	nid.cbSize = sizeof(NOTIFYICONDATA);
-    nid.hWnd = hwnd;
-    nid.uID = uID;
+	nid.hWnd = hwnd;
+	nid.uID = uID;
 	return(Shell_NotifyIcon(NIM_DELETE, &nid));
 }
 
@@ -97,12 +97,12 @@ void ShowVolumeBalloon(int vol) {
 		wchar_t* l_volume = (wchar_t*)malloc(size);
 		memset(l_volume, 0, size);
 		wsprintfW(l_volume, WC_VULCAN_VOLUME_CHANGE, vol);
-		ShowBalloon(WC_VULCAN_VOLUME_TITLE, l_volume, NIIF_INFO);
+		ShowBalloon(WC_VULCAN_VOLUME_TITLE, l_volume, NIIF_USER);
 		free(l_volume);
 	}
 	else if (vol == 0)
 	{
-		ShowBalloon(WC_VULCAN_VOLUME_TITLE, WC_VULCAN_VOLUME_MUTE, NIIF_INFO);
+		ShowBalloon(WC_VULCAN_VOLUME_TITLE, WC_VULCAN_VOLUME_MUTE, NIIF_USER);
 	}
 }
 
@@ -113,28 +113,16 @@ void ShowBalloon(wchar_t* title, wchar_t* text, DWORD type)
 	NOTIFYICONDATA nid;
 	g_aboutballoon = 0;
 
-	// Set special size in order to be compatible with win2000
-	if (windows_version <= WINVER_2000)
-	{
-		nid.cbSize = NOTIFYICONDATA_V2_SIZE;
-		if( type == NIIF_USER )
-			nid.dwInfoFlags = NIIF_INFO;
-		else
-			nid.dwInfoFlags = type;
-		// Display 10 seconds
-		nid.uTimeout = 15;
-	}
-	else
-	{
-		nid.cbSize = sizeof(NOTIFYICONDATA);
-		nid.dwInfoFlags = type;
-		nid.hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON));
-	}
+	nid.cbSize = sizeof(NOTIFYICONDATA);
+	nid.dwInfoFlags = type | NIIF_NOSOUND | NIIF_LARGE_ICON;
+	nid.hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_TRAY_ICON));
+	nid.uVersion = NOTIFYICON_VERSION_4;
+	nid.hBalloonIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON));
 
 	nid.hWnd = g_hwndMain;
 	nid.uID = IDI_MAIN_ICON;
-	nid.uFlags = NIF_INFO;
-	
+	nid.uFlags = NIF_INFO | NIF_REALTIME;
+
 	ZeroMemory(nid.szInfoTitle, SIZEOF_ARRAY(nid.szInfoTitle));
 	ZeroMemory(nid.szInfo, SIZEOF_ARRAY(nid.szInfo));
 	

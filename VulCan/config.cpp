@@ -97,7 +97,7 @@ int openConfig()
 					step = 30;
 				if (step < 2)
 					step = 1;
-				g_volume_step = (float)(step / 100);
+				g_volume_step = (((float)step) / 100);
 			}
 
 			//

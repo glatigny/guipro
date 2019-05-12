@@ -18,14 +18,38 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef XML_CONFIG_H
-#define XML_CONFIG_H
+#include "common.h"
 
-#include "portalConfig.h"
+#ifndef PATHSTORAGE_H
+#define PATHSTORAGE_H
+#ifdef USE_PATH_STORAGE
 
-void pushHotkey(PortalConfig* config, PortalProg* l_prog);
+#include <vector>
 
-PortalConfig* loadConfig(wchar_t* filename);
-int saveConfig(PortalConfig* config, wchar_t* filename);
+typedef struct _pathSlice {
+	size_t parent;
+	size_t size;
+	wchar_t* content;
+} pathSlice;
 
-#endif /* XML_CONFIG_W_H */
+class pathStorage
+{
+	public:
+		std::vector<pathSlice> entries;
+
+		pathStorage();
+		~pathStorage();
+
+		size_t add(const wchar_t*);
+		bool remove(const wchar_t*);
+		bool remove(size_t);
+		wchar_t* get(size_t);
+		size_t search(const wchar_t*);
+		void clear();
+
+	private:
+		size_t wcscmpidx(const wchar_t*, const wchar_t*);
+};
+
+#endif
+#endif /* PATHSTORAGE_H */

@@ -29,7 +29,7 @@ UINT defaultShowShortcut = 0x0;
 
 /* ------------------------------------------------------------------------------------------------- */
 
-UINT isTrue(const wchar_t* cTemp, UINT ret = 0x0)
+static UINT isTrue(const wchar_t* cTemp, UINT ret = 0x0)
 {
 	if( (cTemp != NULL) && (cTemp[0] != L'\0') )
 	{
@@ -49,7 +49,7 @@ UINT isTrue(const wchar_t* cTemp, UINT ret = 0x0)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-COLORREF getColor(const wchar_t* cTemp)
+static COLORREF getColor(const wchar_t* cTemp)
 {
 	if (cTemp == NULL)
 		return 0;
@@ -72,7 +72,7 @@ COLORREF getColor(const wchar_t* cTemp)
 }
 /* ------------------------------------------------------------------------------------------------- */
 
-ColorPair* getColorPair(const wchar_t* cTemp)
+static ColorPair* getColorPair(const wchar_t* cTemp)
 {
 	if (cTemp == NULL)
 		return NULL;
@@ -92,7 +92,7 @@ ColorPair* getColorPair(const wchar_t* cTemp)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-void getGeneralOptions(PortalConfig* config, pugi::xml_node elem)
+static void getGeneralOptions(PortalConfig* config, pugi::xml_node elem)
 {
 	if( isTrue(elem.attribute(L"defaultshell").value() ) ) 
 		config->shellExecuteDefault = true;
@@ -107,7 +107,7 @@ void getGeneralOptions(PortalConfig* config, pugi::xml_node elem)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-UINT getOptions(pugi::xml_node elem)
+static UINT getOptions(pugi::xml_node elem)
 {
 	UINT options = PROG_OPTION_NONE;
 
@@ -144,7 +144,7 @@ UINT getOptions(pugi::xml_node elem)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-UINT getEvents(pugi::xml_node elem)
+static UINT getEvents(pugi::xml_node elem)
 {
 	UINT events = PROG_EVENT_NONE;
 
@@ -177,7 +177,7 @@ UINT getEvents(pugi::xml_node elem)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-void loadSubMenu(pugi::xml_node elem, PortalProg* container, PortalConfig* config)
+static void loadSubMenu(pugi::xml_node elem, PortalProg* container, PortalConfig* config)
 {
 	PortalProg* l_prog = NULL;
 	PortalProg* prog_tmp = NULL;
@@ -212,19 +212,20 @@ void loadSubMenu(pugi::xml_node elem, PortalProg* container, PortalConfig* confi
 				l_prog->overriding = (isTrue(elem.attribute(L"over").value()) != 0x0);
 
 			if(!elem.attribute(L"ico").empty())
-				l_prog->icoPath = specialDirs(elem.attribute(L"ico").value());
+				l_prog->setIcoPath( specialDirs(elem.attribute(L"ico").value()) );
 
 			if(!elem.attribute(L"path").empty())
-				l_prog->dirPath = specialDirs(elem.attribute(L"path").value());
+				l_prog->setDirPath( specialDirs(elem.attribute(L"path").value()) );
 
 			if(!elem.attribute(L"exe").empty())
-				l_prog->progExe = specialDirs(elem.attribute(L"exe").value());
+				l_prog->setProgExe( specialDirs(elem.attribute(L"exe").value()) );
 
 			if(!elem.attribute(L"param").empty())
-				l_prog->progParam = specialDirs(elem.attribute(L"param").value());
+				l_prog->setProgParam( specialDirs(elem.attribute(L"param").value()) );
 			l_prog->options = getOptions(elem);
 			l_prog->events = getEvents(elem);
 
+			// Insert the Portal Program Entry
 			container->progs.push_back( l_prog );
 
 			pushHotkey(config, l_prog);
@@ -250,17 +251,18 @@ void loadSubMenu(pugi::xml_node elem, PortalProg* container, PortalConfig* confi
 				l_prog->overriding = (isTrue(elem.attribute(L"over").value()) != 0x0);
 
 			if(!elem.attribute(L"ico").empty())
-				l_prog->icoPath = specialDirs(elem.attribute(L"ico").value());
+				l_prog->setIcoPath( specialDirs(elem.attribute(L"ico").value()) );
 
 			l_prog->options = getOptions(elem);
 
+			// Insert the Portal Program Entry
 			container->progs.push_back( l_prog );
 
 			pushHotkey(config, l_prog);
 			config->flat.push_back( l_prog );
 			l_prog->uID = (UINT)config->flat.size();
 
-			loadSubMenu(elem.first_child(), l_prog, config );
+			loadSubMenu(elem.first_child(), l_prog, config);
 		}
 		else
 		{
@@ -283,23 +285,24 @@ void loadSubMenu(pugi::xml_node elem, PortalProg* container, PortalConfig* confi
 				l_prog->overriding = (isTrue(elem.attribute(L"over").value()) != 0x0);
 
 			if(!elem.attribute(L"ico").empty())
-				l_prog->icoPath = specialDirs(elem.attribute(L"ico").value());
+				l_prog->setIcoPath( specialDirs(elem.attribute(L"ico").value()) );
 
 			l_prog->options = getOptions(elem);
 
 			if( !wcscmp(elem.name(), L"sep" ) )
 			{
-				l_prog->progExe = _wcsdup(L"|sep");
+				l_prog->setProgExe( _wcsdup(L"|sep") );
 			}
 			else if( !wcscmp(elem.name(), L"quit" ) )
 			{
-				l_prog->progExe = _wcsdup(L"|quit");
+				l_prog->setProgExe(_wcsdup(L"|quit") );
 			}
 			else if( !wcscmp(elem.name(), L"about" ) )
 			{
-				l_prog->progExe = _wcsdup(L"|about");
+				l_prog->setProgExe(_wcsdup(L"|about") );
 			}
 
+			// Insert the Portal Program Entry
 			container->progs.push_back( l_prog );
 
 			pushHotkey(config, l_prog);
@@ -332,7 +335,7 @@ void loadSubMenu(pugi::xml_node elem, PortalProg* container, PortalConfig* confi
 
 /* ------------------------------------------------------------------------------------------------- */
 
-void loadVariables(pugi::xml_node elem, PortalVariableVector* variables)
+static void loadVariables(pugi::xml_node elem, PortalVariableVector* variables)
 {
 	PortalVariable* var = NULL;
 
@@ -365,7 +368,7 @@ void loadVariables(pugi::xml_node elem, PortalVariableVector* variables)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-void loadMenuSkin(pugi::xml_node elem)
+static void loadMenuSkin(pugi::xml_node elem)
 {
 	clearMenuSkin();
 	g_PortalMenuDesign = (PortalMenuDesign*)malloc(sizeof(PortalMenuDesign));
@@ -513,13 +516,13 @@ PortalConfig* loadConfig(wchar_t* filename)
 				if (!menu.attribute(L"over").empty())
 					l_prog->overriding = (isTrue(menu.attribute(L"over").value()) != 0x0);
 				if (!menu.attribute(L"ico").empty())
-					l_prog->icoPath = specialDirs(menu.attribute(L"ico").value());
+					l_prog->setIcoPath( specialDirs(menu.attribute(L"ico").value()) );
 				if (!menu.attribute(L"path").empty())
-					l_prog->dirPath = specialDirs(menu.attribute(L"path").value());
+					l_prog->setDirPath( specialDirs(menu.attribute(L"path").value()) );
 				if (!menu.attribute(L"exe").empty())
-					l_prog->progExe = specialDirs(menu.attribute(L"exe").value());
+					l_prog->setProgExe( specialDirs(menu.attribute(L"exe").value()) );
 				if (!menu.attribute(L"param").empty())
-					l_prog->progParam = specialDirs(menu.attribute(L"param").value());
+					l_prog->setProgParam( specialDirs(menu.attribute(L"param").value()) );
 				l_prog->options = getOptions(menu);
 				l_prog->events = getEvents(menu);
 			}
@@ -536,7 +539,7 @@ PortalConfig* loadConfig(wchar_t* filename)
 				if (!menu.attribute(L"over").empty())
 					l_prog->overriding = (isTrue(menu.attribute(L"over").value()) != 0x0);
 				if (!menu.attribute(L"ico").empty())
-					l_prog->icoPath = specialDirs(menu.attribute(L"ico").value());
+					l_prog->setIcoPath( specialDirs(menu.attribute(L"ico").value()) );
 				l_prog->options = getOptions(menu);
 
 				if (isTrue(menu.attribute(L"autoopen").value()) == 0x1)

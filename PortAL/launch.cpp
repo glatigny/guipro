@@ -27,9 +27,9 @@
 
 void launch(PortalProg* prog)
 {
-	wchar_t* progname = prog->progExe;
-	wchar_t* progparams = prog->progParam;
-	wchar_t* dirname = prog->dirPath;
+	wchar_t* progname = prog->getProgExe();
+	wchar_t* progparams = prog->getProgParam();
+	wchar_t* dirname = prog->getDirPath();
 
 	const wchar_t* s_szConfig = progname;
 	wchar_t szBuff[512] = L"";
@@ -48,6 +48,9 @@ void launch(PortalProg* prog)
 		{
 			ShowAbout(g_currentMenu);
 		}
+		prog->freeRes(progname);
+		prog->freeRes(progparams);
+		prog->freeRes(dirname);
 		return;
 	}
 
@@ -120,6 +123,10 @@ void launch(PortalProg* prog)
 			n--;
 		wcsncpy_s(szDirName, szBuff, n + 1);
 	}
+
+	prog->freeRes(progname);
+	prog->freeRes(progparams);
+	prog->freeRes(dirname);
 
 	if( (g_portal->shellExecuteDefault && !(prog->options & PROG_OPTION_NOSHELL) ) || prog->options & PROG_OPTION_SHELL )
 	{

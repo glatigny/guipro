@@ -220,7 +220,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					ShowTrayMenu(g_portal->menus[pos], param);
 					g_currentMenu = pos;
 				}
-				else if( (g_portal->menus[pos] != NULL) && (g_portal->menus[pos]->progExe != NULL ))
+				else if( (g_portal->menus[pos] != NULL) && (g_portal->menus[pos]->isProgExe()))
 				{
 					if((UINT)lParam == WM_LBUTTONUP)
 					{

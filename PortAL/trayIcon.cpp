@@ -265,19 +265,25 @@ void DeleteTrayIcons()
 
 void loadSystrayIcon(int pos)
 {
-	if( g_portal->menus[pos]->icoPath )
+	if( g_portal->menus[pos]->isIcoPath() )
 	{
 		SHFILEINFO tSHFileInfo;
 		ZeroMemory(&tSHFileInfo, sizeof(tSHFileInfo));
-		SHGetFileInfo( g_portal->menus[pos]->icoPath , 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+		
+		wchar_t* t = g_portal->menus[pos]->getIcoPath();
+		SHGetFileInfo( t , 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+		g_portal->menus[pos]->freeRes(t);
 
 		g_IconTray[pos] = tSHFileInfo.hIcon;
 	}
-	else if( g_portal->menus[pos]->progExe )
+	else if( g_portal->menus[pos]->isProgExe() )
 	{
 		SHFILEINFO tSHFileInfo;
 		ZeroMemory(&tSHFileInfo, sizeof(tSHFileInfo));
-		DWORD_PTR ret = SHGetFileInfo( g_portal->menus[pos]->progExe , 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+
+		wchar_t* t = g_portal->menus[pos]->getProgExe();
+		DWORD_PTR ret = SHGetFileInfo( t , 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+		g_portal->menus[pos]->freeRes(t);
 
 		if( ret != 0 )
 		{

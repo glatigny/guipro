@@ -46,12 +46,13 @@
 
 /* ------------------------------------------------------------------------------------------------- */
 
-//#define MENU_DRAW_V1					// Old menu design.
-//#define ICON_MANAGER					// Old icon manager.
-//#define ICON_MANAGER_THREAD			// Loading image in a thread (experimental)
-//#define PORTAL_REFUSE_HOTKEY_ERROR	// Old rules for the loading of the configuration.
-//#define USE_GDI_MENU
-//#define DEV_MENU_DESIGN_SUBCLASSING_FOR_BORDER
+//#define MENU_DRAW_V1								// Old menu design.
+//#define ICON_MANAGER								// Old icon manager.
+//#define ICON_MANAGER_THREAD						// Loading image in a thread (experimental)
+//#define PORTAL_REFUSE_HOTKEY_ERROR				// Old rules for the loading of the configuration.
+//#define USE_GDI_MENU								// Use GDI+ to handle and display the icons (experimental)
+//#define DEV_MENU_DESIGN_SUBCLASSING_FOR_BORDER	// Add an extra layer to draw the menu and avoid the white borders (experimental)
+//#define USE_PATH_STORAGE							// Path Storage feature to reduce memory footprint (experimental)
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -98,7 +99,7 @@
 #define WC_PORTAL_ABOUT_ITEM_TEXT		L"About"
 #define WC_PORTAL_QUIT_ITEM_TEXT		L"Quit"
 
-#define PORTAL_VERSION					L"1.5.1"
+#define PORTAL_VERSION					L"1.5.2"
 #define WC_PORTAL_ABOUT_TEXT_TITLE		L"PortAL " PORTAL_VERSION
 #define WC_PORTAL_ABOUT_TEXT			L"Portable Application Launcher\nhttp://glatigny.github.io/guipro/"
 

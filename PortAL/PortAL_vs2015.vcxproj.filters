@@ -68,6 +68,9 @@
     <ClInclude Include="pugixml\pugiconfig.hpp">
       <Filter>Header Files\pugixml</Filter>
     </ClInclude>
+    <ClInclude Include="pathStorage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp">
@@ -102,6 +105,12 @@
     </ClCompile>
     <ClCompile Include="pugixml\pugixml.cpp">
       <Filter>Source Files\pugixml</Filter>
+    </ClCompile>
+    <ClCompile Include="pathStorage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="portalConfig.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

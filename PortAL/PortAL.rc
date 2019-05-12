@@ -13,10 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// French (France) resources
+// Français (France) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
 LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -50,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,1,0
- PRODUCTVERSION 1,5,1,0
+ FILEVERSION 1,5,2,0
+ PRODUCTVERSION 1,5,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -68,13 +69,13 @@ BEGIN
         BEGIN
             VALUE "Comments", "Glatigny Jerome"
             VALUE "FileDescription", "Portable Application Launcher - GuiPro project"
-            VALUE "FileVersion", "1.5.1.0"
+            VALUE "FileVersion", "1.5.2.0"
             VALUE "InternalName", "PortAL"
-            VALUE "LegalCopyright", "GPL 2007-2016"
+            VALUE "LegalCopyright", "GPL 2007-2019"
             VALUE "LegalTrademarks", "GuiPro project - http://glatigny.github.io/guipro/"
             VALUE "OriginalFilename", "PortAL.exe"
             VALUE "ProductName", "Portable Application Launcher"
-            VALUE "ProductVersion", "1.5.1.0"
+            VALUE "ProductVersion", "1.5.2.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -92,7 +93,8 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_MAIN_ICON           ICON                    "usb.minimal.ico"
-#endif    // French (France) resources
+
+#endif    // Français (France) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

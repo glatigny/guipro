@@ -21,6 +21,7 @@
 #ifndef PORTAL_CONFIG_H
 #define PORTAL_CONFIG_H
 
+#include "common.h"
 #include <windows.h>
 #include <vector>
 
@@ -46,12 +47,20 @@ extern void launch(PortalProg* prog);
 
 class PortalProg
 {
-	public:
-		wchar_t*	progName;
+	protected:
+#ifdef USE_PATH_STORAGE
+		size_t		icoPath;
+		size_t		progExe;
+		size_t		progParam;
+		size_t		dirPath;
+#else
 		wchar_t*	icoPath;
 		wchar_t*	progExe;
 		wchar_t*	progParam;
 		wchar_t*	dirPath;
+#endif
+	public:
+		wchar_t*	progName;
 		UINT		hkey;
 		UINT		modifier;
 		bool		overriding;
@@ -61,20 +70,50 @@ class PortalProg
 		PortalProg*	nextSameHotkey;
 		std::vector<PortalProg*> progs;
 
-		PortalProg()
+		PortalProg();
+		~PortalProg();
+
+		void setIcoPath(wchar_t*);
+		wchar_t* getIcoPath();
+		bool isIcoPath();
+		//
+		void setProgExe(wchar_t*);
+		wchar_t* getProgExe();
+		bool isProgExe();
+		//
+		void setProgParam(wchar_t*);
+		wchar_t* getProgParam();
+		bool isProgParam();
+		//
+		void setDirPath(wchar_t*);
+		wchar_t* getDirPath();
+		bool isDirPath();
+
+		inline void freeRes(wchar_t* content) {
+#ifdef USE_PATH_STORAGE
+			if (content != NULL)
+				free(content);
+#endif
+		};
+
+		void run(bool);
+/*
+		PortalProg() :
+			progName(NULL), icoPath(NULL), progExe(NULL), progParam(NULL), dirPath(NULL),
+			hkey(0), modifier(0), uID(0), options(0), overriding(false),
+			nextSameHotkey(NULL)
 		{
-			progName = NULL;
-			icoPath = NULL;
-			progExe = NULL;
-			progParam = NULL;
-			dirPath = NULL;
-			hkey = 0;
-			modifier = 0;
-			overriding = false;
-			uID = 0;
-			options = 0;
-			nextSameHotkey = NULL;
 			progs.clear();
+		}
+
+		void setIcoPath(wchar_t* path)
+		{
+
+		}
+
+		wchar_t* getIcoPath()
+		{
+			return NULL;
 		}
 
 		~PortalProg()
@@ -105,6 +144,7 @@ class PortalProg
 			if( progExe != NULL && progExe[0] ==  '|' )
 				launch( this );
 		}
+*/
 };
 
 typedef std::vector<PortalProg*> PortalProgVector;

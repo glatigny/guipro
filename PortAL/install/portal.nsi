@@ -9,11 +9,11 @@
 ;General
 	;Name and file
 	Name "Portable Application Launcher"
-	OutFile "PortAL-1.5.0.exe"
+	OutFile "PortAL-1.5.2.exe"
 	BrandingText "Graphical User Interface Productivity : PortAL"
 
 	!define PRODUCT_NAME "PortAL"
-	!define PRODUCT_VERSION "1.5.0"
+	!define PRODUCT_VERSION "1.5.2"
 	!define PRODUCT_PUBLISHER "Graphical User Interface Productivity"
 	!define PRODUCT_WEB_SITE "http://obsidev.github.io/guipro/"
 	!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"

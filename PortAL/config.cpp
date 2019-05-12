@@ -379,6 +379,8 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 			{
 				if (!modified && !wcsncmp(Buffer[i].FileName, WC_PORTAL_XML_FILENAME, wcslen(WC_PORTAL_XML_FILENAME)))
 				{
+					Sleep(50);
+
 					modified = true;
 					// Send the command via "PostMessage" because we are in a thread !
 					PostMessage(g_hwndMain, WM_COMMAND, IDM_RELOAD, NULL);

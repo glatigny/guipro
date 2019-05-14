@@ -404,6 +404,8 @@ BOOL isBanishedHandle(HWND hwnd)
 
 	// Windows 10 specific
 
+	if (!wcscmp(buffer, L"Shell_SecondaryTrayWnd"))
+		return true;
 	if (!wcscmp(buffer, L"MultitaskingViewFrame"))
 		return true;
 

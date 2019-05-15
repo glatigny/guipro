@@ -27,7 +27,7 @@ static pathStorage storage;
 
 PortalProg::PortalProg() :
 	progName(NULL), icoPath(NULL), progExe(NULL), progParam(NULL), dirPath(NULL),
-	hkey(0), modifier(0), uID(0), options(0), overriding(false),
+	hkey(0), modifier(0), uID(0), options(0), overriding(false), events(PROG_EVENT_NONE),
 	nextSameHotkey(NULL)
 {
 	progs.clear();

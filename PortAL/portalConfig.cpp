@@ -43,7 +43,10 @@ PortalProg::~PortalProg()
 
 	free(progName);
 #ifdef USE_PATH_STORAGE
-
+	icoPath = NULL;
+	progExe = NULL;
+	progParam = NULL;
+	dirPath = NULL;
 #else
 	free(icoPath);
 	free(progExe);
@@ -58,6 +61,8 @@ PortalProg::~PortalProg()
 
 void PortalProg::setIcoPath(wchar_t* path)
 {
+	if (icoPath != NULL)
+		free(icoPath);
 #ifdef USE_PATH_STORAGE
 	icoPath = 0;
 	if (path == NULL)
@@ -94,6 +99,8 @@ bool PortalProg::isIcoPath()
 
 void PortalProg::setProgExe(wchar_t* path)
 {
+	if (progExe != NULL)
+		free(progExe);
 #ifdef USE_PATH_STORAGE
 	progExe = 0;
 	if (path == NULL)
@@ -128,6 +135,8 @@ bool PortalProg::isProgExe()
 
 void PortalProg::setProgParam(wchar_t* path)
 {
+	if (progParam != NULL)
+		free(progParam);
 #ifdef USE_PATH_STORAGE
 	progParam = 0;
 	if (path == NULL)
@@ -162,6 +171,8 @@ bool PortalProg::isProgParam()
 
 void PortalProg::setDirPath(wchar_t* path)
 {
+	if (dirPath != NULL)
+		free(dirPath);
 #ifdef USE_PATH_STORAGE
 	dirPath = 0;
 	if (path == NULL)

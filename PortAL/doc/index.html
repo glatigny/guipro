@@ -36,7 +36,7 @@ By default PortAL will load the file in the same folder than the binary ; but yo
 
 <p>This root element have two possible parameters.</p>
 
-<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">portal</span> <span class="pl-e">defaultshell</span>=<span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span> <span class="pl-e">showshortcut</span>=<span class="pl-s"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span> <span class="pl-e">skin</span>=<span class="pl-s"><span class="pl-pds">"</span>default<span class="pl-pds">"</span></span>&gt;</pre></div>
+<div class="highlight highlight-XML"><pre>&lt;<span class="pl-ent">portal</span> <span class="pl-e">defaultshell</span>=<span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span> <span class="pl-e">threading</span>=<span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span> <span class="pl-e">showshortcut</span>=<span class="pl-s"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span> <span class="pl-e">skin</span>=<span class="pl-s"><span class="pl-pds">"</span>default<span class="pl-pds">"</span></span>&gt;</pre></div>
 
 <ul>
 <li>
@@ -48,6 +48,9 @@ The windows shell has the possibility to open documents. If the "application" is
 <strong>skin</strong> (<em>name</em>) indicate the preset skin that you want to use ; you can otherwise create your own skin (describe below in the documentation).
 There is for the moment three skins: <strong>default</strong>, <strong>flat</strong> and <strong>dark</strong>.
 If you do not specify a value, it will use the <em>fourth</em> skin based on your operation system configuration.</li>
+<li>
+<strong>threading</strong> (<em>false</em>/<em>true</em>) indicates if you want to load the icons asynchronously.
+By default the loading the done in the main thread which could freeze the menu display if it try to access a file which is on a sleeping disk.</li>
 </ul>
 
 <p>The elements you will place directly in the <code>portal</code> root will be displayed in the system tray (systray).</p>

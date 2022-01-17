@@ -21,9 +21,6 @@
 #ifndef MENU_H
 #define MENU_H
 
-#define ICON_MANAGER
-//#define ICON_MANAGER_THREAD
-
 /* ------------------------------------------------------------------------------------------------- */
 
 #include "common.h"
@@ -39,6 +36,8 @@ typedef struct _PortalMenuItem
 	HICON icon;
 #else
 	UINT iconid;
+	HMENU hMenu;
+	unsigned menuPos;
 #endif
 	wchar_t* text;
 	wchar_t* sctext;
@@ -100,6 +99,7 @@ BOOL AddSubMenu(HMENU hMenu, UINT uItemID, UINT uType, UINT uState, HMENU subMen
 void ShowTrayMenu(PortalProg* p_menu, int param = 0);
 HBITMAP LoadIconAsBitmap(UINT nIDResource, int size);
 PortalMenuItem* insertItemMenu(PortalProg* prog, PortalMenuItem* item, HMENU hMenu, int* configElem, int* nResult);
+void RefreshTrayMenuItem(PortalMenuItem* itemData);
 
 HMENU MyCreateMenu(PortalProg* p_menu, int param);
 HMENU MyCreateSubMenu(PortalProg* p_menu);

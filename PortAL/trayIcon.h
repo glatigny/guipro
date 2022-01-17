@@ -24,7 +24,9 @@
 #include <windows.h>
 #include <ShellAPI.h>
 
-#define WM_MYTRAYMSG (WM_USER + 100)
+#define WM_MYTRAYMSG    (WM_USER + 100)
+#define WM_MYREDRAWMENU (WM_USER + 101)
+#define WM_MYREDRAWITEM (WM_USER + 102)
 
 BOOL AddTrayIcon(HWND hwnd, UINT uID, HICON hIcon, PCWSTR szTip);
 BOOL DeleteTrayIcon(HWND hwnd, UINT uID);

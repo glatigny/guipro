@@ -25,6 +25,7 @@
 #include "menu.h"
 #include "launch.h"
 #include "updater.h"
+#include "iconManager.h"
 #include "config.h"
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -54,7 +55,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
 flag |= _CRTDBG_LEAK_CHECK_DF;
 _CrtSetDbgFlag(flag);
-#endif 
+#endif
+	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
 	// Keep the Instance of the application
 	g_hInst = hInstance;
@@ -86,7 +88,9 @@ _CrtSetDbgFlag(flag);
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	
+
+	CoUninitialize();
+
 	return 0;
 }
 
@@ -250,6 +254,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
+	case WM_MYREDRAWMENU:
+		DrawMenuBar(g_hwndMain);
+		break;
+
+	case WM_MYREDRAWITEM:
+		RefreshTrayMenuItem((PortalMenuItem*)lParam);
+		break;
+
 	case WM_INITMENUPOPUP :
 		OnInitMenuPopup(hwnd, wParam, lParam);
 		break;
@@ -331,6 +343,9 @@ void quitPortal()
 	unregisterHotkeys();
 	uninstallHookKeyboard();
 	clearMenuSkin();
+#ifdef ICON_MANAGER
+	unloaderIconManager();
+#endif
 
 	delete( g_portal );
 	g_portal = NULL;

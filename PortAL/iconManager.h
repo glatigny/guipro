@@ -28,26 +28,19 @@
 #include <vector>
 
 /* ------------------------------------------------------------------------------------------------- */
-#ifdef ICON_MANAGER_THREAD
-typedef struct _refreshParam {
-	WPARAM wParam;
-	LPARAM lParam;
-} refreshParam;
 
-typedef std::vector<refreshParam*> refreshParams;
-#endif
-/* --------------------------------------------------- */
+typedef struct _iconLoaderThread {
+	HANDLE mutex;
+	HANDLE thread;
+	std::vector<PortalMenuItem*>* items;
+} iconLoaderThread;
 
 typedef struct _iconLoader {
 	wchar_t* filename;
 	wchar_t* ext;
 	HICON icon;
 	UINT counter;
-#ifdef ICON_MANAGER_THREAD
-	refreshParams* refreshs;
-	HANDLE semaphore;
-	HANDLE thread;
-#endif
+	iconLoaderThread* thread;
 } iconLoader;
 
 typedef std::vector<iconLoader*> iconsLoader;
@@ -56,8 +49,8 @@ typedef std::vector<iconLoader*> iconsLoader;
 
 UINT preloadIcon(wchar_t* filename);
 
-HICON* getIcon(UINT id, WPARAM wParam, LPARAM lParam);
-HICON* getIcon(wchar_t* filename, WPARAM wParam, LPARAM lParam);
+HICON* getIcon(UINT id, LPDRAWITEMSTRUCT);
+HICON* getIcon(wchar_t* filename);
 
 void unloadIcon(wchar_t* filename);
 void unloadIcon(UINT id);

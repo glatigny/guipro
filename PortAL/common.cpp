@@ -21,6 +21,9 @@
 #include "common.h"
 #include "config.h"
 #include <shlobj.h>
+#ifndef LEGACY
+#include <VersionHelpers.h>
+#endif
 
 extern HWND g_hwndMain;
 
@@ -30,6 +33,7 @@ typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
 
 DWORD GetWindowsVersion()
 {
+#ifdef LEGACY
 	OSVERSIONINFOEX osvi;
 	SYSTEM_INFO si;
 	PGNSI pGNSI;
@@ -69,6 +73,23 @@ DWORD GetWindowsVersion()
 	}
 	
 	return WINVER_unknow;
+#else
+	/* The older version we want to recognize is Win2k */
+	if (!IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN2K), LOBYTE(_WIN32_WINNT_WIN2K), 0))
+		return WINVER_unknow;
+
+	if (IsWindows10OrGreater())
+		return WINVER_10;
+	if (IsWindows8OrGreater())
+		return WINVER_8;
+	if (IsWindows7OrGreater())
+		return WINVER_7;
+	if (IsWindowsVistaOrGreater())
+		return WINVER_VISTA;
+	if (IsWindowsVistaOrGreater())
+		return WINVER_VISTA;
+	return WINVER_2000;
+#endif
 }
 
 /* ------------------------------------------------------------------------------------------------- */

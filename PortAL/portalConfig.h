@@ -97,54 +97,6 @@ class PortalProg
 		};
 
 		void run(bool);
-/*
-		PortalProg() :
-			progName(NULL), icoPath(NULL), progExe(NULL), progParam(NULL), dirPath(NULL),
-			hkey(0), modifier(0), uID(0), options(0), overriding(false),
-			nextSameHotkey(NULL)
-		{
-			progs.clear();
-		}
-
-		void setIcoPath(wchar_t* path)
-		{
-
-		}
-
-		wchar_t* getIcoPath()
-		{
-			return NULL;
-		}
-
-		~PortalProg()
-		{
-			for( std::vector<PortalProg*>::iterator i = progs.begin(); i != progs.end(); i++ )
-			{
-				delete (*i);
-			}
-			progs.clear();
-
-			free( progName );
-			free( icoPath );
-			free( progExe );
-			free( progParam );
-			free( dirPath );
-
-			nextSameHotkey = NULL;
-		}
-
-		void run(bool single)
-		{
-			if( progExe != NULL && progExe[0] !=  '|' )
-				launch( this );
-
-			if( !single && nextSameHotkey )
-				nextSameHotkey->run(single);
-
-			if( progExe != NULL && progExe[0] ==  '|' )
-				launch( this );
-		}
-*/
 };
 
 typedef std::vector<PortalProg*> PortalProgVector;
@@ -156,6 +108,9 @@ class PortalConfig
 		PortalProgVector	hotkeys;
 		PortalProgVector	flat;
 		bool				shellExecuteDefault;
+#ifdef ICON_MANAGER
+		bool				iconloaderThread;
+#endif
 
 		PortalConfig()
 		{
@@ -163,6 +118,9 @@ class PortalConfig
 			hotkeys.clear();
 			flat.clear();
 			shellExecuteDefault = false;
+#ifdef ICON_MANAGER
+			iconloaderThread = false;
+#endif
 		}
 
 		~PortalConfig()

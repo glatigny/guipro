@@ -19,6 +19,7 @@
 */
 
 #include "common.h"
+#include "config.h"
 #include "menu.h"
 
 #ifdef ICON_MANAGER
@@ -35,43 +36,75 @@ iconsLoader iconManager;
 DWORD WINAPI preloaderIcon(LPVOID param);
 
 /* ------------------------------------------------------------------------------------------------- */
-#ifdef ICON_MANAGER_THREAD
-HICON* retrieveIconFrom(iconLoader* loader, WPARAM wParam, LPARAM lParam)
-{
-	/*
-	//Maybe we should add some semaphore checks
-	DWORD waitFor = WaitForSingleObject( loader->semaphore, 0L );
-	*/
 
-	if( loader->thread == NULL)
+HICON* retrieveIconFrom(iconLoader* loader, LPDRAWITEMSTRUCT ptDrawItem)
+{
+	if (loader->thread == NULL || loader->thread->thread == NULL)
 	{
-		if( loader->icon != NULL )
+		if (loader->icon != NULL)
 			return &(loader->icon);
 		return NULL;
 	}
 
-	if( wParam != NULL || lParam != NULL )
-	{
-		DWORD waitFor = WaitForSingleObject( loader->semaphore, INFINITE );
-		if( waitFor == WAIT_OBJECT_0 )
-		{
-			refreshParam* param = (refreshParam*)malloc(sizeof(refreshParam));
-			memset(param, 0, sizeof(refreshParam));
-			param->lParam = lParam;
-			param->wParam = wParam;
+	if (ptDrawItem == NULL)
+		return NULL;
 
-			loader->refreshs->insert( loader->refreshs->end(), param );
-		}
-		else
+	HANDLE mutex = loader->thread->mutex;
+	DWORD waitFor = WaitForSingleObject(mutex, 10L);
+	if( waitFor == WAIT_OBJECT_0 )
+	{
+		if (loader->thread->thread == NULL || loader->icon != NULL)
 		{
-			PostMessageW(g_hwndMain, WM_DRAWITEM, lParam, wParam);
+			ReleaseMutex(mutex);
+			if (loader->icon != NULL)
+				return &(loader->icon);
+			return NULL;
 		}
+
+		loader->thread->items->insert(loader->thread->items->end(), (PortalMenuItem*)ptDrawItem->itemData);
+		ReleaseMutex(mutex);
 	}
 
 	return NULL;
 }
-#endif
+
 /* ------------------------------------------------------------------------------------------------- */
+
+static void _loadIcon(iconLoader* loader)
+{
+	wchar_t* pos = 0;
+	if (loader->ext == NULL && (wcsstr(loader->filename, L".exe") != NULL || wcsstr(loader->filename, L".dll") != NULL))
+	{
+		pos = wcschr(loader->filename, L',');
+	}
+	if (pos > 0)
+	{
+		wchar_t icoPath[512];
+		int i = 0;
+		wcsncpy_s(icoPath, 512, loader->filename, size_t(pos - loader->filename));
+		i = _wtoi(&pos[1]);
+		ExtractIconEx(icoPath, i, NULL, &loader->icon, 1);
+	}
+	else
+	{
+		DWORD attribs = GetFileAttributes(loader->filename);
+		if (attribs != (DWORD)-1)
+		{
+			SHFILEINFO tSHFileInfo;
+			ZeroMemory(&tSHFileInfo, sizeof(tSHFileInfo));
+
+			if (!wcscmp(loader->filename, L"/") || (attribs & FILE_ATTRIBUTE_DIRECTORY))
+			{
+				SHGetFileInfo(loader->filename, FILE_ATTRIBUTE_DIRECTORY, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON);
+			}
+			else
+			{
+				SHGetFileInfo(loader->filename, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+			}
+			loader->icon = tSHFileInfo.hIcon;
+		}
+	}
+}
 
 UINT preloadIcon(wchar_t* filename)
 {
@@ -124,95 +157,84 @@ UINT preloadIcon(wchar_t* filename)
 	memset(loader, 0, sizeof(iconLoader));
 	loader->counter = 1;
 	loader->ext = NULL;
+	loader->thread = NULL;
 	if( ext != NULL )
 		loader->ext = _wcsdup(ext);
 	loader->filename = _wcsdup(filename);
-#ifndef ICON_MANAGER_THREAD
-	// Load Icon
-	//
-	wchar_t* pos = 0;
-	if( loader->ext == NULL && (wcsstr(loader->filename, L".exe") != NULL || wcsstr(loader->filename, L".dll") != NULL) )
-	{
-		pos = wcschr(loader->filename, L',');
-	}
-	if( pos > 0 )
-	{
-		wchar_t icoPath[512];
-		int i = 0;
-		wcsncpy_s( icoPath, 512, loader->filename, size_t(pos - loader->filename) );
-		i = _wtoi( &pos[1] );
-		ExtractIconEx( icoPath, i, NULL, &loader->icon, 1 );
-	}
-	else
-	{
-		DWORD attribs = GetFileAttributes(loader->filename);
-		if( attribs != (DWORD)-1 )
-		{
-			SHFILEINFO tSHFileInfo;
-			ZeroMemory(&tSHFileInfo, sizeof(tSHFileInfo));
 
-			if( !wcscmp(loader->filename, L"/") || (attribs & FILE_ATTRIBUTE_DIRECTORY) )
-			{
-				SHGetFileInfo(loader->filename, FILE_ATTRIBUTE_DIRECTORY, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON);
-			}
-			else
-			{
-				SHGetFileInfo(loader->filename , 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
-			}
-			loader->icon = tSHFileInfo.hIcon;
-		}
+	if (!g_portal->iconloaderThread) {
+		_loadIcon(loader);
+	} else {
+		DWORD id;
+		loader->icon = NULL;
+		loader->thread = (iconLoaderThread*)calloc(1, sizeof(iconLoaderThread));
+		loader->thread->mutex = CreateMutex(NULL, FALSE, NULL);
+		loader->thread->items = new std::vector<PortalMenuItem*>();
+		loader->thread->items->clear();
+		// loader->thread->semaphore = CreateSemaphore(NULL, 10, 10, NULL);
+		loader->thread->thread = CreateThread(
+			NULL,
+			0,
+			preloaderIcon,
+			(LPVOID)loader,
+			0,
+			&id);
 	}
-#else
-	// Load icon in a thread (still experimental)
-	//
-	DWORD id;
-	loader->icon = NULL;
-	loader->refreshs = new refreshParams();
-	loader->semaphore = CreateSemaphore(NULL,10,10,NULL);
-	loader->thread = CreateThread(
-						NULL,
-						0,
-						preloaderIcon,
-						(LPVOID)loader,
-						0,
-						&id);
-#endif
-	iconManager.insert( iconManager.end(), loader);
-
+	iconManager.insert(iconManager.end(), loader);
 	return (UINT)(iconManager.size()-1);
 }
 
 /* ------------------------------------------------------------------------------------------------- */
 
-HICON* getIcon(wchar_t* filename, WPARAM wParam, LPARAM lParam, bool count)
+HICON* getIcon(wchar_t* filename)
 {
 	UINT id = preloadIcon(filename);
 	if( id >= 0 && id <= iconManager.size() )
 	{
 		iconLoader* loader = iconManager.at( id );
-#ifndef ICON_MANAGER_THREAD
-		return &loader->icon;
-#else
-		return retrieveIconFrom(loader, wParam, lParam);
-#endif
+		return (loader->thread == NULL) ? &loader->icon : retrieveIconFrom(loader, NULL);
 	}
 	return NULL;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
 
-HICON* getIcon(UINT id, WPARAM wParam, LPARAM lParam)
+HICON* getIcon(UINT id, LPDRAWITEMSTRUCT ptDrawItem)
 {
 	if( id >= 0 && id < iconManager.size() )
 	{
 		iconLoader* loader = iconManager.at( id );
-#ifndef ICON_MANAGER_THREAD
-		return &loader->icon;
-#else
-		return retrieveIconFrom(loader, wParam, lParam);
-#endif
+		return (loader->thread == NULL) ? &loader->icon : retrieveIconFrom(loader, ptDrawItem);
 	}
 	return NULL;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+static void _unloadIconLoader(iconLoader *loader)
+{
+	if (loader == NULL)
+		return;
+
+	if (loader->thread != NULL)
+	{
+		if (loader->thread->thread != NULL) {
+			TerminateThread(loader->thread->thread, 0);
+			CloseHandle(loader->thread->thread);
+		}
+		if (loader->thread->mutex != NULL)
+			CloseHandle(loader->thread->mutex);
+		if (loader->thread->items != NULL)
+		{
+			loader->thread->items->clear();
+			delete(loader->thread->items);
+			loader->thread->items = NULL;
+		}
+	}
+	DestroyIcon(loader->icon);
+	loader->icon = NULL;
+	free(loader->ext);
+	free(loader->filename);
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -234,23 +256,8 @@ void unloadIcon(wchar_t* filename)
 		loader->counter--;
 		if( loader->counter == 0 )
 		{
-#ifdef ICON_MANAGER_THREAD
-			if( loader->thread )
-			{
-				CloseHandle( loader->thread );
-			}
-			if( loader->semaphore )
-			{
-				CloseHandle( loader->semaphore );
-			}
-			if( loader->refreshs )
-				delete(loader->refreshs);
-#endif
-			DestroyIcon( loader->icon );
-			loader->icon = NULL;
-			free(loader->ext);
-			free(loader->filename);
-
+			_unloadIconLoader(loader);
+			free(loader);
 			iconManager.erase(it);
 		}
 	}
@@ -269,23 +276,8 @@ void unloadIcon(UINT id)
 		loader->counter--;
 		if( loader->counter == 0 )
 		{
-#ifdef ICON_MANAGER_THREAD
-			if( loader->thread )
-			{
-				CloseHandle( loader->thread );
-			}
-			if( loader->semaphore )
-			{
-				CloseHandle( loader->semaphore );
-			}
-			if( loader->refreshs )
-				delete(loader->refreshs);
-#endif
-			DestroyIcon( loader->icon );
-			loader->icon = NULL;
-			free(loader->ext);
-			free(loader->filename);
-
+			_unloadIconLoader(loader);
+			free(loader);
 
 			iconManager.erase( iconManager.begin() + id );
 		}
@@ -293,15 +285,34 @@ void unloadIcon(UINT id)
 }
 
 /* ------------------------------------------------------------------------------------------------- */
-#ifdef ICON_MANAGER_THREAD
+
+static bool _shGetFileInfo(iconLoader* loader, DWORD attribs, SHFILEINFO* ptSHFileInfo)
+{
+	DWORD_PTR dwptr;
+	if (!wcscmp(loader->filename, L"/") || (attribs & FILE_ATTRIBUTE_DIRECTORY))
+	{
+		dwptr = SHGetFileInfo(loader->filename, FILE_ATTRIBUTE_DIRECTORY, ptSHFileInfo,
+			sizeof(*ptSHFileInfo), SHGFI_ICON | SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON);
+	}
+	else
+	{
+		dwptr = SHGetFileInfo(loader->filename, FILE_ATTRIBUTE_NORMAL, ptSHFileInfo,
+			sizeof(*ptSHFileInfo), SHGFI_ICON | SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON);
+	}
+	if (FAILED(dwptr)) {
+		return false;
+	}
+	return true;
+}
+
 DWORD WINAPI preloaderIcon(LPVOID param)
 {
 	bool processed = false;
 	DWORD waitFor;
-	SHFILEINFO tSHFileInfo;
+	SHFILEINFO tSHFileInfo = { 0 };
 	iconLoader* loader = (iconLoader*)param;
 
-	ZeroMemory(&tSHFileInfo, sizeof(tSHFileInfo));
+	CoInitializeEx(NULL, COINITBASE_MULTITHREADED);
 
 	// Load Icon
 	//
@@ -327,67 +338,60 @@ DWORD WINAPI preloaderIcon(LPVOID param)
 		}
 		else
 		{
-			if( !wcscmp(loader->filename, L"/") || (attribs & FILE_ATTRIBUTE_DIRECTORY) )
-			{
-				SHGetFileInfo(loader->filename, FILE_ATTRIBUTE_DIRECTORY, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON);
-			}
-			else
-			{
-				SHGetFileInfo(loader->filename , 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+			/* We need to perform a loop with a sleep if we did not retrieve the hIcon of an element.
+			 * The values are just something which is working on the test machine.
+			 * The reason is that the first times the function is called, there is no hIcon, but just a few miliseconds after that, it's working.
+			 * More strange, that kind of issue doesn't arrived when we're in the main thread ; even with CoInitializeEx. */
+			int cpt = 0;
+			while (cpt++ < 30) {
+				_shGetFileInfo(loader, attribs, &tSHFileInfo);
+				if (tSHFileInfo.hIcon == NULL) {
+					Sleep(5);
+				} else {
+					break;
+				}
 			}
 		}
 	}
 
 	while(!processed)
 	{
-		waitFor = WaitForSingleObject( loader->semaphore, 100L );
+		waitFor = WaitForSingleObject( loader->thread->mutex, 100L );
 		if( waitFor == WAIT_OBJECT_0 )
 		{
 			// Set the icon
-			loader->icon = tSHFileInfo.hIcon;
+			if (tSHFileInfo.hIcon != NULL) {
+				loader->icon = CopyIcon(tSHFileInfo.hIcon);
+				DestroyIcon(tSHFileInfo.hIcon);
+			} else {
+				loader->icon = NULL;
+			}
 
 			processed = true;
 
-			// Call redraw
-			//
-			for(refreshParams::iterator i = loader->refreshs->begin(); i != loader->refreshs->end(); i++)
+			// Call redraw using a special internal message since it's not possible to do it otherwise.
+			for (std::vector<PortalMenuItem*>::iterator i = loader->thread->items->begin(); i != loader->thread->items->end(); i++)
 			{
-				PostMessageW(g_hwndMain, WM_DRAWITEM, (*i)->lParam, (*i)->wParam);
-				free( (*i) );
+				PostMessageW(g_hwndMain, WM_MYREDRAWITEM, NULL, (LPARAM)(*i));
 			}
-			delete loader->refreshs;
-			loader->refreshs = NULL;
-			loader->thread = NULL;
+			loader->thread->items->clear();
+			delete(loader->thread->items);
+			loader->thread->items = NULL;
+			loader->thread->thread = NULL;
 
-			ReleaseSemaphore( loader->semaphore, 1, NULL );
-			CloseHandle( loader->semaphore );
-			loader->semaphore = NULL;
-		}
-		else
-		{
-			if( loader->semaphore == NULL )
-				processed = true;
+			// We finished our modification in the object, releasing the mutex
+			// ReleaseMutex(loader->thread->mutex);
+			CloseHandle(loader->thread->mutex);
+			loader->thread->mutex = NULL;
+
+			// Force the redraw of the entire menu
+			PostMessageW(g_hwndMain, WM_MYREDRAWMENU, 0, 0);
 		}
 	}
-	if( loader->semaphore != NULL )
-	{
-		ReleaseSemaphore( loader->semaphore, 1, NULL );
-		CloseHandle( loader->semaphore );
-		loader->semaphore = NULL;
-	}
-	if( loader->refreshs != NULL )
-	{
-		for(refreshParams::iterator i = loader->refreshs->begin(); i != loader->refreshs->end(); i++)
-		{
-			free( (*i) );
-		}
-		delete loader->refreshs;
-		loader->refreshs = NULL;
-	}
-	loader->thread = NULL;
+
+	CoUninitialize();
 	return TRUE;
 }
-#endif
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -395,10 +399,7 @@ void unloaderIconManager()
 {
 	for(iconsLoader::iterator i = iconManager.begin(); i != iconManager.end(); i++)
 	{
-		DestroyIcon( (*i)->icon );
-		(*i)->icon = NULL;
-		free((*i)->ext);
-		free((*i)->filename);
+		_unloadIconLoader((*i));
 		free( (*i) );
 	}
 	iconManager.clear();

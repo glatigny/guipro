@@ -51,12 +51,19 @@ ULONG_PTR g_gdiplusToken = 0;
 
 BOOL g_activeMenu = FALSE;
 
-LOGFONT g_localFont;
-SIZE g_iconSize;
-DWORD g_menuBackColor;
-DWORD g_menuBackTextColor;
-DWORD g_ShotcutColor;
-DWORD g_TextColor;
+typedef struct {
+	LOGFONT localFont;
+	SIZE iconSize;
+	DWORD menuBackColor;
+	DWORD menuBackTextColor;
+	DWORD ShotcutColor;
+	DWORD TextColor;
+} stPortalMenuVars;
+
+stPortalMenuVars g_menuvars = {
+	0, 0, 0, 0, 0, 0
+};
+
 std::map<HMENU,PortalProg*> menus;
 
 PortalMenuItem* g_PortalMenuItem = NULL;
@@ -93,7 +100,7 @@ PortalMenuDesign design2 = {
 PortalMenuDesign design3 = {
 	0,			// border_size
 	0,			// border_round
-	NULL,	// border_color
+	NULL,		// border_color
 	&cp2,		// base
 	NULL,		// selected
 	&cg2,		// background_gradiant
@@ -112,14 +119,14 @@ void InitMenuVars()
 
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &tNCMetrics, 0);
 
-	g_localFont = tNCMetrics.lfMenuFont;
-	g_iconSize.cx = GetSystemMetrics(SM_CXSMICON);
-	g_iconSize.cy = GetSystemMetrics(SM_CYSMICON);
-	//g_menuBackColor = GetSysColor(COLOR_HIGHLIGHT);
-	g_menuBackColor = GetSysColor(COLOR_MENUHILIGHT);
-	g_menuBackTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
-	g_ShotcutColor = GetSysColor(COLOR_GRAYTEXT);
-	g_TextColor = GetSysColor(COLOR_MENUTEXT);
+	g_menuvars.localFont = tNCMetrics.lfMenuFont;
+	g_menuvars.iconSize.cx = GetSystemMetrics(SM_CXSMICON);
+	g_menuvars.iconSize.cy = GetSystemMetrics(SM_CYSMICON);
+	//g_menuvars.menuBackColor = GetSysColor(COLOR_HIGHLIGHT);
+	g_menuvars.menuBackColor = GetSysColor(COLOR_MENUHILIGHT);
+	g_menuvars.menuBackTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
+	g_menuvars.ShotcutColor = GetSysColor(COLOR_GRAYTEXT);
+	g_menuvars.TextColor = GetSysColor(COLOR_MENUTEXT);
 
 #ifdef USE_GDI_MENU
 	if(g_PortalMenuDesignSystem)
@@ -286,7 +293,7 @@ HBITMAP IconToBitmapPARGB32(UINT uIcon)
 	HICON* hIcon = NULL;
 	if (uIcon < PORTAL_ICON_RESOURCE)
 	{
-		hIcon = getIcon(uIcon, NULL, NULL);
+		hIcon = getIcon(uIcon, NULL);
 	}
 	else if (uIcon > PORTAL_ICON_RESOURCE)
 	{
@@ -344,7 +351,7 @@ HBITMAP IconToBitmap(UINT uIcon)
 	HICON* hIcon = NULL;
 	if (uIcon < PORTAL_ICON_RESOURCE)
 	{
-		hIcon = getIcon(uIcon, NULL, NULL);
+		hIcon = getIcon(uIcon, NULL);
 	}
 	else if (uIcon > PORTAL_ICON_RESOURCE)
 	{
@@ -530,26 +537,29 @@ PortalMenuItem* insertItemMenu(PortalProg* prog, PortalMenuItem* item, HMENU hMe
 #ifndef ICON_MANAGER
 		ZeroMemory(&tSHFileInfo, sizeof(tSHFileInfo));
 
-		if( (prog->icoPath != NULL) && (prog->icoPath[0] != L'\0') )
+		if( prog->isIcoPath() )
 		{
-			wchar_t* pos = wcschr( prog->icoPath, L',');
+			wchar_t* progIcoPath = prog->getIcoPath();
+			wchar_t* pos = wcschr(progIcoPath, L',');
 			if( pos > 0 )
 			{
 				wchar_t icoPath[512];
 				int i = 0;
-				wcsncpy_s( icoPath, 512, prog->icoPath, size_t(pos - prog->icoPath) );
+				wcsncpy_s( icoPath, 512, progIcoPath, size_t(pos - progIcoPath) );
 				i = _wtoi( &pos[1] );
 				ExtractIconEx( icoPath, i, NULL, &tSHFileInfo.hIcon, 1 );
 			}
 			else
-				SHGetFileInfo( prog->icoPath , 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+				SHGetFileInfo(progIcoPath, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+
+			prog->freeRes(progIcoPath);
 		}
-		else
+		else if(prog->isProgExe())
 		{
-			if( (prog->progExe != NULL) && (prog->progExe[0] != L'|') )
-			{
-				SHGetFileInfo( prog->progExe , 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
-			}
+			wchar_t* progExe = prog->getProgExe();
+			if(progExe[0] != L'|')
+				SHGetFileInfo(progExe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+			prog->freeRes(progExe);
 		}
 #else
 		UINT iconid = (UINT)PORTAL_ICON_RESOURCE;
@@ -678,6 +688,8 @@ PortalMenuItem* insertItemMenu(PortalProg* prog, PortalMenuItem* item, HMENU hMe
 		{
 			item->iconid = preloadIcon(L"/");
 		}
+		item->hMenu = hMenu;
+		item->menuPos = (prog->uID + PORTAL_HK_ID);
 #endif
 
 		if( prog->progs.size() == 0 && !(prog->options & PROG_OPTION_BROWSE) )
@@ -696,6 +708,19 @@ PortalMenuItem* insertItemMenu(PortalProg* prog, PortalMenuItem* item, HMENU hMe
 	// We do not free "char_sctext" because we didn't dump it in newPortalItem
 
 	return item;
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+
+void RefreshTrayMenuItem(PortalMenuItem* itemData)
+{
+	MENUITEMINFO mii;
+	memset(&mii, 0, sizeof(mii));
+	mii.cbSize = sizeof(mii);
+	mii.fMask = MIIM_STATE;
+	GetMenuItemInfo(itemData->hMenu, itemData->menuPos, FALSE, &mii);
+	// We touch nothing but we re-commit to force the redraw of the item
+	SetMenuItemInfoW(itemData->hMenu, itemData->menuPos, FALSE, &mii);
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -826,7 +851,9 @@ void DestroyMyMenu(BOOL all)
 		}
 		g_portal_files.clear();
 	}
+#ifdef ICON_MANAGER
 	unloaderIconManager();
+#endif
 	g_PortalMenuItem = NULL;
 }
 
@@ -940,10 +967,8 @@ LRESULT OnMenuCharItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-static void HandleSubDirectory(HMENU hmenu, PortalProg *p_menu)
+static void HandleSubDirectory(PortalMenuItem* item, HMENU hmenu, PortalProg *p_menu)
 {
-	PortalMenuItem* item = NULL;
-
 	bool subDirectory = (p_menu->isDirPath()); // && wcslen(p_menu->dirPath) > 0 
 	bool display = false;
 #ifndef ICON_MANAGER
@@ -1027,7 +1052,7 @@ static void HandleSubDirectory(HMENU hmenu, PortalProg *p_menu)
 					wcscat_s(prog_exe, size, L"\\");
 
 #ifndef ICON_MANAGER
-					SHGetFileInfo(prog->progExe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+					SHGetFileInfo(menuProgExe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
 					item->icon = tSHFileInfo.hIcon;
 #else
 					item->iconid = preloadIcon(L"/");
@@ -1050,7 +1075,7 @@ static void HandleSubDirectory(HMENU hmenu, PortalProg *p_menu)
 					wcscat_s(prog_exe, size, findData.cFileName);
 
 #ifndef ICON_MANAGER
-					SHGetFileInfo(prog->progExe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+					SHGetFileInfo(prog_exe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
 					item->icon = tSHFileInfo.hIcon;
 #else
 					item->iconid = preloadIcon(prog_exe);
@@ -1116,7 +1141,7 @@ void OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		HandleSubDirectory(hmenu, p_menu);
+		HandleSubDirectory(item, hmenu, p_menu);
 	}
 }
 
@@ -1137,7 +1162,7 @@ void OnMeasureItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	PortalMenuItem* item = (PortalMenuItem*)ptMeasure->itemData;
 
 	hDC = GetDC(hWnd);
-	hFont = CreateFontIndirect(&g_localFont);
+	hFont = CreateFontIndirect(&g_menuvars.localFont);
 	hOldFont = (HFONT)SelectObject(hDC, hFont);
 
 	ptMeasure->itemWidth = 0;
@@ -1152,7 +1177,7 @@ void OnMeasureItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	SelectObject(hDC, hOldFont);
 	DeleteObject(hFont);
 
-	ptMeasure->itemWidth += tSize.cx + g_iconSize.cx + 54;
+	ptMeasure->itemWidth += tSize.cx + g_menuvars.iconSize.cx + 54;
 
 	if( item->options & MENU_SEP )
 	{
@@ -1160,7 +1185,7 @@ void OnMeasureItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		ptMeasure->itemHeight = g_iconSize.cy + 8;
+		ptMeasure->itemHeight = g_menuvars.iconSize.cy + 8;
 	}
 
 	ReleaseDC(hWnd, hDC);
@@ -1207,7 +1232,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	tRect = ptDrawItem->rcItem;
 
 	tRectText = tRect;
-	tRectText.left += g_iconSize.cx + 24;
+	tRectText.left += g_menuvars.iconSize.cx + 24;
 	tRectText.top += 4;
 
 	hDC = ptDrawItem->hDC;
@@ -1224,20 +1249,18 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 	if( ptDrawItem->itemState & ODS_SELECTED )
 	{
-//#ifdef MENU_DRAW_V1
 		if (g_PortalMenuDesign == NULL)
 		{
 			// Draw Item Menu: Version 1
 			//
-			SetBkColor(hDC, g_menuBackColor);
-			SetTextColor(hDC, g_menuBackTextColor);
+			SetBkColor(hDC, g_menuvars.menuBackColor);
+			SetTextColor(hDC, g_menuvars.menuBackTextColor);
 
-			hBrush = CreateSolidBrush(g_menuBackColor);
+			hBrush = CreateSolidBrush(g_menuvars.menuBackColor);
 			FillRect(hDC, &tRect, hBrush);
 		}
 		else
 		{
-//#else
 			if (g_PortalMenuDesign->selected != NULL)
 			{
 				SetTextColor(hDC, g_PortalMenuDesign->selected->textcolor);
@@ -1259,8 +1282,8 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				hBrush = CreateSolidBrush(g_menuBackColor);
-				SetBkColor(hDC, g_menuBackColor);
+				hBrush = CreateSolidBrush(g_menuvars.menuBackColor);
+				SetBkColor(hDC, g_menuvars.menuBackColor);
 			}
 
 			DWORD penColor = GetSysColor(COLOR_HIGHLIGHT);
@@ -1329,7 +1352,6 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				FillRect(hDC, &fullRect, hBrush);
 			}
 		}
-//#endif
 	}
 	else if( item->options & MENU_TITLE )
 	{
@@ -1354,7 +1376,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	if ( !(ptDrawItem->itemState & ODS_SELECTED) && g_PortalMenuDesign != NULL && g_PortalMenuDesign->icon_gradiant != NULL)
 	{
 		RECT iRect = ptDrawItem->rcItem;
-		iRect.right = iRect.left + g_iconSize.cx + 18;
+		iRect.right = iRect.left + g_menuvars.iconSize.cx + 18;
 		iRect.bottom += 1;
 		TRIVERTEX v[2];
 		GRADIENT_RECT r = { 0, 1 };
@@ -1383,7 +1405,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	{
 		bar.top = tRect.top;
 		bar.bottom = tRect.bottom;
-		bar.left = g_iconSize.cx + 16;
+		bar.left = g_menuvars.iconSize.cx + 16;
 		bar.right = tRect.right;
 		DrawEdge(hDC, &bar, EDGE_ETCHED, BF_LEFT);
 	}
@@ -1392,7 +1414,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	{
 		bar.top = tRect.top + 1 + (tRect.bottom - tRect.top) / 2;
 		bar.bottom = bar.top;
-		bar.left = tRect.left + g_iconSize.cx + 17;
+		bar.left = tRect.left + g_menuvars.iconSize.cx + 17;
 		bar.right = tRect.right - 1;
 		DrawEdge(hDC, &bar, EDGE_ETCHED, BF_BOTTOM);
 	}
@@ -1401,28 +1423,28 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 #ifndef ICON_MANAGER
 		if( item->icon != NULL )
 		{
-			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, item->icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
+			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, item->icon, g_menuvars.iconSize.cx, g_menuvars.iconSize.cy, 0, NULL, DI_NORMAL);
 		}
 #else
 		if( item->iconid < PORTAL_ICON_RESOURCE )
 		{
-			HICON* icon = getIcon(item->iconid, wParam, lParam);
+			HICON* icon = getIcon(item->iconid, ptDrawItem);
 			if( icon != NULL )
 			{
-				DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, *icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
+				DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, *icon, g_menuvars.iconSize.cx, g_menuvars.iconSize.cy, 0, NULL, DI_NORMAL);
 			}
 		}
 		else if( item->iconid > PORTAL_ICON_RESOURCE )
 		{
 			HICON icon = LOADRESOURCEICON( item->iconid - PORTAL_ICON_RESOURCE);
-			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, icon, g_iconSize.cx, g_iconSize.cy, 0, NULL, DI_NORMAL);
+			DrawIconEx(hDC, tRect.left + 8, tRect.top + 4, icon, g_menuvars.iconSize.cx, g_menuvars.iconSize.cy, 0, NULL, DI_NORMAL);
 		}
 #endif
 		DrawText(hDC, item->text, lngText, &tRectText, DT_LEFT | DT_BOTTOM);
 
 		if( item->options & MENU_SHOWSC )
 		{
-			SetTextColor(hDC, g_ShotcutColor);
+			SetTextColor(hDC, g_menuvars.ShotcutColor);
 			RECT t = tRectText;
 			t.right -= 10;
 			if(isArrow)
@@ -1431,17 +1453,16 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			}
 			DrawText(hDC, item->sctext, (int)wcslen(item->sctext), &t, DT_RIGHT | DT_BOTTOM);
 			
-			SetTextColor(hDC, g_TextColor);
+			SetTextColor(hDC, g_menuvars.TextColor);
 			if (g_PortalMenuDesign != NULL && g_PortalMenuDesign->base != NULL)
 				SetTextColor(hDC, g_PortalMenuDesign->base->textcolor);
 		}
 	}
 	SetBkMode(hDC, OPAQUE);
 
-//#ifndef MENU_DRAW_V1
 	if (g_PortalMenuDesign != NULL && isArrow)
 	{
-		SetTextColor(hDC, g_TextColor);
+		SetTextColor(hDC, g_menuvars.TextColor);
 		SetBkMode(hDC, TRANSPARENT);
 		DWORD oldBkColor = GetBkColor(hDC);
 		SetBkColor(hDC, RGB(255,255,255));
@@ -1496,7 +1517,6 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		// Exclude the clip rect in order to not redraw the system arrow.
 		ExcludeClipRect(hDC, tRectArrow.left, tRectArrow.top, tRectArrow.right, tRectArrow.bottom);
 	}
-//#endif
 }
 
 /* ------------------------------------------------------------------------------------------------- */

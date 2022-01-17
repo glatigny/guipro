@@ -94,14 +94,17 @@ static ColorPair* getColorPair(const wchar_t* cTemp)
 
 static void getGeneralOptions(PortalConfig* config, pugi::xml_node elem)
 {
-	if( isTrue(elem.attribute(L"defaultshell").value() ) ) 
+	if (isTrue(elem.attribute(L"defaultshell").value())) 
 		config->shellExecuteDefault = true;
 	
+	if (isTrue(elem.attribute(L"threading").value()))
+		config->iconloaderThread = true;
+
 	defaultShowShortcut = 0x0;
-	if( isTrue(elem.attribute(L"showshortcut").value() ) ) 
+	if (isTrue(elem.attribute(L"showshortcut").value()))
 		defaultShowShortcut = 0x1;
 
-	if( !elem.attribute(L"skin").empty() )
+	if (!elem.attribute(L"skin").empty())
 		setMenuSkin(elem.attribute(L"skin").value());
 }
 

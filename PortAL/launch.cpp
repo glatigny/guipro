@@ -23,6 +23,28 @@
 #include "common.h"
 #include "config.h"
 
+/*
+Advanced support of console applications
+
+Via startup-info:
+	LPWSTR  lpTitle;
+	DWORD   dwX;
+	DWORD   dwY;
+	DWORD   dwXSize;
+	DWORD   dwYSize;
+	DWORD   dwXCountChars;
+	DWORD   dwYCountChars;
+
+Doc:
+	https://docs.microsoft.com/fr-fr/windows/console/console-reference
+Code:
+	// wincon.h
+	SetConsoleScreenBufferInfoEx
+	// consolapi.h
+	AllocConsole
+	SetConsoleMode();
+*/
+
 /* ------------------------------------------------------------------------------------------------- */
 
 void launch(PortalProg* prog)
@@ -195,9 +217,12 @@ HRESULT launchRTApp(wchar_t* app)
 	if (windowsVersion < WINVER_8)
 		return E_FAIL;
 
+	if (wcslen(app) == 0)
+		return E_INVALIDARG;
+
 	HRESULT hr = E_FAIL;
-	hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-	if (!SUCCEEDED(hr))
+	hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	if (FAILED(hr))
 		return hr;
 
 	wchar_t* app_name = app;
@@ -217,14 +242,12 @@ HRESULT launchRTApp(wchar_t* app)
 #undef IS_APP
 
 	CComPtr<IApplicationActivationManager> activationManager;
-	//	hr = CoCreateInstance(CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&activationManager));
 	hr = CoCreateInstance(CLSID_ApplicationActivationManager, NULL, CLSCTX_LOCAL_SERVER, IID_IApplicationActivationManager, (LPVOID*)&activationManager);
 
 	if (SUCCEEDED(hr))
 	{
 		hr = CoAllowSetForegroundWindow(activationManager, NULL);
 	}
-
 	if (SUCCEEDED(hr))
 	{
 		DWORD newProcessId;

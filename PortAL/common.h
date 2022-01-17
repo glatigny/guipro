@@ -46,8 +46,7 @@
 
 /* ------------------------------------------------------------------------------------------------- */
 
-//#define MENU_DRAW_V1								// Old menu design.
-//#define ICON_MANAGER								// Old icon manager.
+#define ICON_MANAGER								// Icon manager system.
 //#define ICON_MANAGER_THREAD						// Loading image in a thread (experimental)
 //#define PORTAL_REFUSE_HOTKEY_ERROR				// Old rules for the loading of the configuration.
 //#define USE_GDI_MENU								// Use GDI+ to handle and display the icons (experimental)
@@ -99,7 +98,7 @@
 #define WC_PORTAL_ABOUT_ITEM_TEXT		L"About"
 #define WC_PORTAL_QUIT_ITEM_TEXT		L"Quit"
 
-#define PORTAL_VERSION					L"1.5.2"
+#define PORTAL_VERSION					L"1.5.3"
 #define WC_PORTAL_ABOUT_TEXT_TITLE		L"PortAL " PORTAL_VERSION
 #define WC_PORTAL_ABOUT_TEXT			L"Portable Application Launcher\nhttp://glatigny.github.io/guipro/"
 
@@ -116,6 +115,7 @@
 #define WINVER_VISTA	3
 #define WINVER_7		4
 #define WINVER_8		5
+#define WINVER_10		6
 
 DWORD GetWindowsVersion();
 bool fileExists(wchar_t* filename);

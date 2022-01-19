@@ -47,7 +47,6 @@
 /* ------------------------------------------------------------------------------------------------- */
 
 #define ICON_MANAGER								// Icon manager system.
-//#define ICON_MANAGER_THREAD						// Loading image in a thread (experimental)
 //#define PORTAL_REFUSE_HOTKEY_ERROR				// Old rules for the loading of the configuration.
 //#define USE_GDI_MENU								// Use GDI+ to handle and display the icons (experimental)
 //#define DEV_MENU_DESIGN_SUBCLASSING_FOR_BORDER	// Add an extra layer to draw the menu and avoid the white borders (experimental)

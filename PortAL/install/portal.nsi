@@ -9,11 +9,11 @@
 ;General
 	;Name and file
 	Name "Portable Application Launcher"
-	OutFile "PortAL-1.5.2.exe"
+	OutFile "PortAL-1.5.3.exe"
 	BrandingText "Graphical User Interface Productivity : PortAL"
 
 	!define PRODUCT_NAME "PortAL"
-	!define PRODUCT_VERSION "1.5.2"
+	!define PRODUCT_VERSION "1.5.3"
 	!define PRODUCT_PUBLISHER "Graphical User Interface Productivity"
 	!define PRODUCT_WEB_SITE "http://obsidev.github.io/guipro/"
 	!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -147,17 +147,17 @@ Section "!PortAL" SecInstall
 	
 installAuto:
 	${If} ${RunningX64}
-		File /oname=PortAL.exe x64\PortAL.exe
+		File /oname=PortAL.exe ..\Build\Release\x64\PortAL.exe
 	${Else}
-		File /oname=PortAL.exe x86\PortAL.exe
+		File /oname=PortAL.exe ..\Build\Release\Win32\PortAL.exe
 	${EndIf}
 	Goto PortalExeOk
 installx86:
-	File /oname=PortAL.exe x86\PortAL.exe
+	File /oname=PortAL.exe ..\Build\Release\Win32\PortAL.exe
 	Goto PortalExeOk
 
 installx64:
-	File /oname=PortAL.exe x64\PortAL.exe
+	File /oname=PortAL.exe ..\Build\Release\x64\PortAL.exe
 	Goto PortalExeOk
 ;*/
 
@@ -172,11 +172,11 @@ PortalExeOk:
 	File ..\license.txt
 	
 	SetOverwrite off
-	File ..\portal.xml
+	File ..\rsc\portal.xml
 	SetOverwrite on
 	
 	SetOutPath "$INSTDIR\doc"
-	File /r /x .svn ..\doc\*.*
+	File /r /x .svn ..\rsc\doc\*.*
 
 SectionEnd
 

@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "main.h"
 #include "hotKey.h"
 #include "resource.h"
+#include "trayicon.h"
 #include "xmlconfig.h"
 
 PortalConfig* g_portal;
@@ -115,7 +116,6 @@ int openConfig()
 	const int nMaxLen = 255 - SIZEOF_ARRAY(szConfigName);
 	wchar_t szBuff[255] = L"";
 	wchar_t* xmlfilename = NULL;
-	wchar_t* szFullDllName = NULL;
 
 	int ret = FALSE;
 
@@ -159,6 +159,7 @@ int openConfig()
 				ret = TRUE;
 			}
 #else
+			UNREFERENCED_PARAMETER(temp);
 			ret = TRUE;
 			if (registerConfig(TRUE) == FALSE)
 				ret = PORTAL_CONFIG_LOAD_PARTIAL;

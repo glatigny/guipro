@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,12 +18,12 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef __MAIN_H__
+#define __MAIN_H__
 
 #include <windows.h>
 #include <vector>
-#include "trayIcon.h"
+/* #include "trayIcon.h" */
 
 extern const wchar_t g_szMainWnd[];
 extern const wchar_t g_szExecuteurWnd[];
@@ -47,4 +47,4 @@ void uninstallCallWndHook();
 void installCallWndHook();
 #endif
 
-#endif
+#endif /* __MAIN_H__ */

@@ -5,11 +5,11 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HulK", "HulK.vcxproj", "{09AEE234-8D5B-4DF5-B145-17B15328F7A0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "systemmenu", "systemmenu\systemmenu.vcxproj", "{0BA2ED29-C3D6-4A67-BFCE-448155C171CF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "systemmenu", "plugins\systemmenu\systemmenu.vcxproj", "{0BA2ED29-C3D6-4A67-BFCE-448155C171CF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wdhook", "wdhook\wdhook.vcxproj", "{F19D548F-FB05-4356-851B-9B3B2136C5CE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wdhook", "plugins\wdhook\wdhook.vcxproj", "{F19D548F-FB05-4356-851B-9B3B2136C5CE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "desktops", "desktops\desktops.vcxproj", "{0128C30C-0270-4AC3-93FF-98FD1B04EAD6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "desktops", "plugins\desktops\desktops.vcxproj", "{0128C30C-0270-4AC3-93FF-98FD1B04EAD6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

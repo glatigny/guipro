@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef LAUNCH_H
-#define LAUNCH_H
+#ifndef __LAUNCH_H__
+#define __LAUNCH_H__
 
 #include <windows.h>
 #include "portalConfig.h"
@@ -40,4 +40,4 @@ void launch(PortalProg* prog);
 void fireEvent(UINT evt);
 HRESULT launchRTApp(wchar_t* app);
 
-#endif /* LAUNCH_H */
+#endif /* __LAUNCH_H__ */

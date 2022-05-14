@@ -147,35 +147,41 @@ Section "!HulK" SecInstall
 	
 installAuto:
 	${If} ${RunningX64}
-		File /oname=HulK.exe x64\HulK.exe
-		File /oname=systemmenu.dll x64\systemmenu.dll
-		File /oname=wdhook.dll x64\wdhook.dll
-		File /oname=desktops.dll x64\desktops.dll
+		File /oname=HulK.exe ..\Build\Release\x64\HulK.exe
+		File /oname=systemmenu.dll ..\Build\Release\x64\plugins\systemmenu\systemmenu.dll
+		File /oname=wdhook.dll ..\Build\Release\x64\plugins\wdhook\wdhook.dll
+		File /oname=desktops.dll ..\Build\Release\x64\plugins\desktops\desktops.dll
+		File /oname=systemmenu_x86.dll ..\Build\Release\Win32\plugins\systemmenu\systemmenu.dll
+		File /oname=wdhook_x86.dll ..\Build\Release\Win32\plugins\wdhook\wdhook.dll
+		File /oname=desktops_x86.dll ..\Build\Release\Win32\plugins\desktops\desktops.dll
 	${Else}
-		File /oname=HulK.exe x86\HulK.exe
-		File /oname=systemmenu.dll x86\systemmenu.dll
-		File /oname=wdhook.dll x86\wdhook.dll
-		File /oname=desktops.dll x86\desktops.dll
+		File /oname=HulK.exe ..\Build\Release\Win32\HulK.exe
+		File /oname=systemmenu.dll ..\Build\Release\Win32\plugins\systemmenu\systemmenu.dll
+		File /oname=wdhook.dll ..\Build\Release\Win32\plugins\wdhook\wdhook.dll
+		File /oname=desktops.dll ..\Build\Release\Win32\plugins\desktops\desktops.dll
 	${EndIf}
 	Goto HulkExeOk
 installx86:
-	File /oname=HulK.exe x86\HulK.exe
-	File /oname=systemmenu.dll x86\systemmenu.dll
-	File /oname=wdhook.dll x86\wdhook.dll
-	File /oname=desktops.dll x86\desktops.dll
+	File /oname=HulK.exe ..\Build\Release\Win32\HulK.exe
+	File /oname=systemmenu.dll ..\Build\Release\Win32\plugins\systemmenu\systemmenu.dll
+	File /oname=wdhook.dll ..\Build\Release\Win32\plugins\wdhook\wdhook.dll
+	File /oname=desktops.dll ..\Build\Release\Win32\plugins\desktops\desktops.dll
 	Goto HulkExeOk
 
 installx64:
-	File /oname=HulK.exe x64\HulK.exe
-	File /oname=systemmenu.dll x64\systemmenu.dll
-	File /oname=wdhook.dll x64\wdhook.dll
-	File /oname=desktops.dll x64\desktops.dll
+	File /oname=HulK.exe ..\Build\Release\x64\HulK.exe
+	File /oname=systemmenu.dll ..\Build\Release\x64\plugins\systemmenu\systemmenu.dll
+	File /oname=wdhook.dll ..\Build\Release\x64\plugins\wdhook\wdhook.dll
+	File /oname=desktops.dll ..\Build\Release\x64\plugins\desktops\desktops.dll
+	File /oname=systemmenu_x86.dll ..\Build\Release\Win32\plugins\systemmenu\systemmenu.dll
+	File /oname=wdhook_x86.dll ..\Build\Release\Win32\plugins\wdhook\wdhook.dll
+	File /oname=desktops_x86.dll ..\Build\Release\Win32\plugins\desktops\desktops.dll
 	Goto HulkExeOk
 ;*/
 
 HulkExeOk:	
 	SetOverwrite off
-	File ..\hulk.xml
+	File ..\rsc\hulk.xml
 	SetOverwrite on
 	
 ;	SetOutPath "$INSTDIR\doc"

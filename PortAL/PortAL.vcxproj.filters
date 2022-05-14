@@ -53,12 +53,6 @@
     <ClInclude Include="src\portalConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\pugixml\pugiconfig.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\pugixml\pugixml.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -70,6 +64,12 @@
     </ClInclude>
     <ClInclude Include="src\xmlconfig.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pugixml\pugiconfig.hpp">
+      <Filter>Header Files\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pugixml\pugixml.hpp">
+      <Filter>Header Files\pugixml</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -100,9 +100,6 @@
     <ClCompile Include="src\portalConfig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\pugixml\pugixml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\trayIcon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -111,6 +108,9 @@
     </ClCompile>
     <ClCompile Include="src\xmlconfig.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pugixml\pugixml.cpp">
+      <Filter>Source Files\pugixml</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

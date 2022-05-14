@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,12 +18,11 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef UPDATER_H
-#define UPDATER_H
+#ifndef __UPDATER_H__
+#define __UPDATER_H__
 
 #include <windows.h>
-#include "portalConfig.h"
 
 void checkGuiproVersion();
 
-#endif /* UPDATER_H */
+#endif /* __UPDATER_H__ */

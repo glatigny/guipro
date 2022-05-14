@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 /*
   When compiling without the WinXP support.
@@ -121,4 +121,4 @@ bool fileExists(wchar_t* filename);
 wchar_t* specialDirs(const wchar_t* cTemp, int mode = 0);
 wchar_t* getClipboard(bool multiple = false);
 
-#endif /* COMMON_H */
+#endif /* __COMMON_H__ */

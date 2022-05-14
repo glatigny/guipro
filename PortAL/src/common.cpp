@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -27,10 +27,13 @@
 
 extern HWND g_hwndMain;
 
-/* ------------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
 
+/**
+ * GetWindowsVersion
+ */
 DWORD GetWindowsVersion()
 {
 #ifdef LEGACY
@@ -92,8 +95,11 @@ DWORD GetWindowsVersion()
 #endif
 }
 
-/* ------------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
+/**
+ * fileExists
+ */
 bool fileExists(wchar_t* filename)
 {
 	HANDLE h = CreateFileW(filename, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
@@ -102,9 +108,48 @@ bool fileExists(wchar_t* filename)
 	return ret;
 }
 
-/* ------------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
-// Dup Or Null with special directories replacement
+/**
+ * specialDirs
+ *
+ * Dup Or Null with special directories replacement
+ *
+ * Doc : http://msdn2.microsoft.com/en-us/library/bb762181(VS.85).aspx
+ * Doc : http://msdn2.microsoft.com/en-us/library/bb762494(VS.85).aspx
+ *
+ *   CSIDL_SYSTEM
+ *   CSIDL_WINDOWS
+ *   CSIDL_SYSTEMX86
+ *   CSIDL_MYMUSIC
+ *   CSIDL_DESKTOPDIRECTORY
+ *   CSIDL_PROGRAM_FILES
+ *   CSIDL_MYVIDEO
+ *   CSIDL_PERSONAL =~ CSIDL_MYDOCUMENTS
+ *   CSIDL_LOCAL_APPDATA
+ *
+ *   CSIDL_ADMINTOOLS
+ *   CSIDL_APPDATA
+ *   CSIDL_COMMON_ADMINTOOLS
+ *   CSIDL_COMMON_APPDATA
+ *   CSIDL_COMMON_DOCUMENTS
+ *   CSIDL_COOKIES
+ *   CSIDL_HISTORY
+ *   CSIDL_INTERNET_CACHE
+ *   CSIDL_MYPICTURES
+ *   CSIDL_PROGRAM_FILES_COMMON
+ *   
+ *   CSIDL_COMMON_DESKTOPDIRECTORY
+ *   CSIDL_COMMON_PICTURES
+ *   CSIDL_COMMON_PROGRAMS
+ *   CSIDL_COMMON_VIDEO
+ *   CSIDL_DRIVES
+ *   CSIDL_DESKTOP
+ *   CSIDL_NETHOOD (user nethood)
+ *   CSIDL_NETWORK
+ *   CSIDL_PRINTERS
+ *   CSIDL_RECENT
+ */
 wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 {
 	if( cTemp == NULL )
@@ -136,44 +181,6 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 	lenght = b; \
 	if( mode == 86 ) CSIDL = c; else { CSIDL = d; special = true; } }
 
-	/*
-		http://msdn2.microsoft.com/en-us/library/bb762181(VS.85).aspx
-
-		CSIDL_SYSTEM
-		CSIDL_WINDOWS
-		CSIDL_SYSTEMX86
-		CSIDL_MYMUSIC
-		CSIDL_DESKTOPDIRECTORY
-		CSIDL_PROGRAM_FILES
-		CSIDL_MYVIDEO
-		CSIDL_PERSONAL =~ CSIDL_MYDOCUMENTS
-		CSIDL_LOCAL_APPDATA
-
-		CSIDL_ADMINTOOLS
-		CSIDL_APPDATA
-		CSIDL_COMMON_ADMINTOOLS
-		CSIDL_COMMON_APPDATA
-		CSIDL_COMMON_DOCUMENTS
-		CSIDL_COOKIES
-		CSIDL_HISTORY
-		CSIDL_INTERNET_CACHE
-		CSIDL_MYPICTURES
-		CSIDL_PROGRAM_FILES_COMMON
-
-		CSIDL_COMMON_DESKTOPDIRECTORY
-		CSIDL_COMMON_PICTURES
-		CSIDL_COMMON_PROGRAMS
-		CSIDL_COMMON_VIDEO
-		CSIDL_DRIVES
-		CSIDL_DESKTOP
-		CSIDL_NETHOOD (user nethood)
-		CSIDL_NETWORK
-		CSIDL_PRINTERS
-		CSIDL_RECENT
-			
-		http://msdn2.microsoft.com/en-us/library/bb762494(VS.85).aspx
-	*/
-
 		D("%win%", 5, CSIDL_WINDOWS);
 		D64("%programfiles%", 14, CSIDL_PROGRAM_FILESX86, CSIDL_PROGRAM_FILES);
 		D("%programfiles86%", 16, CSIDL_PROGRAM_FILESX86);
@@ -191,7 +198,6 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 		if( (lenght > 0) && (CSIDL != 0) )
 		{
 			wchar_t buff[MAX_PATH];
-			DWORD dwSize = sizeof(buff);
 			HRESULT result = SHGetFolderPathW(NULL, CSIDL, NULL, SHGFP_TYPE_CURRENT, buff);
 					
 			if( result == S_OK )
@@ -282,8 +288,84 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 	return _wcsdup(lTemp);
 }
 
-/* ------------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
+static wchar_t* _getClipboardText(HANDLE clipHwnd)
+{
+	wchar_t* ret = NULL;
+	wchar_t* data = (wchar_t*)GlobalLock(clipHwnd);
+	if (data != NULL)
+	{
+		ret = _wcsdup(data);
+	}
+	GlobalUnlock(data);
+	return ret;
+}
+
+static wchar_t* _getClipboardFile(HANDLE clipHwnd, bool multiple)
+{
+	wchar_t* ret = NULL;
+	HDROP drop = (HDROP)GlobalLock(clipHwnd);
+	if (drop == NULL)
+	{
+		return ret;
+	}
+
+	int nbFiles = DragQueryFileW(drop, 0xFFFFFFFF, NULL, 0);
+	if (nbFiles <= 0)
+	{
+		GlobalUnlock(drop);
+		return ret;
+	}
+	
+	// Handle the files in the clipboard
+	// With a special (small) way if we are not in "multiple" mode.
+	if (!multiple)
+	{
+		// We only allocate a small range of memory in that case
+		ret = (wchar_t*)malloc(sizeof(wchar_t) * MAX_PATH);
+		if (ret != NULL)
+		{
+			memset(ret, 0, sizeof(wchar_t) * MAX_PATH);
+			DragQueryFileW(drop, 0, ret, MAX_PATH);
+		}
+	}
+	else
+	{
+		// We need to list all files in the clipboard without going outside of the memory.
+		ret = (wchar_t*)malloc(sizeof(wchar_t) * CLIPBOARD_BUFFER_LNG);
+		if (ret != NULL)
+		{
+			int pos = 0;
+			wchar_t* curr = ret;
+
+			memset(ret, 0, sizeof(wchar_t) * CLIPBOARD_BUFFER_LNG);
+
+			for (int i = 0; i < nbFiles && pos < CLIPBOARD_BUFFER_LNG; i++)
+			{
+				int n = DragQueryFileW(drop, i, curr, CLIPBOARD_BUFFER_LNG - pos);
+				if (n > 0) {
+					pos += n;
+					curr += n;
+				}
+				
+				// We add a space between the files
+				if ((i + 1) < nbFiles && pos < CLIPBOARD_BUFFER_LNG)
+				{
+					curr[0] = ' ';
+					curr++;
+				}
+			}
+		}
+	}
+
+	GlobalUnlock(drop);
+	return ret;
+}
+
+/**
+ * getClipboard
+ */
 wchar_t* getClipboard(bool multiple)
 {
 	wchar_t* ret = NULL;
@@ -304,11 +386,13 @@ wchar_t* getClipboard(bool multiple)
 		return ret;
 	}
 
-	// Text Clipboard
-	//
 	if (clipboardType == CF_UNICODETEXT)
 	{
-		WCHAR* data = (WCHAR*)GlobalLock(clipHwnd);
+		// Text Clipboard
+		//
+		ret = _getClipboardText(clipHwnd);
+#if 0
+		wchar_t* data = (wchar_t*)GlobalLock(clipHwnd);
 		if (data != NULL)
 		{
 			ret = _wcsdup(data);
@@ -316,12 +400,14 @@ wchar_t* getClipboard(bool multiple)
 		GlobalUnlock(data);
 		CloseClipboard();
 		return ret;
+#endif
 	}
-	
-	// File Clipboard
-	//
-	if (clipboardType == CF_HDROP)
+	else if (clipboardType == CF_HDROP)
 	{
+		// File Clipboard
+		//
+		ret = _getClipboardFile(clipHwnd, multiple);
+#if 0
 		// Get the clipboard lock
 		HDROP drop = (HDROP)GlobalLock(clipHwnd);
 		if (drop == NULL)
@@ -382,10 +468,11 @@ wchar_t* getClipboard(bool multiple)
 			}
 		}
 		GlobalUnlock(drop);
+#endif
 	}
 
 	CloseClipboard();
 	return ret;
 }
 
-/* ------------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */

@@ -170,35 +170,35 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="common.cpp" />
-    <ClCompile Include="config.cpp" />
-    <ClCompile Include="hotKey.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="menu.cpp" />
-    <ClCompile Include="mouse.cpp" />
-    <ClCompile Include="trayIcon.cpp" />
-    <ClCompile Include="volume.cpp" />
+    <ClCompile Include="src\common.cpp" />
+    <ClCompile Include="src\config.cpp" />
+    <ClCompile Include="src\hotKey.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\menu.cpp" />
+    <ClCompile Include="src\mouse.cpp" />
+    <ClCompile Include="src\trayIcon.cpp" />
+    <ClCompile Include="src\volume.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.h" />
-    <ClInclude Include="config.h" />
-    <ClInclude Include="hotKey.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="menu.h" />
-    <ClInclude Include="mouse.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="trayIcon.h" />
-    <ClInclude Include="volume.h" />
+    <ClInclude Include="src\common.h" />
+    <ClInclude Include="src\config.h" />
+    <ClInclude Include="src\hotKey.h" />
+    <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\menu.h" />
+    <ClInclude Include="src\mouse.h" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\trayIcon.h" />
+    <ClInclude Include="src\volume.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="VulCan.rc" />
+    <ResourceCompile Include="src\VulCan.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="VulCan_icon_16.ico" />
-    <Image Include="VulCan_icon_32.ico" />
+    <Image Include="rsc\VulCan_icon_16.ico" />
+    <Image Include="rsc\VulCan_icon_32.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="vulcan.ini">
+    <None Include="rsc\vulcan.ini">
       <DeploymentContent>true</DeploymentContent>
     </None>
   </ItemGroup>

@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef MENU_H
-#define MENU_H
+#ifndef __MENU_H__
+#define __MENU_H__
 
 /* ------------------------------------------------------------------------------------------------- */
 
@@ -121,4 +121,4 @@ HBITMAP IconToBitmap(UINT uIcon);
 
 /* ------------------------------------------------------------------------------------------------- */
 
-#endif /* MENU_H */
+#endif /* __MENU_H__ */

@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
 #include <windows.h>
 #include <vector>
@@ -53,4 +53,4 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis);
 bool installFileNotification(wchar_t* xmlfilename = NULL);
 bool uninstallFileNotification();
 
-#endif /* CONFIG_H */
+#endif /* __CONFIG_H__ */

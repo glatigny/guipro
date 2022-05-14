@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -216,12 +216,12 @@ void ShowTrayIcons()
 
 void ReloadTrayIcons()
 {
-	int size = (int)g_portal->menus.size();
-	if( g_IconTray.size() == size )
+	UINT size = (UINT)g_portal->menus.size();
+	if((UINT)g_IconTray.size() == size )
 	{
 		const WCHAR* name = NULL;
 		
-		for( int i = 0; i < size; i++ )
+		for( UINT i = 0; i < size; i++ )
 		{
 			loadSystrayIcon(i);
 
@@ -263,7 +263,7 @@ void DeleteTrayIcons()
 
 /* ------------------------------------------------------------------------------------------------- */
 
-void loadSystrayIcon(int pos)
+void loadSystrayIcon(size_t pos)
 {
 	if( g_portal->menus[pos]->isIcoPath() )
 	{

@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,13 +18,14 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef ICON_MANAGER_H
-#define ICON_MANAGER_H
+#ifndef __ICON_MANAGER_H__
+#define __ICON_MANAGER_H__
 
-#include "menu.h"
+#include "common.h"
 
 #ifdef ICON_MANAGER
 
+#include "menu.h"
 #include <vector>
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -59,4 +60,4 @@ void unloaderIconManager();
 
 #endif /* ICON_MANAGER */
 
-#endif /* ICON_MANAGER_H */
+#endif /* __ICON_MANAGER_H__ */

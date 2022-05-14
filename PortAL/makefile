@@ -66,7 +66,7 @@ LD_FLAGS_X86 = /MACHINE:X86 /SAFESEH
 # + $(SYS_LIBS)
 
 # Current flags
-CL_FLAGS = /c /Zi /nologo /W3 /WX- /diagnostics:classic /O1 /Ot /Oy /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm- /EHsc /MT /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fd"$(OBJ)\vc141.pdb" /Gd /TP /FC /errorReport:prompt 
+CL_FLAGS = /c /Zi /nologo /W4 /WX- /diagnostics:classic /O1 /Ot /Oy /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm- /EHsc /MT /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fd"$(OBJ)\vc141.pdb" /Gd /TP /FC /errorReport:prompt 
 LD_FLAGS = /ERRORREPORT:PROMPT /INCREMENTAL:NO /NOLOGO $(SYS_LIBS) /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"$(OUTBIN)\$(PROGNAME).pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG:incremental /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"$(OUTBIN)\$(PROGNAME).lib" /MACHINE:X64
 
 # Generatings objs from sources

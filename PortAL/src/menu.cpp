@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -861,6 +861,8 @@ void DestroyMyMenu(BOOL all)
 
 LRESULT OnMenuCharItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+
 	char chUser = (char)LOWORD(wParam); 
 	HMENU menu = (HMENU)lParam;
 
@@ -1095,6 +1097,9 @@ static void HandleSubDirectory(PortalMenuItem* item, HMENU hmenu, PortalProg *p_
 
 void OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(lParam);
+
 	HMENU hmenu = (HMENU)wParam;
 	int count = GetMenuItemCount(hmenu);
 	PortalProg *p_menu = menus[hmenu];
@@ -1149,12 +1154,18 @@ void OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 void OnUninitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(wParam);
+	UNREFERENCED_PARAMETER(lParam);
 }
 
 /* ------------------------------------------------------------------------------------------------- */
 
 void OnMeasureItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(wParam);
+	UNREFERENCED_PARAMETER(lParam);
+
 	LPMEASUREITEMSTRUCT ptMeasure = (LPMEASUREITEMSTRUCT)lParam;
 	HDC hDC;
 	SIZE tSize;
@@ -1221,6 +1232,9 @@ ULONG _getGradiant(TRIVERTEX* vertex, RECT* tRect, ColorGradient* gradiant, UINT
 
 void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(wParam);
+
 	LPDRAWITEMSTRUCT ptDrawItem = (LPDRAWITEMSTRUCT)lParam;
 	HDC hDC;
 	RECT tRect, tRectText, bar;

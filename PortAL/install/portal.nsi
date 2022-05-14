@@ -168,7 +168,6 @@ installx64:
 ;*/
 
 PortalExeOk:
-	File ..\portal.txt
 	File ..\license.txt
 	
 	SetOverwrite off

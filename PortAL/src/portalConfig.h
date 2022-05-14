@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef PORTAL_CONFIG_H
-#define PORTAL_CONFIG_H
+#ifndef __PORTAL_CONFIG_H__
+#define __PORTAL_CONFIG_H__
 
 #include "common.h"
 #include <windows.h>
@@ -35,11 +35,11 @@
 #define PROG_OPTION_BREAK		(0x040)
 #define PROG_OPTION_ELEVATION	(0x080)
 
-#define PROG_EVENT_NONE			(0x000)
-#define PROG_EVENT_START		(0x001)
-#define PROG_EVENT_QUIT			(0x002)
-#define PROG_EVENT_LOCK			(0x004)
-#define PROG_EVENT_UNLOCK		(0x008)
+#define PROG_EVENT_NONE			(0x00)
+#define PROG_EVENT_START		(0x01)
+#define PROG_EVENT_QUIT			(0x02)
+#define PROG_EVENT_LOCK			(0x04)
+#define PROG_EVENT_UNLOCK		(0x08)
 
 class PortalProg;
 
@@ -93,6 +93,8 @@ class PortalProg
 #ifdef USE_PATH_STORAGE
 			if (content != NULL)
 				free(content);
+#else
+			UNREFERENCED_PARAMETER(content);
 #endif
 		};
 
@@ -148,4 +150,4 @@ struct _PortalVariable {
 
 typedef std::vector<PortalVariable*> PortalVariableVector;
 
-#endif /* PORTAL_CONFIG_H */
+#endif /* __PORTAL_CONFIG_H__ */

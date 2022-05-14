@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "launch.h"
 #include "updater.h"
 #include "iconManager.h"
+#include "trayIcon.h"
 #include "config.h"
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -52,10 +53,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 // Special debugging code in order to have
 #ifndef NDEBUG
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-flag |= _CRTDBG_LEAK_CHECK_DF;
-_CrtSetDbgFlag(flag);
+	int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+	flag |= _CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF;
+	_CrtSetDbgFlag(flag);
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
 #endif
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(nShowCmd);
+
 	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
 	// Keep the Instance of the application

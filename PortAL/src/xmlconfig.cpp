@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -147,9 +147,9 @@ static UINT getOptions(pugi::xml_node elem)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-static UINT getEvents(pugi::xml_node elem)
+static UINT8 getEvents(pugi::xml_node elem)
 {
-	UINT events = PROG_EVENT_NONE;
+	UINT8 events = PROG_EVENT_NONE;
 
 	// Retro-compatibility
 	if (isTrue(elem.attribute(L"autorun").value()))
@@ -403,10 +403,10 @@ static void loadMenuSkin(pugi::xml_node elem)
 		if (!wcscmp(item.name(), L"border"))
 		{
 			if (!item.attribute(L"size").empty())
-				g_PortalMenuDesign->border_size = _wtoi(item.attribute(L"size").value());
+				g_PortalMenuDesign->border_size = (UINT16)_wtoi(item.attribute(L"size").value());
 
 			if (!item.attribute(L"round").empty())
-				g_PortalMenuDesign->border_round = _wtoi(item.attribute(L"round").value());
+				g_PortalMenuDesign->border_round = (UINT16)_wtoi(item.attribute(L"round").value());
 
 			if (!item.attribute(L"color").empty())
 				g_PortalMenuDesign->border_color = getColor(item.attribute(L"round").value());

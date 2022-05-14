@@ -1,7 +1,7 @@
 /*
 	PortAL - GUIPro Project ( http://glatigny.github.io/guipro/ )
 
-	Author : Glatigny Jérôme <jerome@darksage.fr>
+	Author : Glatigny Jérôme <jerome@obsi.dev>
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef TRAYICON_H
-#define TRAYICON_H
+#ifndef __TRAYICON_H__
+#define __TRAYICON_H__
 
 #include <windows.h>
 #include <ShellAPI.h>
@@ -43,6 +43,6 @@ void ShowTrayIcon(int pos);
 
 void DeleteTrayIcons();
 
-void loadSystrayIcon(int pos);
+void loadSystrayIcon(size_t pos);
 
-#endif /* TRAYICON_H */
+#endif /* __TRAYICON_H__ */

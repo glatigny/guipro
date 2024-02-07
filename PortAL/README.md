@@ -64,6 +64,7 @@ You can use the Visual Studio Project.
 ```
 msbuild /p:Configuration=Release;Platform=x64
 ```
+A makefile is also available but in work in progress.
 
 ### Experimentations
 
@@ -86,5 +87,5 @@ The `common.h` file contains some defines that you can uncomment to enable *work
 
 ## License
 
-* Copyright (C) 2007 - 2022 Glatigny Jerome. All rights reserved.
+* Copyright (C) 2007 - 2024 Glatigny Jerome. All rights reserved.
 * Distributed under the GNU General Public License version 2 or later

@@ -71,19 +71,26 @@ void alwaysOnTop( HWND p_hwnd )
 
 void borderlessWindow( HWND p_hwnd)
 {
+	/* For the record
+	 * WS_OVERLAPPEDWINDOW: (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX)
+	 * WS_OVERLAPPED: 0x00000000L
+	 *
+	 * Borderless is mostly related to WS_POPUP that we need to add/remove.
+	 * WS_CAPTION (title bar) includes WS_BORDER
+	 * But we need to notify the refresh of the window after the change.
+	 */
 	LONG_PTR lpStyle = GetWindowLongPtr( p_hwnd, GWL_STYLE );
-//	LONG_PTR lpExStyle = GetWindowLongPtr( p_hwnd, GWL_EXSTYLE );
 	if( lpStyle & WS_CAPTION )
 	{
-		lpStyle = (lpStyle | WS_POPUP) & ~( WS_CAPTION | WS_MINIMIZEBOX | WS_OVERLAPPED );
+		lpStyle = (lpStyle | WS_POPUP) & ~( WS_CAPTION );
 		SetWindowLongPtr( p_hwnd, GWL_STYLE, lpStyle);
 		/*
-// https://github.com/melak47/BorderlessWindow/blob/master/BorderlessWindow/src/BorderlessWindow.cpp
-#define WINDOWED 			(WS_OVERLAPPEDWINDOW | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX)
-#define AERO_BORDERLESS  	(WS_POPUP            | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX)
-#define BASIC_BORDERLESS 	(WS_POPUP            | WS_THICKFRAME              | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX)
+// Ref: https://github.com/melak47/BorderlessWindow/blob/master/BorderlessWindow/src/BorderlessWindow.cpp
+#define WINDOWED            (WS_OVERLAPPEDWINDOW | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX)
+#define AERO_BORDERLESS     (WS_POPUP            | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX)
+#define BASIC_BORDERLESS    (WS_POPUP            | WS_THICKFRAME              | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX)
 		*/
-		/*
+#if 0
 		LONG_PTR lpStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
 		lpStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
 		SetWindowLongPtr(hwnd, GWL_STYLE, lpStyle);
@@ -91,13 +98,15 @@ void borderlessWindow( HWND p_hwnd)
 		LONG_PTR lpExStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 		lpExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
 		SetWindowLongPtr(hwnd, GWL_EXSTYLE, lpExStyle);
-		*/
+#endif
 	}
 	else
 	{
-		lpStyle = (lpStyle | WS_CAPTION | WS_MINIMIZEBOX | WS_OVERLAPPED );
+		lpStyle = (lpStyle | WS_CAPTION ) & ~( WS_POPUP );
 		SetWindowLongPtr( p_hwnd, GWL_STYLE, lpStyle);
 	}
+	// Notify the window frame changed
+	SetWindowPos( p_hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE );
 }
 
 /* ------------------------------------------------------------------------------------------------- */

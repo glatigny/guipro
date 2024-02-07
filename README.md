@@ -43,5 +43,5 @@ Download binaries from: http://glatigny.github.io/guipro/ (or in the [releases s
 
 # License
 
-* Copyright (C) 2007 - 2022 Glatigny Jerome. All rights reserved.
+* Copyright (C) 2007 - 2024 Glatigny Jerome. All rights reserved.
 * Distributed under the GNU General Public License version 2 or later

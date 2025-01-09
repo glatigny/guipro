@@ -47,5 +47,5 @@ A makefile is also available but in work in progress.
 
 ## License
 
-* Copyright (C) 2007 - 2024 Glatigny Jerome. All rights reserved.
+* Copyright (C) 2007 - 2025 Glatigny Jerome. All rights reserved.
 * Distributed under the GNU General Public License version 2 or later

@@ -30,6 +30,7 @@
 #include "config.h"
 #include "iconManager.h"
 #include "hotKey.h"
+#include "xmlconfig.h"
 
 #ifdef USE_GDI_MENU
 /* Some useful doc
@@ -969,23 +970,188 @@ LRESULT OnMenuCharItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 /* ------------------------------------------------------------------------------------------------- */
 
-static void HandleSubDirectory(PortalMenuItem* item, HMENU hmenu, PortalProg *p_menu)
+static PortalMenuItem* listSubDirectories(PortalMenuItem* item, HMENU hmenu, PortalProg *p_menu, wchar_t const *search)
 {
-	bool subDirectory = (p_menu->isDirPath()); // && wcslen(p_menu->dirPath) > 0 
-	bool display = false;
 #ifndef ICON_MANAGER
 	SHFILEINFO tSHFileInfo;
 #endif
 	PortalProg* prog = NULL;
-	size_t size = 0;
+	size_t length = 0;
 
-	wchar_t search[MAX_FILE_LEN];
 	WIN32_FIND_DATA findData;
 	HANDLE find = INVALID_HANDLE_VALUE;
+
+	memset(&findData, 0, sizeof(WIN32_FIND_DATA));
+	find = FindFirstFileW(search, &findData);
+	if (find == INVALID_HANDLE_VALUE)
+	{
+		return item;
+	}
+
+	bool slashNeeded = false;
+	wchar_t* menuProgExe = NULL;
+	wchar_t* menuDirPath = NULL;
+	wchar_t* menuDirParams = NULL;
+	size_t menuProgExeSize = 0;
+
+	// Browse for directory
+	// - Add directories with MyCreateSubMenu
+	do
+	{
+		if ((findData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) || !(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		{
+			continue;
+		}
+		if (!wcscmp(findData.cFileName, L"..") || !wcscmp(findData.cFileName, L"."))
+		{
+			continue;
+		}
+
+		if (menuProgExe == NULL) {
+			menuProgExe = p_menu->getProgExe();
+			menuDirPath = p_menu->getDirPath();
+			menuDirParams = p_menu->getProgParam();
+
+			menuProgExeSize = wcslen(menuProgExe);
+			slashNeeded = (menuProgExe[menuProgExeSize - 1] != '\\');
+		}
+
+		UINT uid = (UINT)g_portal_files.size() + PORTAL_FILE_ID;
+		item = newPortalItem(uid, findData.cFileName, MENU_NORMAL, item, NULL);
+		prog = new PortalProg();
+		
+		if (menuDirPath != NULL)
+			prog->setDirPath(_wcsdup(menuDirPath));
+		if (menuDirParams != NULL)
+			prog->setProgParam(_wcsdup(menuDirParams));
+
+		prog->options = p_menu->options;
+		prog->progName = _wcsdup(findData.cFileName);
+
+		length = menuProgExeSize + wcslen(findData.cFileName) + (slashNeeded ? 3 : 2);
+
+		wchar_t* prog_exe = (wchar_t*)calloc(length, sizeof(wchar_t));
+		wcscpy_s(prog_exe, length, menuProgExe);
+		if (slashNeeded)
+			wcscat_s(prog_exe, length, L"\\");
+		wcscat_s(prog_exe, length, findData.cFileName);
+		wcscat_s(prog_exe, length, L"\\");
+
+#ifndef ICON_MANAGER
+		SHGetFileInfo(menuProgExe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+		item->icon = tSHFileInfo.hIcon;
+#else
+		item->iconid = preloadIcon(L"/");
+#endif
+
+		prog->setProgExe(prog_exe);
+		prog_exe = NULL;
+
+		HMENU subMenu = MyCreateSubMenu(prog);
+		AddSubMenu(hmenu, uid, MFT_OWNERDRAW, 0, subMenu, item);
+
+		g_portal_files.insert(g_portal_files.end(), prog);
+		prog = NULL;
+
+	} while (FindNextFileW(find, &findData) != 0);
+
+	if (menuProgExe != NULL)
+		p_menu->freeRes(menuProgExe);
+	if (menuDirPath != NULL)
+		p_menu->freeRes(menuDirPath);
+	if (menuDirParams != NULL)
+		p_menu->freeRes(menuDirParams);
+
+	return item;
+}
+
+static PortalMenuItem* listFiles(PortalMenuItem* item, HMENU hmenu, PortalProg *p_menu, wchar_t const *search)
+{
+#ifndef ICON_MANAGER
+	SHFILEINFO tSHFileInfo;
+#endif
+	PortalProg* prog = NULL;
+	size_t length = 0;
+
+	WIN32_FIND_DATA findData;
+	HANDLE find = INVALID_HANDLE_VALUE;
+
+	memset(&findData, 0, sizeof(WIN32_FIND_DATA));
+	find = FindFirstFileW(search, &findData);
+	if (find == INVALID_HANDLE_VALUE)
+	{
+		return item;
+	}
+
+	bool slashNeeded = false;
+	wchar_t* menuProgExe = NULL;
+	size_t menuProgExeSize = 0;
+
+	// Browse for files
+	// - Add files with shell option
+	do
+	{
+		// Skip hidden files
+		if ((findData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN))
+		{
+			continue;
+		}
+		// Skip all that not normal files
+		if (!(findData.dwFileAttributes & (FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_ARCHIVE)))
+		{
+			continue;
+		}
+
+		if (menuProgExe == NULL) {
+			menuProgExe = p_menu->getProgExe();
+			menuProgExeSize = wcslen(menuProgExe);
+			slashNeeded = (menuProgExe[menuProgExeSize - 1] != '\\');
+		}
+
+		UINT uid = (UINT)g_portal_files.size() + PORTAL_FILE_ID;
+		item = newPortalItem(uid, findData.cFileName, MENU_NORMAL, item, NULL);
+		prog = new PortalProg();
+		prog->options = p_menu->options;
+		prog->progName = _wcsdup(findData.cFileName);
+
+		length = menuProgExeSize + wcslen(findData.cFileName) + (slashNeeded ? 2 : 1);
+
+		wchar_t* prog_exe = (wchar_t*)calloc(length, sizeof(wchar_t));
+		wcscpy_s(prog_exe, length, menuProgExe);
+		if (slashNeeded)
+			wcscat_s(prog_exe, length, L"\\");
+		wcscat_s(prog_exe, length, findData.cFileName);
+
+#ifndef ICON_MANAGER
+		SHGetFileInfo(prog_exe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
+		item->icon = tSHFileInfo.hIcon;
+#else
+		item->iconid = preloadIcon(prog_exe);
+#endif
+
+		prog->setProgExe(prog_exe);
+		prog_exe = NULL;
+
+		AddMenuItem(hmenu, uid, MFT_OWNERDRAW, 0, item);
+
+		g_portal_files.insert(g_portal_files.end(), prog);
+		prog = NULL;
+
+	} while (FindNextFileW(find, &findData) != 0);
+
+	if (menuProgExe != NULL)
+		p_menu->freeRes(menuProgExe);
+
+	return item;
+}
+
+static void HandleSubDirectory(PortalMenuItem* item, HMENU hmenu, PortalProg *p_menu)
+{
+	bool subDirectory = (p_menu->isDirPath());
+	wchar_t search[MAX_FILE_LEN];
 	wchar_t* t;
 
 	memset(search, 0, sizeof(wchar_t) * MAX_FILE_LEN);
-	memset(&findData, 0, sizeof(WIN32_FIND_DATA));
 
 	t = p_menu->getProgExe();
 	wcscpy_s(search, t);
@@ -994,9 +1160,17 @@ static void HandleSubDirectory(PortalMenuItem* item, HMENU hmenu, PortalProg *p_
 	wcscat_s(search, L"\\");
 	if (subDirectory)
 	{
-		wcscat_s(search, L"*");
+		// Prepare a specific search for folders
+		wchar_t* search_subfolders = (wchar_t*)calloc(MAX_FILE_LEN, sizeof(wchar_t));
+		wcscpy_s(search_subfolders, MAX_FILE_LEN, search);
+		wcscat_s(search_subfolders, MAX_FILE_LEN, L"*");
+		// List the sub folders
+		item = listSubDirectories(item, hmenu, p_menu, search_subfolders);
+		// Free
+		free(search_subfolders);
 	}
-	else if (p_menu->isProgParam())
+
+	if (p_menu->isProgParam())
 	{
 		t = p_menu->getProgParam();
 		wcscat_s(search, t);
@@ -1007,92 +1181,7 @@ static void HandleSubDirectory(PortalMenuItem* item, HMENU hmenu, PortalProg *p_
 		wcscat_s(search, L"*.*");
 	}
 
-	find = FindFirstFileW(search, &findData);
-	if (find != INVALID_HANDLE_VALUE)
-	{
-		// Browse for directory
-		// - Add directories with MyCreateSubMenu
-		// - Add files with shell option
-		do
-		{
-			display = false;
-			if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN))
-			{
-				if (findData.dwFileAttributes & (FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_ARCHIVE))
-				{
-					display = true;
-				}
-				if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && subDirectory)
-				{
-					if (wcscmp(findData.cFileName, L"..") && wcscmp(findData.cFileName, L"."))
-					{
-						display = true;
-					}
-				}
-			}
-			if (display)
-			{
-				UINT uid = (UINT)g_portal_files.size() + PORTAL_FILE_ID;
-				item = newPortalItem(uid, findData.cFileName, MENU_NORMAL, item, NULL);
-				prog = new PortalProg();
-				wchar_t* menuDirPath = p_menu->getDirPath();
-				prog->setDirPath( _wcsdup(menuDirPath) );
-				p_menu->freeRes(menuDirPath);
-				prog->options = p_menu->options;
-				prog->progName = _wcsdup(findData.cFileName);
-
-				if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				{
-					wchar_t* menuProgExe = p_menu->getProgExe();
-					size = sizeof(menuProgExe) + sizeof(findData.cFileName) + sizeof(L"\\");
-					wchar_t* prog_exe = (wchar_t*)malloc(size);
-					memset(prog_exe, 0, size);
-					size /= sizeof(wchar_t);
-					wcscpy_s(prog_exe, size, menuProgExe);
-					wcscat_s(prog_exe, size, L"\\");
-					wcscat_s(prog_exe, size, findData.cFileName);
-					wcscat_s(prog_exe, size, L"\\");
-
-#ifndef ICON_MANAGER
-					SHGetFileInfo(menuProgExe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
-					item->icon = tSHFileInfo.hIcon;
-#else
-					item->iconid = preloadIcon(L"/");
-#endif
-
-					prog->setProgExe( prog_exe );
-					p_menu->freeRes(menuProgExe);
-
-					HMENU subMenu = MyCreateSubMenu(prog);
-					AddSubMenu(hmenu, uid, MFT_OWNERDRAW, 0, subMenu, item);
-				}
-				else
-				{
-					wchar_t* menuProgExe = p_menu->getProgExe();
-					size = sizeof(menuProgExe) + sizeof(findData.cFileName);
-					wchar_t* prog_exe = (wchar_t*)malloc(size);
-					memset(prog_exe, 0, size);
-					size /= sizeof(wchar_t);
-					wcscpy_s(prog_exe, size, menuProgExe);
-					wcscat_s(prog_exe, size, findData.cFileName);
-
-#ifndef ICON_MANAGER
-					SHGetFileInfo(prog_exe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
-					item->icon = tSHFileInfo.hIcon;
-#else
-					item->iconid = preloadIcon(prog_exe);
-#endif
-
-					prog->setProgExe(prog_exe);
-					p_menu->freeRes(menuProgExe);
-
-					AddMenuItem(hmenu, uid, MFT_OWNERDRAW, 0, item);
-				}
-
-				g_portal_files.insert(g_portal_files.end(), prog);
-			}
-		} while (FindNextFileW(find, &findData) != 0);
-	}
+	item = listFiles(item, hmenu, p_menu, search);
 }
 
 void OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)

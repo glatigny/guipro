@@ -74,7 +74,7 @@ HICON* retrieveIconFrom(iconLoader* loader, LPDRAWITEMSTRUCT ptDrawItem)
 static void _loadIcon(iconLoader* loader)
 {
 	wchar_t* pos = 0;
-	if (loader->ext == NULL && (wcsstr(loader->filename, L".exe") != NULL || wcsstr(loader->filename, L".dll") != NULL))
+	if (loader->ext == NULL && (wcsstr(loader->filename, L".exe") != NULL || wcsstr(loader->filename, L".dll") != NULL || wcsstr(loader->filename, L".ico") != NULL))
 	{
 		pos = wcschr(loader->filename, L',');
 	}
@@ -117,9 +117,9 @@ UINT preloadIcon(wchar_t* filename)
 
 	if( ext > 0 )
 	{
-		// Check if it is a : exe / ico / a dll with ","
+		// Check if it is a : exe / ico / a dll with "," / lnk
 		//
-		if( wcsncmp(ext, L".exe", 4) == 0 || wcsncmp(ext, L".dll,", 5) == 0 || wcsncmp(ext, L".ico", 4) == 0 )
+		if( wcsncmp(ext, L".exe", 4) == 0 || wcsncmp(ext, L".dll,", 5) == 0 || wcsncmp(ext, L".ico", 4) == 0 || wcsncmp(ext, L".lnk", 4) == 0 )
 		{
 			ext = NULL;
 		}

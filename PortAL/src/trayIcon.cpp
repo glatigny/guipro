@@ -267,6 +267,15 @@ void loadSystrayIcon(size_t pos)
 {
 	if( g_portal->menus[pos]->isIcoPath() )
 	{
+#ifdef FORCE_USE_EXTRACT_ICON
+		wchar_t* t = g_portal->menus[pos]->getIcoPath();
+		UINT ret = ExtractIconEx(t, 0, NULL, &g_IconTray[pos], 1);
+		g_portal->menus[pos]->freeRes(t);
+
+		if (ret == 0) {
+			g_IconTray[pos] = (HICON)LoadImage(	g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);	
+		}
+#else
 		SHFILEINFO tSHFileInfo;
 		ZeroMemory(&tSHFileInfo, sizeof(tSHFileInfo));
 		
@@ -275,9 +284,19 @@ void loadSystrayIcon(size_t pos)
 		g_portal->menus[pos]->freeRes(t);
 
 		g_IconTray[pos] = tSHFileInfo.hIcon;
+#endif
 	}
 	else if( g_portal->menus[pos]->isProgExe() )
 	{
+#ifdef FORCE_USE_EXTRACT_ICON
+		wchar_t* t = g_portal->menus[pos]->getProgExe();
+		UINT ret = ExtractIconEx(t, 0, NULL, &g_IconTray[pos], 1);
+		g_portal->menus[pos]->freeRes(t);
+
+		if (ret == 0) {
+			g_IconTray[pos] = (HICON)LoadImage(	g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);	
+		}
+#else
 		SHFILEINFO tSHFileInfo;
 		ZeroMemory(&tSHFileInfo, sizeof(tSHFileInfo));
 
@@ -293,6 +312,7 @@ void loadSystrayIcon(size_t pos)
 		{
 			g_IconTray[pos] = (HICON)LoadImage(	g_hInst, MAKEINTRESOURCE(IDI_MAIN_ICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 		}
+#endif
 	}
 	else
 	{

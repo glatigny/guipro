@@ -17,7 +17,7 @@
 		</group>
 		<app name="Portal Documentation" exe="%portal%\doc\index.html" shell="true"/>
 		<!-- An entry in order to config your portal menu. The icon of notepad is replaced by the XML icon -->
-		<app name="Edit this config" exe="%win%\notepad.exe" param="%portal%\portal.xml" ico="%portal%\portal.xml" />
+		<app name="Edit this config" exe="%win%\notepad.exe" param="%config%" ico="%config%" />
 		<sep/>
 		<quit/>
 	</group>

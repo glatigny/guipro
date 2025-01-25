@@ -1545,7 +1545,7 @@ void OnDrawItem(HWND hWnd, WPARAM wParam, LPARAM lParam)
 #endif
 		DrawText(hDC, item->text, lngText, &tRectText, DT_LEFT | DT_BOTTOM);
 
-		if( item->options & MENU_SHOWSC )
+		if( item->options & MENU_SHOWSC && item->sctext != NULL)
 		{
 			SetTextColor(hDC, g_menuvars.ShotcutColor);
 			RECT t = tRectText;

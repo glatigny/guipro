@@ -112,8 +112,6 @@ wchar_t* getConfigurationFilename()
 int openConfig()
 {
 	// File variables
-	wchar_t szConfigName[] = WC_PORTAL_XML_FILENAME;
-	const int nMaxLen = 255 - SIZEOF_ARRAY(szConfigName);
 	wchar_t szBuff[255] = L"";
 	wchar_t* xmlfilename = NULL;
 
@@ -217,34 +215,45 @@ int openConfig()
 int registerConfig(int alert)
 {
 	LPWSTR l_registerErrors = (LPWSTR)malloc(sizeof(PWSTR) * MAX_LANGLEN);
+	if (l_registerErrors == NULL)
+		return FALSE;
 	memset(l_registerErrors, 0, sizeof(PWSTR) * MAX_LANGLEN);
-	if( registerHotkeys(l_registerErrors) > 0)
+	if (registerHotkeys(l_registerErrors) == 0)
 	{
-		if( alert )
-		{
-			size_t l_size = (wcslen(ERR_HOTKEYS_MSG) + wcslen(l_registerErrors) + 2);
-			LPWSTR l_message = (LPWSTR)malloc(sizeof(PWSTR) * l_size);
-			wcscpy_s(l_message, l_size, ERR_HOTKEYS_MSG);
-			wcscat_s(l_message, l_size, l_registerErrors);
-			
-			// If we do not have any tray icon ; we store the message in a global variable
-			//
-			if (g_IconTray.size() == 0)
-			{
-				g_loadingmessage = _wcsdup(l_message);
-			}
-			else
-			{
-				ShowBalloon(ERR_MSGBOX_TITLE, l_message, 0, NIIF_ERROR);
-			}
-			
-			free(l_message);
-		}
+		free(l_registerErrors);
+		return TRUE;
+	}
+	if (!alert)
+	{
 		free(l_registerErrors);
 		return FALSE;
 	}
+
+	size_t l_size = (wcslen(ERR_HOTKEYS_MSG) + wcslen(l_registerErrors) + 2);
+	LPWSTR l_message = (LPWSTR)malloc(sizeof(PWSTR) * l_size);
+	if (l_message == NULL)
+	{
+		free(l_registerErrors);
+		return FALSE;
+	}
+
+	wcscpy_s(l_message, l_size, ERR_HOTKEYS_MSG);
+	wcscat_s(l_message, l_size, l_registerErrors);
+
+	// If we do not have any tray icon ; we store the message in a global variable
+	//
+	if (g_IconTray.size() == 0)
+	{
+		g_loadingmessage = _wcsdup(l_message);
+	}
+	else
+	{
+		ShowBalloon(ERR_MSGBOX_TITLE, l_message, 0, NIIF_ERROR);
+	}
+
+	free(l_message);
 	free(l_registerErrors);
-	return TRUE;
+	return FALSE;
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -271,6 +280,8 @@ int registerHotkeys(LPWSTR p_registerErrors)
 			error++;
 
 			LPWSTR l_errkey = (LPWSTR)malloc(sizeof(PWSTR) * MAX_ERRHKLEN);
+			if (l_errkey == NULL)
+				continue;
 			ZeroMemory(l_errkey, sizeof(PWSTR) * MAX_ERRHKLEN);
 
 			LPWSTR tmp = getInvModifier((*i)->modifier);
@@ -334,6 +345,8 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 	// Get file path
 	if (n == 0) {
 		szBuff = (wchar_t*)malloc(sizeof(wchar_t) * THREAD_FILENAME_SIZE);
+		if (szBuff == NULL)
+			return FALSE;
 		n = GetModuleFileName(g_hInst, szBuff, THREAD_FILENAME_SIZE);
 	}
 
@@ -341,8 +354,15 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 	if (n != 0 && n < THREAD_FILENAME_SIZE) {
 		while (n >= 0 && szBuff[n] != L'\\') n--;
 		szPath = (wchar_t*)malloc(sizeof(wchar_t) * (n + 1));
+		if (szPath == NULL)
+			return FALSE;
 		memset(szPath, 0, sizeof(wchar_t) * (n + 1));
-		lstrcpyn(szPath, szBuff, n + 1);
+		if (lstrcpyn(szPath, szBuff, n + 1) == NULL)
+		{
+			if (szBuff != NULL)
+				free(szBuff);
+			return FALSE;
+		}
 	}
 #undef THREAD_FILENAME_SIZE
 
@@ -350,7 +370,7 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 		free(szBuff);
 
 	if (n == 0)
-		return false;
+		return FALSE;
 	HANDLE g_hDir;
 	FILE_NOTIFY_INFORMATION Buffer[8];
 	memset(Buffer, 0, sizeof(Buffer));
@@ -397,7 +417,7 @@ DWORD WINAPI threadFileNotification(LPVOID lpthis)
 	}
 
 	CloseHandle(g_hDir);
-	return false;
+	return FALSE;
 }
 
 /* ------------------------------------------------------------------------------------------------- */

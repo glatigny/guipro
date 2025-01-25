@@ -28,5 +28,9 @@
 *.x86_64
 *.hex
 *.sdf
-PortAL/PortAL_vs2012.vcxproj.user
 *.zip
+
+/Tools
+/PortAL/.vs
+/HulK/.vs
+/VulCan/.vs

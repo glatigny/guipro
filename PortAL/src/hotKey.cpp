@@ -229,7 +229,7 @@ UINT getModifier(const wchar_t* p_ascii)
 
 wchar_t* getHotkeyText(UINT mod, UINT hkey)
 {
-	if( mod == 0 || hkey == 0 )
+	if( mod == 0 && hkey == 0 )
 		return NULL;
 
 	wchar_t hkText[MAX_SCLEN];
@@ -249,6 +249,8 @@ wchar_t* getHotkeyText(UINT mod, UINT hkey)
 		free(tmp);
 	}
 
+	if (hkText[0] == '\0')
+		return NULL;
 	return _wcsdup(hkText);
 }
 
@@ -316,12 +318,12 @@ wchar_t* getInvHotKeyCode(UINT key)
 	else KEYSYMB("HELP",HELP)
 	else KEYSYMB("APPS",APPS)
 	else KEYSYMB("SLEEP",SLEEP)
-	else KEYSYMB("MULTIPLY",MULTIPLY)
-	else KEYSYMB("ADD",ADD)
+	else KEYSYMB("*",MULTIPLY)
+	else KEYSYMB("+",ADD)
 	else KEYSYMB("SEPARATOR",SEPARATOR)
-	else KEYSYMB("SUBTRACT",SUBTRACT)
+	else KEYSYMB("-",SUBTRACT)
 	else KEYSYMBRAW("DECIMAL",VK_DECIMAL)
-	else KEYSYMB("DIVIDE",DIVIDE)
+	else KEYSYMB("/",DIVIDE)
 	else KEYSYMB("NUMLOCK",NUMLOCK)
 	else KEYSYMB("SCROLL",SCROLL)
 	else KEYSYMB("BROWSER BACK",BROWSER_BACK)
@@ -348,12 +350,13 @@ wchar_t* getInvHotKeyCode(UINT key)
 	else KEYSYMB("OEM 4",OEM_4)
 	else KEYSYMB("OEM 5",OEM_5)
 	else KEYSYMB("OEM 6",OEM_6)
-	else KEYSYMB("OEM 7",OEM_7)
+	else KEYSYMB("OEM 7",OEM_7) // azerty: ²  qwerty: '"
 	else KEYSYMB("OEM 8",OEM_8)
-	else KEYSYMB("OEM PLUS",OEM_PLUS)
-	else KEYSYMB("OEM COMMA",OEM_COMMA)
-	else KEYSYMB("OEM MINUS",OEM_MINUS)
-	else KEYSYMB("OEM PERIOD",OEM_PERIOD)
+	else KEYSYMB("<", OEM_102)
+	else KEYSYMB("+",OEM_PLUS)
+	else KEYSYMB(",",OEM_COMMA)
+	else KEYSYMB("-",OEM_MINUS)
+	else KEYSYMB(".",OEM_PERIOD)
 
 #undef KEYSYMB
 #undef KEYSYMBRAW

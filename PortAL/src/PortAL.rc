@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,3,0
- PRODUCTVERSION 1,5,3,0
+ FILEVERSION 1,5,4,0
+ PRODUCTVERSION 1,5,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,13 +69,13 @@ BEGIN
         BEGIN
             VALUE "Comments", "Glatigny Jerome"
             VALUE "FileDescription", "Portable Application Launcher - GuiPro project"
-            VALUE "FileVersion", "1.5.3.0"
+            VALUE "FileVersion", "1.5.4.0"
             VALUE "InternalName", "PortAL"
             VALUE "LegalCopyright", "GPL 2007-2022"
             VALUE "LegalTrademarks", "GuiPro project - http://glatigny.github.io/guipro/"
             VALUE "OriginalFilename", "PortAL.exe"
             VALUE "ProductName", "Portable Application Launcher"
-            VALUE "ProductVersion", "1.5.3.0"
+            VALUE "ProductVersion", "1.5.4.0"
         END
     END
     BLOCK "VarFileInfo"

@@ -186,11 +186,13 @@ wchar_t* specialDirs(const wchar_t* cTemp, int mode)
 		D("%programfiles86%", 16, CSIDL_PROGRAM_FILESX86);
 		D64("%system%", 8, CSIDL_SYSTEMX86, CSIDL_SYSTEM);
 		D("%system86%", 10, CSIDL_SYSTEMX86);
+		D("%user%", 6, CSIDL_PROFILE);
 		D("%mydocs%", 8, CSIDL_PERSONAL);
 		D("%mymusic%", 9, CSIDL_MYMUSIC);
 		D("%myvideo%", 8, CSIDL_MYVIDEO);
 		D("%desktop%", 9, CSIDL_DESKTOPDIRECTORY);
 		D("%appdata%", 9, CSIDL_LOCAL_APPDATA);
+		D("%appadata-r%", 11, CSIDL_APPDATA);
 
 #undef D
 #undef D64

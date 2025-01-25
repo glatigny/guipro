@@ -119,7 +119,7 @@ UINT preloadIcon(wchar_t* filename)
 	{
 		// Check if it is a : exe / ico / a dll with "," / lnk
 		//
-		if( wcsncmp(ext, L".exe", 4) == 0 || wcsncmp(ext, L".dll,", 5) == 0 || wcsncmp(ext, L".ico", 4) == 0 || wcsncmp(ext, L".lnk", 4) == 0 )
+		if( _wcsnicmp(ext, L".exe", 4) == 0 || _wcsnicmp(ext, L".dll,", 5) == 0 || _wcsnicmp(ext, L".ico", 4) == 0 || _wcsnicmp(ext, L".lnk", 4) == 0 )
 		{
 			ext = NULL;
 		}

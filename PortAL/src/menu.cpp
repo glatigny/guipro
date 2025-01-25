@@ -733,37 +733,35 @@ HMENU MyCreateMenu(PortalProg* p_menu, int param)
 	HMENU hMenu = NULL;	
 	PortalMenuItem* item = g_PortalMenuItem;
 
-	if( item != NULL )
+	if (item != NULL)
 	{
-		while( item->next != NULL )
+		while (item->next != NULL)
 			item = item->next;
 	}
 
 	// Create menu
 	hMenu = CreatePopupMenu();
-	if(hMenu == NULL)
-	{
+	if (hMenu == NULL)
 		return NULL;
-	}
 
-	if( p_menu )
+	if (p_menu != NULL)
 	{
 		menus[hMenu] = p_menu;
 
-		for( PortalProgVector::iterator i = p_menu->progs.begin() ; i != p_menu->progs.end() ; i++)
+		for (PortalProgVector::iterator i = p_menu->progs.begin() ; i != p_menu->progs.end() ; i++)
 		{
 			item = insertItemMenu( (*i), item, hMenu, &configElem, &nResult );
-			if( item == NULL )
+			if (item == NULL)
 				break;
 		}
 	}
 
-	if (p_menu && p_menu->isProgExe())
+	if (p_menu != NULL && p_menu->isProgExe())
 	{
 		item = insertItemMenu( p_menu, item, hMenu, &configElem, &nResult );
 	}
 
-	if(( param == PORTAL_MENU_SYSTRAY_CMD ) && (configElem != PORTAL_CFG_OPT))
+	if ((param == PORTAL_MENU_SYSTRAY_CMD) && (configElem != PORTAL_CFG_OPT))
 	{
 		item = newPortalItem( (IDM_EXIT + 1), L"-", MENU_SEP, item, NULL);
 		AddMenuItem(hMenu, (IDM_EXIT + 1), MFT_SEPARATOR | MFT_OWNERDRAW, 0, item);
@@ -1071,7 +1069,9 @@ static PortalMenuItem* listFiles(PortalMenuItem* item, HMENU hmenu, PortalProg *
 	SHFILEINFO tSHFileInfo;
 #endif
 	PortalProg* prog = NULL;
-	size_t length = 0;
+	size_t progLength = 0;
+	bool removeLnkExt = false;
+	size_t findFilenameLength = 0;
 
 	WIN32_FIND_DATA findData;
 	HANDLE find = INVALID_HANDLE_VALUE;
@@ -1104,23 +1104,38 @@ static PortalMenuItem* listFiles(PortalMenuItem* item, HMENU hmenu, PortalProg *
 
 		if (menuProgExe == NULL) {
 			menuProgExe = p_menu->getProgExe();
+			if (menuProgExe == NULL)
+				continue;
 			menuProgExeSize = wcslen(menuProgExe);
 			slashNeeded = (menuProgExe[menuProgExeSize - 1] != '\\');
 		}
 
+		findFilenameLength = wcslen(findData.cFileName);
+		removeLnkExt = (!_wcsicmp((const wchar_t*)(findData.cFileName + findFilenameLength - 4), L".lnk"));
+		if (removeLnkExt)
+			findData.cFileName[findFilenameLength - 4] = '\0';
+
+		// Insert a new item in the chained-list
 		UINT uid = (UINT)g_portal_files.size() + PORTAL_FILE_ID;
 		item = newPortalItem(uid, findData.cFileName, MENU_NORMAL, item, NULL);
+
+		// Create a new Program
 		prog = new PortalProg();
 		prog->options = p_menu->options;
 		prog->progName = _wcsdup(findData.cFileName);
 
-		length = menuProgExeSize + wcslen(findData.cFileName) + (slashNeeded ? 2 : 1);
+		if (removeLnkExt)
+			findData.cFileName[findFilenameLength - 4] = '.';
 
-		wchar_t* prog_exe = (wchar_t*)calloc(length, sizeof(wchar_t));
-		wcscpy_s(prog_exe, length, menuProgExe);
+		progLength = menuProgExeSize + findFilenameLength + (slashNeeded ? 2 : 1);
+
+		wchar_t* prog_exe = (wchar_t*)calloc(progLength, sizeof(wchar_t));
+		if (prog_exe == NULL)
+			continue;
+		wcscpy_s(prog_exe, progLength, menuProgExe);
 		if (slashNeeded)
-			wcscat_s(prog_exe, length, L"\\");
-		wcscat_s(prog_exe, length, findData.cFileName);
+			wcscat_s(prog_exe, progLength, L"\\");
+		wcscat_s(prog_exe, progLength, findData.cFileName);
 
 #ifndef ICON_MANAGER
 		SHGetFileInfo(prog_exe, 0, &tSHFileInfo, sizeof(tSHFileInfo), SHGFI_ICON | SHGFI_SMALLICON);
